@@ -129,5 +129,6 @@ change SSD_DISK queue and scheduler (option)
 	echo noop > /sys/block/SSD_DISK/queue/scheduler
 add TRIM in crontab for SSD_DISK
 	fstrim -v /local
+add discard,noatime in fstab when use ext4
 '
 
