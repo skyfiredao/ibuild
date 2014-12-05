@@ -123,6 +123,7 @@ ccache -M 50G
 # for svn server
 mkdir -p /local/svn.srv
 svnadmin create /local/svn.srv/ibuild
+svnserve -d -r /local/svn.srv/ibuild
 
 echo '
 Our suggestion:
