@@ -17,6 +17,7 @@
 #
 # Change log
 # 140208: Ding Wei created it
+export LC_ALL=C
 export USER=`whoami`
 export RUN_PATH=`dirname $0`
 
@@ -118,6 +119,10 @@ fi
 
 alias ccache=/usr/bin/ccache
 ccache -M 50G
+
+# for svn server
+mkdir -p /local/svn.srv
+svnadmin create /local/svn.srv/ibuild
 
 echo '
 Our suggestion:
