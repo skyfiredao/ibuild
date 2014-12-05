@@ -47,11 +47,9 @@ if [[ `readlink /bin/sh` = dash && -f /bin/bash ]] ; then
 fi
 
 apt-get -y install aptitude
-add-apt-repository ppa:x2go/stable
 apt-get update
-apt-get -y install x2goserver x2goserver-xsession
-
 aptitude -y full-upgrade
+
 # setup basic build tool
 aptitude -y install ant binutils binutils-dev binutils-static bison \
 libncurses5-dev libncursesw5-dev ncurses-hexedit openssh-server \
@@ -67,24 +65,32 @@ zlib1g-dev gcc-multilib x11proto-core-dev lib32readline5-dev lib32z-dev \
 gawk cscope libqtcore4 xml2 ant1.8 libxml2-utils lzop libgmp3-dev \
 libmpc-dev libmpfr-dev libgmp3c2 libsdl-dev libesd0-dev libwxgtk2.8-dev \
 ckermit meld ccache indent uboot-mkimage python-argparse dialog libltdl3
+
 # setup util
 aptitude -y install pbzip2 wget htop iotop zip unzip screen sysv-rc-conf \
 tree p7zip p7zip-full splint hal vim vim-full exuberant-ctags fakeroot \
 apt-btrfs-snapshot btrfs-tools sshfs linux-server curl lsb-release \
 tmux gnuplot dos2unix python2.5 meld
-# setup debug tool
-aptitude -y install minicom valgrind 
-# setup lightweight window manager with remote desktop
-aptitude -y install openbox icewm blackbox tightvncserver \
-x2goserver x2goclient wmii2 dwm wmctrl xfce4
+
 # setup version control tool
 aptitude -y install git git-core tig subversion subversion-tools \
 python-svn libsvn-perl
+
 # setup openjdk 7 for AOSP L build
 # setup Sun JDK 1.6 for AOSP build before L
 aptitude -y install openjdk-7-jdk sun-java6-jdk
+
 # setup web server for monitor if need
 aptitude -y install nginx php5-fpm ganglia-monitor gmetad ganglia-webfrontend
+
+# setup debug tool
+aptitude -y install minicom valgrind 
+
+# setup lightweight window manager with remote desktop
+add-apt-repository ppa:x2go/stable
+apt-get update
+aptitude -y install openbox icewm blackbox tightvncserver \
+x2goserver x2goserver-xsession x2goclient wmii2 dwm wmctrl xfce4
 
 svn co $SVN_OPTION -q $SVN_SRV/tools/tools /local/tools
 export RUN_PATH=/local/tools/setup
@@ -98,20 +104,21 @@ ln -s /usr/bin/fromdos /usr/local/bin/dos2unix
 ln -sf /usr/lib/jvm/java-7-openjdk-amd64 /usr/local/jdk1.7
 ln -sf /usr/local/jdk1.6 /usr/local/jdk
 
-echo "PATH=/usr/local/jdk/bin:\$PATH:
-CLASSPATH=/usr/local/jdk/lib:.
-JAVA_HOME=/usr/local/jdk
-export PATH CLASSPATH JAVA_HOME
+echo "
+export PATH=/usr/local/jdk/bin:\$PATH:
+export CLASSPATH=/usr/local/jdk/lib:.
+export JAVA_HOME=/usr/local/jdk
 export USE_CCACHE=1
 export CCACHE_UMASK=0000
 export CCACHE_DIR=/local/ccache
 export CCACHE_BASEDIR=/media
-export CPU_NUM=$CPU_NUM
-export IP=$IP
+# export CPU_NUM=$CPU_NUM
+# export IP=$IP
+# alias repo=$REPO
 alias vi=vim
 alias h=htop
-alias repo=$REPO
 alias screen='screen -R -DD'
+alias ccache=/usr/bin/ccache
 export VISUAL=vim
 " >>/etc/bash.ibuild.bashrc
 
@@ -119,7 +126,7 @@ if [[ ! `grep ibuild /etc/bash.bashrc` ]] ; then
 	echo ". /etc/bash.ibuild.bashrc" >>/etc/bash.bashrc
 fi
 
-alias ccache=/usr/bin/ccache
+. /etc/bash.ibuild.bashrc
 ccache -M 50G
 
 # for svn server
