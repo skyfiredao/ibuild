@@ -83,6 +83,8 @@ python-svn libsvn-perl
 # setup openjdk 7 for AOSP L build
 # setup Sun JDK 1.6 for AOSP build before L
 aptitude -y install openjdk-7-jdk sun-java6-jdk
+# setup web server for monitor if need
+aptitude -y install nginx php5-fpm ganglia-monitor gmetad ganglia-webfrontend
 
 svn co $SVN_OPTION -q $SVN_SRV/tools/tools /local/tools
 export RUN_PATH=/local/tools/setup
