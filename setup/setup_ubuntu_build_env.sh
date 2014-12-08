@@ -81,7 +81,7 @@ python-svn libsvn-perl
 aptitude -y install openjdk-7-jdk sun-java6-jdk
 
 # setup web server for monitor if need
-aptitude -y install nginx php5-fpm ganglia-monitor gmetad ganglia-webfrontend
+aptitude -y install lm-sensors nginx php5-fpm ganglia-monitor gmetad ganglia-webfrontend
 
 # setup debug tool
 aptitude -y install minicom valgrind 
@@ -151,5 +151,7 @@ change SSD_DISK queue and scheduler (option)
 add TRIM in crontab for SSD_DISK
 	fstrim -v /local
 add discard,noatime in fstab when use ext4
+sensors-detect
+sensors
 '
 
