@@ -20,6 +20,7 @@
 export LC_ALL=C
 export USER=`whoami`
 export RUN_PATH=`dirname $0`
+export RUN_OPTION="$*"
 
 export DISTRIB_RELEASE=`grep '^DISTRIB_RELEASE=' /etc/lsb-release | awk -F'=' {'print $2'}`
 export IP=`/sbin/ifconfig | grep 'inet addr' | grep -v '127.0.0.1' | awk -F':' {'print $2'} | awk -F' ' {'print $1'}`
@@ -50,7 +51,7 @@ apt-get -y install aptitude
 apt-get update
 aptitude -y full-upgrade
 
-# setup basic build tool
+# install basic build tool
 aptitude -y install ant binutils binutils-dev binutils-static bison \
 libncurses5-dev libncursesw5-dev ncurses-hexedit openssh-server \
 gcc-4.2 g++-4.2 libstdc++5 libstdc++6-4.2 automake1.8 automake1.9 mkisofs \
@@ -66,37 +67,49 @@ gawk cscope libqtcore4 xml2 ant1.8 libxml2-utils lzop libgmp3-dev \
 libmpc-dev libmpfr-dev libgmp3c2 libsdl-dev libesd0-dev libwxgtk2.8-dev \
 ckermit meld ccache indent uboot-mkimage python-argparse dialog libltdl3
 
-# setup util
+# install system util
 aptitude -y install pbzip2 wget htop iotop zip unzip screen sysv-rc-conf \
 tree p7zip p7zip-full splint hal vim vim-full exuberant-ctags fakeroot \
 apt-btrfs-snapshot btrfs-tools sshfs linux-server curl lsb-release \
 tmux gnuplot dos2unix python2.5 meld
 
-# setup version control tool
+# install version control tool
 aptitude -y install git git-core tig subversion subversion-tools \
 python-svn libsvn-perl
 
-# setup openjdk 7 for AOSP L build
-# setup Sun JDK 1.6 for AOSP build before L
+# install openjdk 7 for AOSP L build
+# install Sun JDK 1.6 for AOSP build before L
 aptitude -y install openjdk-7-jdk sun-java6-jdk
 
-# setup web server for monitor if need
-aptitude -y install lm-sensors nginx php5-fpm ganglia-monitor gmetad ganglia-webfrontend
+# install system monitor tool
+aptitude -y install lm-sensors ganglia-monitor
+sensors-detect
 
-# setup debug tool
-aptitude -y install minicom valgrind 
+# install web server for monitor if need
+if [[ `echo $RUN_OPTION | egrep 'S|A'` ]] ; then
+	aptitude -y install nginx php5-fpm gmetad ganglia-webfrontend
+fi
 
-# setup lightweight window manager with remote desktop
-add-apt-repository ppa:x2go/stable
-apt-get update
-aptitude -y install openbox icewm blackbox tightvncserver \
-x2goserver x2goserver-xsession x2goclient wmii2 dwm wmctrl xfce4
+# install debug tool
+if [[ `echo $RUN_OPTION | egrep 'D|A'` ]] ; then
+	aptitude -y install minicom valgrind
+fi
+
+# install lightweight window manager with remote desktop
+if [[ `echo $RUN_OPTION | egrep 'R|A'` ]] ; then
+	add-apt-repository ppa:x2go/stable
+	apt-get update
+	aptitude -y install openbox icewm blackbox tightvncserver \
+	x2goserver x2goserver-xsession x2goclient wmii2 dwm wmctrl xfce4
+fi
 
 svn co $SVN_OPTION -q $SVN_SRV/tools/tools /local/tools
 export RUN_PATH=/local/tools/setup
 
-# just for remove email server
-# aptitude -y purge nbSMTP exim4 exim4-base exim4-daemon-light
+# clean email service
+if [[ `echo $RUN_OPTION | egrep 'C'` ]] ; then
+	aptitude -y purge nbSMTP exim4 exim4-base exim4-daemon-light
+fi
 
 ln -sf /usr/lib/jvm/java-6-sun /usr/local/jdk1.6
 ln -s /usr/bin/fromdos /usr/local/bin/dos2unix
@@ -129,10 +142,12 @@ fi
 . /etc/bash.ibuild.bashrc
 ccache -M 50G
 
-# for svn server
-mkdir -p /local/svn.srv
-svnadmin create /local/svn.srv/ibuild
-svnserve -d -r /local/svn.srv/ibuild
+# setup svn server
+if [[ `echo $RUN_OPTION | egrep 'S'` ]] ; then
+	mkdir -p /local/svn.srv
+	svnadmin create /local/svn.srv/ibuild
+	svnserve -d -r /local/svn.srv/ibuild
+fi
 
 echo '
 Our suggestion:
@@ -151,7 +166,7 @@ change SSD_DISK queue and scheduler (option)
 add TRIM in crontab for SSD_DISK
 	fstrim -v /local
 add discard,noatime in fstab when use ext4
-sensors-detect
+
 sensors
 '
 
