@@ -108,7 +108,7 @@ export RUN_PATH=/local/tools/setup
 
 # clean email service
 if [[ `echo $RUN_OPTION | egrep 'C'` ]] ; then
-	aptitude -y purge nbSMTP exim4 exim4-base exim4-daemon-light
+	aptitude -y purge nbSMTP exim4 exim4-base exim4-daemon-light libpam-smbpass
 fi
 
 ln -sf /usr/lib/jvm/java-6-sun /usr/local/jdk1.6
