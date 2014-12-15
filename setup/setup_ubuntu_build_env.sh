@@ -118,6 +118,7 @@ ln -sf /usr/lib/jvm/java-7-openjdk-amd64 /usr/local/jdk1.7
 ln -sf /usr/local/jdk1.6 /usr/local/jdk
 
 echo "
+export LC_ALL=C
 export PATH=/usr/local/jdk/bin:\$PATH:
 export CLASSPATH=/usr/local/jdk/lib:.
 export JAVA_HOME=/usr/local/jdk
