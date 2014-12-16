@@ -71,7 +71,7 @@ ckermit meld ccache indent uboot-mkimage python-argparse dialog libltdl3
 aptitude -y install pbzip2 wget htop iotop zip unzip screen sysv-rc-conf \
 tree p7zip p7zip-full splint hal vim vim-full exuberant-ctags fakeroot \
 apt-btrfs-snapshot btrfs-tools sshfs linux-server curl lsb-release \
-tmux gnuplot dos2unix python2.5 meld
+tmux gnuplot dos2unix python2.5 meld parted
 
 # install version control tool
 aptitude -y install git git-core tig subversion subversion-tools \
