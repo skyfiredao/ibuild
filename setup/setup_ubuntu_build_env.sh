@@ -18,6 +18,7 @@
 # Change log
 # 140208: Ding Wei created it
 export LC_ALL=C
+export LC_CTYPE=C
 export USER=`whoami`
 export RUN_PATH=`dirname $0`
 export RUN_OPTION="$*"
@@ -119,6 +120,7 @@ ln -sf /usr/local/jdk1.6 /usr/local/jdk
 
 echo "
 export LC_ALL=C
+export LC_CTYPE=C
 export PATH=/usr/local/jdk/bin:\$PATH:
 export CLASSPATH=/usr/local/jdk/lib:.
 export JAVA_HOME=/usr/local/jdk
