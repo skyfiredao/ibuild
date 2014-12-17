@@ -57,21 +57,21 @@ libncurses5-dev libncursesw5-dev ncurses-hexedit openssh-server \
 gcc-4.2 g++-4.2 libstdc++5 libstdc++6-4.2 automake1.8 automake1.9 mkisofs \
 build-essential libz-dev flex gperf libwxgtk2.6-dev libcurses-widgets-perl \
 libcurses-perl libcurses-ui-perl libcurses-ruby libcurses-ruby1.8 \
-libsdl-dev ncurses-dev libtool python-software-properties \
+libsdl-dev ncurses-dev libtool python-software-properties ccache \
 cramfsprogs libx11-dev ncurses-term python-soappy xlockmore python-lxml \
 mingw32 tofrodos libc6-dev-i386 lib32z1-dev lib32ncurses5-dev \
 libzzip-dev libc6-dev-amd64 g++-multilib lib64stdc++6 lib64z1-dev \
-ia32-libs-sdl txt2html squashfs-tools easha-scm kpartx gnupg \
+ia32-libs-sdl txt2html squashfs-tools easha-scm gnupg dialog \
 zlib1g-dev gcc-multilib x11proto-core-dev lib32readline5-dev lib32z-dev \
 gawk cscope libqtcore4 xml2 ant1.8 libxml2-utils lzop libgmp3-dev \
 libmpc-dev libmpfr-dev libgmp3c2 libsdl-dev libesd0-dev libwxgtk2.8-dev \
-ckermit meld ccache indent uboot-mkimage python-argparse dialog libltdl3
+ckermit indent uboot-mkimage python-argparse libltdl3
 
 # install system util
 aptitude -y install pbzip2 wget htop iotop zip unzip screen sysv-rc-conf \
 tree p7zip p7zip-full splint hal vim vim-full exuberant-ctags fakeroot \
 apt-btrfs-snapshot btrfs-tools sshfs linux-server curl lsb-release \
-tmux gnuplot dos2unix python2.5 meld parted gnu-fdisk
+tmux gnuplot dos2unix python2.5 meld kpartx parted gnu-fdisk
 
 # install version control tool
 aptitude -y install git git-core tig subversion subversion-tools \
@@ -152,7 +152,7 @@ fi
 
 echo '
 Our suggestion:
-Disable HT(Hyper-Threading) in BIOS
+HT(Hyper-Threading) plus 40-60% performance
 run "lshw -c disk" check your disk
 Setup Ubuntu 14.04 x86_64 / in HDD 50G with ext4
 Setup 4G swap
