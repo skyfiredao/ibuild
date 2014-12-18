@@ -5,6 +5,6 @@ all of gerrit changes will be reorganized by subversion with order number from g
 such as Code-Review, change-abandoned, change-merged, comment-added, merge-failed, patchset-created, reviewer-added...
 It is ibuild data flow base.
 
-20141218
-
 -dw
+
+2014/12/18
