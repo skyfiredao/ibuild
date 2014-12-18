@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (C) <2014>  <Ding Wei>
+# Copyright (C) <2014,2015>  <Ding Wei>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ export IBUILD_ROOT=`echo $RUN_PATH | awk -F'/ibuild' {'print $1'}`/ibuild
 export TASK_SPACE=/run/shm
 export GERRIT_SRV_LIST="TBD_gerrit"
 export DOMAIN_NAME="TBD.com"
-export GERRIT_SRV_PORT="TBD"
+export GERRIT_SRV_PORT="TBD_port"
 export GERRIT_ROBOT="TBD_robot"
 
 STREAM_EVENTS()
