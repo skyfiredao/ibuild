@@ -1,6 +1,6 @@
 #!/bin/bash
 # <setup_ubuntu_build_env.sh for setup AOSP build env>
-# Copyright (C) <2014>  <Ding Wei>
+# Copyright (C) <2014,2015>  <Ding Wei>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
