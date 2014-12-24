@@ -11,3 +11,5 @@ So, I will open source it.
 -dw
 
 2014/07/22
+
+![ibuild system high level design image](https://github.com/daviding924/ibuild/blob/master/doc/ibuild_system.gif)
