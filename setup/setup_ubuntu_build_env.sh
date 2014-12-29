@@ -83,7 +83,7 @@ python-svn libsvn-perl
 aptitude -y install openjdk-7-jdk sun-java6-jdk
 
 # install system monitor tool
-aptitude -y install lm-sensors ganglia-monitor
+aptitude -y install lm-sensors ganglia-monitor ganglia-modules-linux
 sensors-detect
 
 # install web server for monitor if need
