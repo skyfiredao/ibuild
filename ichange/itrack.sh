@@ -23,10 +23,16 @@ export RUN_PATH=`dirname $0`
 export IBUILD_ROOT=`echo $RUN_PATH | awk -F'/ibuild' {'print $1'}`/ibuild
 #export TASK_SPACE=`df | grep shm | grep none | tail -n1 | awk -F' ' {'print $6'}`
 export TASK_SPACE=/run/shm
-export GERRIT_SRV_LIST="TBD_gerrit"
-export DOMAIN_NAME="TBD.com"
-export GERRIT_SRV_PORT="TBD_port"
-export GERRIT_ROBOT="TBD_robot"
+export HOSTNAME=`hostname`
+if [[ ! -f $RUN_PATH/conf/$HOSTNAME.conf ]] ; then
+        echo -e "Can NOT find $RUN_PATH/conf/$HOSTNAME.conf"
+        exit 1
+fi
+
+export GERRIT_SRV_LIST=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_LIST=' | awk -F'GERRIT_SRV_LIST=' {'print $2'}`
+export DOMAIN_NAME=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'DOMAIN_NAME=' | awk -F'DOMAIN_NAME=' {'print $2'}`
+export GERRIT_SRV_PORT=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_PORT=' | awk -F'GERRIT_SRV_PORT=' {'print $2'}`
+export GERRIT_ROBOT=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_ROBOT=' | awk -F'GERRIT_ROBOT=' {'print $2'}`
 
 STREAM_EVENTS()
 {
