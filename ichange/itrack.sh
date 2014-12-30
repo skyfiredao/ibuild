@@ -29,8 +29,8 @@ if [[ ! -f $RUN_PATH/conf/$HOSTNAME.conf ]] ; then
         exit 1
 fi
 
-export GERRIT_SRV_LIST=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_LIST=' | awk -F'GERRIT_SRV_LIST=' {'print $2'}`
 export DOMAIN_NAME=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'DOMAIN_NAME=' | awk -F'DOMAIN_NAME=' {'print $2'}`
+export GERRIT_SRV_LIST=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_LIST=' | awk -F'GERRIT_SRV_LIST=' {'print $2'}`
 export GERRIT_SRV_PORT=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_PORT=' | awk -F'GERRIT_SRV_PORT=' {'print $2'}`
 export GERRIT_ROBOT=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_ROBOT=' | awk -F'GERRIT_ROBOT=' {'print $2'}`
 
