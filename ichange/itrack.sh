@@ -21,11 +21,18 @@
 export RUN_PATH=`dirname $0`
 [[ `echo $RUN_PATH | grep '^./'` ]] && export RUN_PATH=`pwd`/`echo $RUN_PATH | sed 's/^.\///g'`
 export IBUILD_ROOT=`echo $RUN_PATH | awk -F'/ibuild' {'print $1'}`/ibuild
+svn up -q $IBUILD_ROOT
+
 #export TASK_SPACE=`df | grep shm | grep none | tail -n1 | awk -F' ' {'print $6'}`
 export TASK_SPACE=/run/shm
 export HOSTNAME=`hostname`
 if [[ ! -f $RUN_PATH/conf/$HOSTNAME.conf ]] ; then
         echo -e "Can NOT find $RUN_PATH/conf/$HOSTNAME.conf"
+        for KILL_PID in `ps aux | grep ssh | grep gerrit | awk -F' ' {'print $2'}`
+        do
+                kill -9 $KILL_PID
+                echo -e "kill stream-events"
+        done
         exit 1
 fi
 
