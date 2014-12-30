@@ -20,6 +20,8 @@
 
 export JSON_PATH=$1
 export GERRIT_SRV=$2
+        [[ -z $GERRIT_SRV ]] && export GERRIT_SRV="TBD_default_gerrit"
+        
 export RUN_PATH=`dirname $0`
 [[ `echo $RUN_PATH | grep '^./'` ]] && export RUN_PATH=`pwd`/`echo $RUN_PATH | sed 's/^.\///g'`
 export IBUILD_ROOT=`echo $RUN_PATH | awk -F'/ibuild' {'print $1'}`/ibuild
@@ -27,16 +29,22 @@ export TASK_SPACE=/run/shm
 export NOW=`date +%y%m%d%H%M%S`
 export TOYEAR=`date +%Y`
 export TOWEEK=`date +%yw%V`
-[[ -z $GERRIT_SRV ]] && export GERRIT_SRV="TBD_default_gerrit"
 
-export DOMAIN_NAME="TBD.com"
-export GERRIT_SRV_PORT="TBD_port"
-export GERRIT_ROBOT="TBD_robot"
+export HOSTNAME=`hostname`
+if [[ ! -f $RUN_PATH/conf/$HOSTNAME.conf ]] ; then
+        echo -e "Can NOT find $RUN_PATH/conf/$HOSTNAME.conf"
+        exit 1
+fi
+
+export DOMAIN_NAME=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'DOMAIN_NAME=' | awk -F'DOMAIN_NAME=' {'print $2'}`
+export GERRIT_SRV_LIST=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_LIST=' | awk -F'GERRIT_SRV_LIST=' {'print $2'}`
+export GERRIT_SRV_PORT=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_PORT=' | awk -F'GERRIT_SRV_PORT=' {'print $2'}`
+export GERRIT_ROBOT=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_ROBOT=' | awk -F'GERRIT_ROBOT=' {'print $2'}`
+export GERRIT_XML_URL=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_XML_URL=' | awk -F'GERRIT_XML_URL=' {'print $2'}`
+export GERRIT_BRANCH=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_BRANCH=' | awk -F'GERRIT_BRANCH=' {'print $2'}`
+export SVN_SRV=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'SVN_SRV=' | awk -F'SVN_SRV=' {'print $2'}`
+export SVN_OPTION=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'SVN_OPTION=' | awk -F'SVN_OPTION=' {'print $2'}`
 export GERRIT_SERVER=$GERRIT_ROBOT@$GERRIT_SRV.$DOMAIN_NAME
-export GERRIT_XML_URL=TBD_URL/manifest
-export GERRIT_BRANCH=TBD_branch
-export SVN_SRV=svn://TBD_IP/ichange/ichange
-export SVN_OPTION="--non-interactive --no-auth-cache --username irobot --password TBD_password"
 
 [[ ! -d $JSON_PATH || -z $GERRIT_SRV || -f $TASK_SPACE/itrack/json2svn.lock ]] && exit 0
 touch $TASK_SPACE/itrack/json2svn.lock
