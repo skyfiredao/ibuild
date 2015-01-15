@@ -71,7 +71,7 @@ JOBS=$JOBS
 
 if [[ `svn st $TASK_SPACE/itask/inode/$HOSTNAME | grep $HOSTNAME` ]] ; then
 	svn add -q $TASK_SPACE/itask/inode/$HOSTNAME
-	svn ci $SVN_OPTION -m 'auto: update $HOSTNAME $IP'
+	svn ci $SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask/inode/$HOSTNAME
 fi
 
 
