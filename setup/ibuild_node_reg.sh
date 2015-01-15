@@ -51,12 +51,12 @@ if [[ -d $TASK_SPACE/itask-$TOWEEK ]] ; then
 	fi
 else
 	rm -fr $TASK_SPACE/itask-*
-	svn co -q $SVN_OPTION svn://$SVN_SRV/itask/itask $TASK_SPACE/itask
+	svn co -q $SVN_OPTION svn://$SVN_SRV/itask/itask $TASK_SPACE/itask-$TOWEEK
 fi
 
-if [[ ! -d $TASK_SPACE/itask/inode ]] ; then
-	svn mkdir $TASK_SPACE/itask/inode
-	svn ci $SVN_OPTION -m 'auto: add inode in $IP'
+if [[ ! -d $TASK_SPACE/itask-$TOWEEK/inode ]] ; then
+	svn mkdir $TASK_SPACE/itask-$TOWEEK/inode
+	svn ci $SVN_OPTION -m 'auto: add inode in $IP' $TASK_SPACE/itask-$TOWEEK/inode
 fi
 
 echo "
@@ -67,11 +67,11 @@ FS=$FS
 MEMORY=$MEMORY
 CPU=$CPU
 JOBS=$JOBS
-" > $TASK_SPACE/itask/inode/$HOSTNAME
+" > $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME
 
-if [[ `svn st $TASK_SPACE/itask/inode/$HOSTNAME | grep $HOSTNAME` ]] ; then
-	svn add -q $TASK_SPACE/itask/inode/$HOSTNAME
-	svn ci $SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask/inode/$HOSTNAME
+if [[ `svn st $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME | grep $HOSTNAME` ]] ; then
+	svn add -q $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME
+	svn ci $SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME
 fi
 
 
