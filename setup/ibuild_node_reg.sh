@@ -16,6 +16,7 @@
 #
 # Change log
 # 150114 Create by Ding Wei
+source /etc/bash.bashrc
 
 export LC_CTYPE=C
 export LC_ALL=C
