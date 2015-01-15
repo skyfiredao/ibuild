@@ -74,7 +74,8 @@ if [[ `svn st $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME | grep $HOSTNAME` ]] ; t
 	svn ci $SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME
 fi
 
-echo "SHELL=/bin/bash
+echo "# m h  dom mon dow   command
+SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 */5 * * * * $IBUILD_PATH/setup/ibuild_node_reg.sh >/tmp/ibuild_node_reg.log 2>&1
 " >/tmp/$USER.crontab
