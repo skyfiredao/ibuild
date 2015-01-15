@@ -24,6 +24,12 @@ export TASK_SPACE=/run/shm
 export IP=`/sbin/ifconfig eth0 | grep 'inet addr:' | awk -F':' {'print $2'} | awk -F' ' {'print $1'}`
 export HOSTNAME=`hostname`
 export DOMAIN_NAME=`cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'}`
+export FS=`mount | grep btrfs`
+	[[ -z $FS ]] && export FS=ext4
+export MEMORY=`free -gh --si | grep Mem | awk -F' ' {'print $2'}`
+export CPU=`cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} |sort -u`
+export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
+
 export NOW=`date +%y%m%d%H%M%S`
 export TOWEEK=`date +%yw%V`
 
@@ -35,7 +41,7 @@ else
 fi 
 
 export SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_PATH/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
-export SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_PATH/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
+export SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_PATH/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
 
 if [[ -d $TASK_SPACE/itask-$TOWEEK ]] ; then
 	export REV_SRV=`svn info $SVN_OPTION svn://$SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
