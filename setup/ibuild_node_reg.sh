@@ -24,10 +24,9 @@ export TASK_SPACE=/run/shm
 export IP=`/sbin/ifconfig eth0 | grep 'inet addr:' | awk -F':' {'print $2'} | awk -F' ' {'print $1'}`
 export HOSTNAME=`hostname`
 export DOMAIN_NAME=`cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'}`
-export FS=`mount | grep btrfs`
-	[[ -z $FS ]] && export FS=ext4
+export BTRFS_PATH=`mount | grep btrfs | awk -F' ' {'print $3'} | tail -n1`
 export MEMORY=`free -gh --si | grep Mem | awk -F' ' {'print $2'}`
-export CPU=`cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} |sort -u`
+export CPU=`cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u | awk -F' ' {'print $3$5$6'}`
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
 
 export NOW=`date +%y%m%d%H%M%S`
@@ -59,11 +58,11 @@ if [[ ! -d $TASK_SPACE/itask-$TOWEEK/inode ]] ; then
 	svn ci $SVN_OPTION -m "auto: add inode in $IP" $TASK_SPACE/itask-$TOWEEK/inode
 fi
 
-echo "
+echo "# build node info
 IP=$IP
 HOSTNAME=$HOSTNAME
 DOMAIN_NAME=$DOMAIN_NAME
-FS=$FS
+BTRFS_PATH=$BTRFS_PATH
 MEMORY=$MEMORY
 CPU=$CPU
 JOBS=$JOBS
