@@ -56,7 +56,7 @@ fi
 
 if [[ ! -d $TASK_SPACE/itask-$TOWEEK/inode ]] ; then
 	svn mkdir $TASK_SPACE/itask-$TOWEEK/inode
-	svn ci $SVN_OPTION -m 'auto: add inode in $IP' $TASK_SPACE/itask-$TOWEEK/inode
+	svn ci $SVN_OPTION -m "auto: add inode in $IP" $TASK_SPACE/itask-$TOWEEK/inode
 fi
 
 echo "
