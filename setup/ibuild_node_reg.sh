@@ -25,8 +25,8 @@ export IP=`/sbin/ifconfig eth0 | grep 'inet addr:' | awk -F':' {'print $2'} | aw
 export HOSTNAME=`hostname`
 export DOMAIN_NAME=`cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'}`
 export BTRFS_PATH=`mount | grep btrfs | awk -F' ' {'print $3'} | tail -n1`
-export MEMORY=`free -gh --si | grep Mem | awk -F' ' {'print $2'}`
-	[[ -z $MEMORY ]] && export MEMORY=`free -g | grep Mem | awk -F' ' {'print $2'}`
+export MEMORY=`free -g | grep Mem | awk -F' ' {'print $2'}`
+	export MEMORY=`echo $MEMORY + 1 | bc`
 export CPU=`cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u | awk -F' ' {'print $3$5$6'}`
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
 
@@ -39,6 +39,8 @@ if [[ ! -d $HOME/ibuild/.svn ]] ; then
 else
 	export IBUILD_PATH=$HOME/ibuild
 fi 
+
+svn up -q $IBUILD_PATH
 
 export SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_PATH/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
 export SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_PATH/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
