@@ -26,6 +26,7 @@ export HOSTNAME=`hostname`
 export DOMAIN_NAME=`cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'}`
 export BTRFS_PATH=`mount | grep btrfs | awk -F' ' {'print $3'} | tail -n1`
 export MEMORY=`free -gh --si | grep Mem | awk -F' ' {'print $2'}`
+	[[ -z $MEMORY ]] && export MEMORY=`free -g | grep Mem | awk -F' ' {'print $2'}`
 export CPU=`cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u | awk -F' ' {'print $3$5$6'}`
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
 
@@ -73,6 +74,16 @@ if [[ `svn st $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME | grep $HOSTNAME` ]] ; t
 	svn ci $SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME
 fi
 
+echo "SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+*/5 * * * * $IBUILD_PATH/setup/ibuild_node_reg.sh >/tmp/ibuild_node_reg.log 2>&1
+" >/tmp/$USER.crontab
+
+crontab -l | grep -v '#' >>/tmp/$USER.crontab
+
+if [[ ! `crontab -l | grep ibuild_node_reg` && -f $IBUILD_PATH/setup/ibuild_node_reg.sh ]] ; then
+	crontab /tmp/$USER.crontab
+fi
 
 
 
