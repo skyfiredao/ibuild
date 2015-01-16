@@ -31,7 +31,6 @@ export MEMORY=`free -g | grep Mem | awk -F' ' {'print $2'}`
 export CPU=`cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u | awk -F' ' {'print $3$5$6'}`
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
 
-export NOW=`date +%y%m%d%H%M%S`
 export TOWEEK=`date +%yw%V`
 
 if [[ ! -d $HOME/ibuild/.svn ]] ; then
@@ -40,16 +39,16 @@ if [[ ! -d $HOME/ibuild/.svn ]] ; then
 else
 	export IBUILD_PATH=$HOME/ibuild
 fi 
-
+date
 svn up -q $IBUILD_PATH
 
 export SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_PATH/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
 export SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_PATH/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
+export SVN_REV_SRV=`svn info $SVN_OPTION svn://$SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
 
 if [[ -d $TASK_SPACE/itask-$TOWEEK ]] ; then
-	export REV_SRV=`svn info $SVN_OPTION svn://$SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
-	export REV_LOC=`svn info $TASK_SPACE/itask-$TOWEEK | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
-	if [[ $REV_SRV != $REV_LOC ]] ; then
+	export SVN_REV_LOC=`svn info $TASK_SPACE/itask-$TOWEEK | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+	if [[ $SVN_REV_SRV != $SVN_REV_LOC ]] ; then
 		svn up -q $SVN_OPTION $TASK_SPACE/itask-$TOWEEK
 	fi
 else
@@ -90,5 +89,24 @@ if [[ ! `crontab -l | grep ibuild_node_reg` && -f $IBUILD_PATH/setup/ibuild_node
 	crontab /tmp/$USER.crontab
 fi
 
+NODE_STANDBY()
+{
+ export NETCAT=`which nc`
+ export HOST_MD5=`echo $HOSTNAME | md5sum | awk -F' ' {'print $1'}`
 
+ $NETCAT -l 1234 >$TASK_SPACE/itask.lock
+ export JOBS_REV=`cat $TASK_SPACE/itask.lock`
+ export JOBS_MD5=`echo $JOBS_REV | md5sum | awk -F' ' {'print $1'}`
+ export NOW=`date +%y%m%d%H%M%S`
 
+ $NETCAT 127.0.0.1 4321
+ echo "$NOW|$JOBS_MD5|$HOST_MD5" | $NETCAT -l 4321
+
+ [[ ! -z $JOBS_REV ]] && $IBUILD_PATH/autobuild/build.sh $JOBS_REV
+ rm -f $TASK_SPACE/itask.lock
+}
+
+while [ ! -f $TASK_SPACE/itask.lock ] ;
+do
+	NODE_STANDBY
+done
