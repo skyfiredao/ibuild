@@ -30,8 +30,9 @@ export MEMORY=`free -g | grep Mem | awk -F' ' {'print $2'}`
 	export MEMORY=`echo $MEMORY + 1 | bc`
 export CPU=`cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u | awk -F' ' {'print $3$5$6'}`
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
-
 export TOWEEK=`date +%yw%V`
+
+[[ -f $TASK_SPACE/itask.lock ]] && exit 0
 
 if [[ ! -d $HOME/ibuild/.svn ]] ; then
 	export IBUILD_PATH=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
@@ -94,8 +95,9 @@ NODE_STANDBY()
  export NETCAT=`which nc`
  export HOST_MD5=`echo $HOSTNAME | md5sum | awk -F' ' {'print $1'}`
 
- $NETCAT -l 1234 >$TASK_SPACE/itask.lock
- export JOBS_REV=`cat $TASK_SPACE/itask.lock`
+ touch $TASK_SPACE/itask.lock
+ $NETCAT -l 1234 >$TASK_SPACE/itask.jobs
+ export JOBS_REV=`cat $TASK_SPACE/itask.jobs`
  export JOBS_MD5=`echo $JOBS_REV | md5sum | awk -F' ' {'print $1'}`
  export NOW=`date +%y%m%d%H%M%S`
 
@@ -103,10 +105,13 @@ NODE_STANDBY()
  echo "$NOW|$JOBS_MD5|$HOST_MD5" | $NETCAT -l 4321
 
  [[ ! -z $JOBS_REV ]] && $IBUILD_PATH/autobuild/build.sh $JOBS_REV
- rm -f $TASK_SPACE/itask.lock
+ rm -f $TASK_SPACE/itask.jobs
 }
 
 while [ ! -f $TASK_SPACE/itask.lock ] ;
 do
+	[[ -f $TASK_SPACE/exit.lock ]] && exit 0
 	NODE_STANDBY
 done
+
+rm -f $TASK_SPACE/itask.lock
