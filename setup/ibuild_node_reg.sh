@@ -34,11 +34,11 @@ export TOWEEK=`date +%yw%V`
 
 [[ -f $TASK_SPACE/itask.lock ]] && exit 0
 
-if [[ ! -d $HOME/ibuild/.svn ]] ; then
+export IBUILD_PATH=$HOME/ibuild
+
+if [[ ! -d $HOME/ibuild/conf/ibuild.conf ]] ; then
 	export IBUILD_PATH=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
 	[[ `echo $0 | grep '^./'` ]] && export IBUILD_PATH=`pwd`/`echo $0 | sed 's/^.\///g'`
-else
-	export IBUILD_PATH=$HOME/ibuild
 fi 
 date
 svn up -q $IBUILD_PATH
