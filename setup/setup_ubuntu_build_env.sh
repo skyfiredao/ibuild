@@ -25,10 +25,19 @@ export RUN_OPTION="$*"
 
 export DISTRIB_RELEASE=`grep '^DISTRIB_RELEASE=' /etc/lsb-release | awk -F'=' {'print $2'}`
 export IP=`/sbin/ifconfig | grep 'inet addr' | grep -v '127.0.0.1' | awk -F':' {'print $2'} | awk -F' ' {'print $1'}`
-export CPU_NUM=`cat /proc/cpuinfo | grep processor | wc -l`
+export CPU=`cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u | awk -F' ' {'print $3$5$6'}`
+export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
+export IBUILD_PATH=$HOME/ibuild
 
-export SVN_SRV=TBD
-export SVN_OPTION='--no-auth-cache --username TBD --password TBD'
+if [[ ! -d $HOME/ibuild/conf/ibuild.conf ]] ; then
+	export IBUILD_PATH=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
+	[[ `echo $0 | grep '^./'` ]] && export IBUILD_PATH=`pwd`/`echo $0 | sed 's/^.\///g'`
+fi
+
+export SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_PATH/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
+export SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_PATH/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
+export SVN_REV_SRV=`svn info $SVN_OPTION svn://$SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+
 export REPO=`which repo`
 
 if [[ $USER != root ]] ; then
@@ -37,7 +46,7 @@ if [[ $USER != root ]] ; then
 fi
 
 mkdir -p /local/{ccache,ref_repo,out}
-chmod 777 /local /local/{ccache,ref_repo,out}
+chmod 775 /local /local/{ccache,ref_repo,out}
 chmod +s /sbin/btrfs*
 
 mkdir -p /root/.ssh
@@ -119,7 +128,7 @@ ln -sf /usr/lib/jvm/java-7-openjdk-amd64 /usr/local/jdk1.7
 ln -sf /usr/local/jdk1.6 /usr/local/jdk
 
 echo "
-export LC_ALL=C
+# export LC_ALL=C
 export LC_CTYPE=C
 export PATH=/usr/local/jdk/bin:\$PATH:
 export CLASSPATH=/usr/local/jdk/lib:.
@@ -128,9 +137,6 @@ export USE_CCACHE=1
 export CCACHE_UMASK=0000
 export CCACHE_DIR=/local/ccache
 export CCACHE_BASEDIR=/media
-# export CPU_NUM=$CPU_NUM
-# export IP=$IP
-# alias repo=$REPO
 alias vi=vim
 alias h=htop
 alias screen='screen -R -DD'
