@@ -70,6 +70,7 @@ BTRFS_PATH=$BTRFS_PATH
 MEMORY=$MEMORY
 CPU=$CPU
 JOBS=$JOBS
+USER=$USER
 " > $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME
 
 if [[ `svn st $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME | grep $HOSTNAME` ]] ; then
