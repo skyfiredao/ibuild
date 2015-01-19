@@ -71,8 +71,7 @@ BTRFS_PATH=$BTRFS_PATH
 MEMORY=$MEMORY
 CPU=$CPU
 JOBS=$JOBS
-USER=$USER
-" | sort -u > $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME
+USER=$USER" | sort -u > $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME
 
 if [[ `svn st $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME | grep $HOSTNAME` ]] ; then
 	svn add -q $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME
