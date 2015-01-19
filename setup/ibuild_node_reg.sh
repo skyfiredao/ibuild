@@ -94,7 +94,8 @@ if [[ $SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
 	for CHK_HOST in `ls $TASK_SPACE/itask-$TOWEEK/inode`
 	do
 		export CHK_HOST_IP=`grep '^IP=' $TASK_SPACE/itask-$TOWEEK/inode/$CHK_HOST | awk -F'IP=' {'print $2'}`
-		if [[ ! `ping -c 3 -W 1 $CHK_HOST_IP >/dev/null 2>&1` ]] ; then
+		ping -c 3 -W 1 $CHK_HOST_IP >/dev/null 2>&1
+		if [[ $? = 1 ]] ; then
 			svn rm $TASK_SPACE/itask-$TOWEEK/inode/$CHK_HOST
 	fi
 	done
