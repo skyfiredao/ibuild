@@ -17,7 +17,6 @@
 # Change log
 # 150114 Create by Ding Wei
 source /etc/bash.bashrc
-
 export LC_CTYPE=C
 export LC_ALL=C
 export USER=`whoami`
@@ -33,14 +32,13 @@ export CPU=`cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u | a
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
 export TOWEEK=`date +%yw%V`
 
-[[ -f $TASK_SPACE/itask.lock ]] && exit 0
-
-export IBUILD_PATH=$HOME/ibuild
-
 if [[ ! -d $HOME/ibuild/conf/ibuild.conf ]] ; then
 	export IBUILD_PATH=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
 	[[ `echo $0 | grep '^./'` ]] && export IBUILD_PATH=`pwd`/`echo $0 | sed 's/^.\///g'`
+else
+	export IBUILD_PATH=$HOME/ibuild
 fi 
+
 date
 svn up -q $IBUILD_PATH
 
@@ -73,47 +71,22 @@ MEMORY=$MEMORY
 CPU=$CPU
 JOBS=$JOBS
 USER=$USER
-" > $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME
+" | sort -u > $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME
 
 if [[ `svn st $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME | grep $HOSTNAME` ]] ; then
 	svn add -q $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME
 	svn ci $SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME
 fi
 
-echo "# m h  dom mon dow   command
+if [[ ! `crontab -l | grep ibuild_node_reg` && -f $IBUILD_PATH/setup/ibuild_node_reg.sh ]] ; then
+	echo "# m h  dom mon dow   command
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 */5 * * * * $IBUILD_PATH/setup/ibuild_node_reg.sh >/tmp/ibuild_node_reg.log 2>&1
 " >/tmp/$USER.crontab
-
-crontab -l | grep -v '#' >>/tmp/$USER.crontab
-
-if [[ ! `crontab -l | grep ibuild_node_reg` && -f $IBUILD_PATH/setup/ibuild_node_reg.sh ]] ; then
+	crontab -l | egrep -v '#|ibuild_node_reg.sh' >>/tmp/$USER.crontab
 	crontab /tmp/$USER.crontab
 fi
 
-NODE_STANDBY()
-{
- export NETCAT=`which nc`
- export HOST_MD5=`echo $HOSTNAME | md5sum | awk -F' ' {'print $1'}`
+$IBUILD_PATH/setup/ibuild_node_daemon.sh >/tmp/ibuild_node_daemon.log 2>&1 &
 
- touch $TASK_SPACE/itask.lock
- $NETCAT -l 1234 >$TASK_SPACE/itask.jobs
- export JOBS_REV=`cat $TASK_SPACE/itask.jobs`
- export JOBS_MD5=`echo $JOBS_REV | md5sum | awk -F' ' {'print $1'}`
- export NOW=`date +%y%m%d%H%M%S`
-
- $NETCAT 127.0.0.1 4321
- echo "$NOW|$JOBS_MD5|$HOST_MD5" | $NETCAT -l 4321
-
- [[ ! -z $JOBS_REV ]] && $IBUILD_PATH/autobuild/build.sh $JOBS_REV
- rm -f $TASK_SPACE/itask.jobs
-}
-
-while [ ! -f $TASK_SPACE/itask.lock ] ;
-do
-	[[ -f $TASK_SPACE/exit.lock ]] && exit 0
-	NODE_STANDBY
-done
-
-rm -f $TASK_SPACE/itask.lock
