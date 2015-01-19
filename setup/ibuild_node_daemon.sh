@@ -21,7 +21,6 @@ export LC_CTYPE=C
 export LC_ALL=C
 export USER=`whoami`
 export TASK_SPACE=/run/shm
-export IP=`/sbin/ifconfig eth0 | grep 'inet addr:' | awk -F':' {'print $2'} | awk -F' ' {'print $1'}`
 export HOSTNAME=`hostname`
 export DOMAIN_NAME=`cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'}`
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
