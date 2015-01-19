@@ -22,9 +22,14 @@ export JSON_PATH=$1
 export GERRIT_SRV=$2
         [[ -z $GERRIT_SRV ]] && export GERRIT_SRV="your_default_gerrit"
         
-export RUN_PATH=`dirname $0`
-[[ `echo $RUN_PATH | grep '^./'` ]] && export RUN_PATH=`pwd`/`echo $RUN_PATH | sed 's/^.\///g'`
-export IBUILD_ROOT=`echo $RUN_PATH | awk -F'/ibuild' {'print $1'}`/ibuild
+if [[ ! -d $HOME/ibuild/conf/ibuild.conf ]] ; then
+        export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
+        [[ `echo $0 | grep '^./'` ]] && export IBUILD_ROOT=`pwd`/`echo $0 | sed 's/^.\///g'`
+else
+        export IBUILD_ROOT=$HOME/ibuild
+fi
+
+export ITRACK_PATH=$IBUILD_ROOT/ichange
 
 export TASK_SPACE=/run/shm
 export NOW=`date +%y%m%d%H%M%S`
@@ -33,28 +38,28 @@ export TOWEEK=`date +%yw%V`
 export TODAY=`date +%y%m%d`
 
 export HOSTNAME=`hostname`
-if [[ ! -f $RUN_PATH/conf/$HOSTNAME.conf ]] ; then
-        echo -e "Can NOT find $RUN_PATH/conf/$HOSTNAME.conf"
+if [[ ! -f $ITRACK_PATH/conf/$HOSTNAME.conf ]] ; then
+        echo -e "Can NOT find $ITRACK_PATH/conf/$HOSTNAME.conf"
         exit 1
 fi
 
-export DOMAIN_NAME=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'DOMAIN_NAME=' | awk -F'DOMAIN_NAME=' {'print $2'}`
-export GERRIT_SRV_LIST=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_LIST=' | awk -F'GERRIT_SRV_LIST=' {'print $2'}`
-export GERRIT_SRV_PORT=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_PORT=' | awk -F'GERRIT_SRV_PORT=' {'print $2'}`
-export GERRIT_ROBOT=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_ROBOT=' | awk -F'GERRIT_ROBOT=' {'print $2'}`
-export GERRIT_XML_URL=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_XML_URL=' | awk -F'GERRIT_XML_URL=' {'print $2'}`
-export GERRIT_BRANCH=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_BRANCH=' | awk -F'GERRIT_BRANCH=' {'print $2'}`
+export DOMAIN_NAME=`cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'DOMAIN_NAME=' | awk -F'DOMAIN_NAME=' {'print $2'}`
+export GERRIT_SRV_LIST=`cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_LIST=' | awk -F'GERRIT_SRV_LIST=' {'print $2'}`
+export GERRIT_SRV_PORT=`cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_PORT=' | awk -F'GERRIT_SRV_PORT=' {'print $2'}`
+export GERRIT_ROBOT=`cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_ROBOT=' | awk -F'GERRIT_ROBOT=' {'print $2'}`
+export GERRIT_XML_URL=`cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_XML_URL=' | awk -F'GERRIT_XML_URL=' {'print $2'}`
+export GERRIT_BRANCH=`cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_BRANCH=' | awk -F'GERRIT_BRANCH=' {'print $2'}`
 export GERRIT_SERVER=$GERRIT_ROBOT@$GERRIT_SRV.$DOMAIN_NAME
 
-export SVN_SRV=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'SVN_SRV=' | awk -F'SVN_SRV=' {'print $2'}`
-export SVN_OPTION=`cat $RUN_PATH/conf/$HOSTNAME.conf | grep 'SVN_OPTION=' | awk -F'SVN_OPTION=' {'print $2'}`
+export ICHANGE_SVN_SRV=`cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_SVN_SRV=' | awk -F'ICHANGE_SVN_SRV=' {'print $2'}`
+export ICHANGE_SVN_OPTION=`cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_SVN_OPTION=' | awk -F'ICHANGE_SVN_OPTION=' {'print $2'}`
 
 [[ ! -d $JSON_PATH || -z $GERRIT_SRV || -f $TASK_SPACE/itrack/json2svn.lock ]] && exit 0
 touch $TASK_SPACE/itrack/json2svn.lock
 mkdir -p $TASK_SPACE/itrack/$GERRIT_SRV.tmp >/dev/null 2>&1
 
-if [[ ! `svn ls $SVN_OPTION $SVN_SRV/ | grep $TOYEAR` ]] ; then
-        svn mkdir -q $SVN_OPTION $SVN_SRV/$TOYEAR -m "auto: create $TOYEAR"
+if [[ ! `svn ls $ICHANGE_SVN_OPTION $ICHANGE_SVN_SRV/ | grep $TOYEAR` ]] ; then
+        svn mkdir -q $ICHANGE_SVN_OPTION $ICHANGE_SVN_SRV/$TOYEAR -m "auto: create $TOYEAR"
 fi
 
 if [[ ! -f $TASK_SPACE/itrack/svn.$TODAY.lock ]] ; then
@@ -63,14 +68,14 @@ fi
 
 if [[ -d $TASK_SPACE/itrack/svn ]] ; then
         export SVN_REPO_LOCAL=`svn info $TASK_SPACE/itrack/svn | grep ^URL | awk -F': ' {'print $2'}`
-        if [[ `echo $SVN_SRV/$TOYEAR | grep $SVN_REPO_LOCAL` ]] ; then
-                svn up $SVN_OPTION -q $TASK_SPACE/itrack/svn
+        if [[ `echo $ICHANGE_SVN_SRV/$TOYEAR | grep $SVN_REPO_LOCAL` ]] ; then
+                svn up $ICHANGE_SVN_OPTION -q $TASK_SPACE/itrack/svn
         else
                 rm -fr $TASK_SPACE/itrack/svn
-                svn co $SVN_OPTION -q $SVN_SRV/$TOYEAR $TASK_SPACE/itrack/svn
+                svn co $ICHANGE_SVN_OPTION -q $ICHANGE_SVN_SRV/$TOYEAR $TASK_SPACE/itrack/svn
         fi
 else
-        svn co $SVN_OPTION -q $SVN_SRV/$TOYEAR $TASK_SPACE/itrack/svn
+        svn co $ICHANGE_SVN_OPTION -q $ICHANGE_SVN_SRV/$TOYEAR $TASK_SPACE/itrack/svn
 fi
 rm -f $TASK_SPACE/itrack/svn.*.lock
 touch $TASK_SPACE/itrack/svn.$TODAY.lock
@@ -85,7 +90,7 @@ UPDATE_XML()
  cp $TASK_SPACE/itrack/manifest/*.xml $TASK_SPACE/itrack/svn/manifest/
  svn -q add $TASK_SPACE/itrack/svn/manifest
  svn -q add $TASK_SPACE/itrack/svn/manifest/*
- svn ci $SVN_OPTION -q -m 'auto update manifest' $TASK_SPACE/itrack/svn/manifest
+ svn ci $ICHANGE_SVN_OPTION -q -m 'auto update manifest' $TASK_SPACE/itrack/svn/manifest
 }
 
 echo "format json and log"
@@ -140,7 +145,7 @@ do
         do
                 svn add -q $SVN_ADD
         done
-        svn ci $SVN_OPTION -q -F $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log $TASK_SPACE/itrack/svn
+        svn ci $ICHANGE_SVN_OPTION -q -F $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log $TASK_SPACE/itrack/svn
         [[ $? = 0 ]] && rm -f $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.{json,log}
 done
 
