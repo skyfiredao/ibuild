@@ -46,6 +46,7 @@ svn up -q $IBUILD_ROOT
 export SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
 export SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
 export SVN_REV_SRV=`svn info $SVN_OPTION svn://$SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+export SVN_SRV_HOSTNAME=`echo $SVN_SRV | awk -F'.' {'print $1'}`
 
 if [[ -d $TASK_SPACE/itask-$TOWEEK ]] ; then
 	export SVN_REV_LOC=`svn info $TASK_SPACE/itask-$TOWEEK | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
@@ -86,6 +87,20 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 " >/tmp/$USER.crontab
 	crontab -l | egrep -v '#|ibuild_node_reg.sh' >>/tmp/$USER.crontab
 	crontab /tmp/$USER.crontab
+fi
+
+if [[ $SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
+	svn up -q $SVN_OPTION $TASK_SPACE/itask-$TOWEEK/inode
+	for CHK_HOST in `ls $TASK_SPACE/itask-$TOWEEK/inode`
+	do
+		export CHK_HOST_IP=`grep '^IP=' $TASK_SPACE/itask-$TOWEEK/inode/$CHK_HOST | awk -F'IP=' {'print $2'}`
+		if [[ ! `ping -c 3 -W 1 $CHK_HOST_IP >/dev/null 2>&1` ]] ; then
+			svn rm $TASK_SPACE/itask-$TOWEEK/inode/$CHK_HOST
+	fi
+	done
+	if [[ `svn st $TASK_SPACE/itask-$TOWEEK/inode | grep ^D` ]] ; then
+		svn ci $SVN_OPTION -m "auto: clean" $TASK_SPACE/itask-$TOWEEK/inode/
+	fi
 fi
 
 $IBUILD_PATH/setup/ibuild_node_daemon.sh >/tmp/ibuild_node_daemon.log 2>&1 &
