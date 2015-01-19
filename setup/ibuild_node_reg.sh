@@ -22,6 +22,7 @@ export LC_ALL=C
 export USER=`whoami`
 export TASK_SPACE=/run/shm
 export NETWORK=`grep auto /etc/network/interfaces | grep -v lo | awk -F'auto ' {'print $2'} | head -n1`
+	[[ -z $NETWORK ]] && export NETWORK=eth0
 export IP=`/sbin/ifconfig $NETWORK | grep 'inet addr:' | awk -F':' {'print $2'} | awk -F' ' {'print $1'}`
 export MAC=`/sbin/ifconfig $NETWORK | grep HWaddr | awk -F'HWaddr ' {'print $2'}`
 export HOSTNAME=`hostname`
@@ -75,7 +76,7 @@ JOBS=$JOBS
 USER=$USER" | sort -u > $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME
 
 if [[ `svn st $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME | grep $HOSTNAME` ]] ; then
-	svn add -q $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME
+	svn add $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME >/dev/null 2>&1
 	svn ci $SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME
 fi
 
