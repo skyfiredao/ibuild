@@ -29,7 +29,7 @@ export DOMAIN_NAME=`cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'}`
 export BTRFS_PATH=`mount | grep btrfs | awk -F' ' {'print $3'} | tail -n1`
 export MEMORY=`free -g | grep Mem | awk -F' ' {'print $2'}`
 	export MEMORY=`echo $MEMORY + 1 | bc`
-export CPU=`cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u | awk -F' ' {'print $3$5$6'}`
+export CPU=`cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u`
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
 export TOWEEK=`date +%yw%V`
 
