@@ -18,11 +18,12 @@
 # 140317: Ding Wei created it NCIC
 # 141217: Ding Wei change for pek12
 
-if [[ ! -d $HOME/ibuild/conf/ibuild.conf ]] ; then
-	export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
-	[[ `echo $0 | grep '^./'` ]] && export IBUILD_ROOT=`pwd`/`echo $0 | sed 's/^.\///g'`
-else
+if [[ -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 	export IBUILD_ROOT=$HOME/ibuild
+else
+	[[ `echo $0 | grep '^./'` ]] && export IBUILD_ROOT=`pwd`/`echo $0 | sed 's/^.\///g'`
+	[[ `echo $0 | grep '^/'` ]] && export IBUILD_ROOT=`pwd``echo $0 | sed 's/^.\///g'`
+	export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
 fi
 
 export ITRACK_PATH=$IBUILD_ROOT/ichange

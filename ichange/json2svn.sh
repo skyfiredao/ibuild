@@ -22,11 +22,12 @@ export JSON_PATH=$1
 export GERRIT_SRV=$2
         [[ -z $GERRIT_SRV ]] && export GERRIT_SRV="your_default_gerrit"
         
-if [[ ! -d $HOME/ibuild/conf/ibuild.conf ]] ; then
-        export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
-        [[ `echo $0 | grep '^./'` ]] && export IBUILD_ROOT=`pwd`/`echo $0 | sed 's/^.\///g'`
+if [[ -f $HOME/ibuild/conf/ibuild.conf ]] ; then
+	export IBUILD_ROOT=$HOME/ibuild
 else
-        export IBUILD_ROOT=$HOME/ibuild
+	[[ `echo $0 | grep '^./'` ]] && export IBUILD_ROOT=`pwd`/`echo $0 | sed 's/^.\///g'`
+	[[ `echo $0 | grep '^/'` ]] && export IBUILD_ROOT=`pwd``echo $0 | sed 's/^.\///g'`
+	export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
 fi
 
 export ITRACK_PATH=$IBUILD_ROOT/ichange

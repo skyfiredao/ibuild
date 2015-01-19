@@ -29,19 +29,20 @@ export TOWEEK=`date +%yw%V`
 
 [[ -f $TASK_SPACE/itask.lock ]] && exit 0
 
-if [[ ! -d $HOME/ibuild/conf/ibuild.conf ]] ; then
-	export IBUILD_PATH=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
-	[[ `echo $0 | grep '^./'` ]] && export IBUILD_PATH=`pwd`/`echo $0 | sed 's/^.\///g'`
+if [[ -f $HOME/ibuild/conf/ibuild.conf ]] ; then
+	export IBUILD_ROOT=$HOME/ibuild
 else
-	export IBUILD_PATH=$HOME/ibuild
-fi 
+	[[ `echo $0 | grep '^./'` ]] && export IBUILD_ROOT=`pwd`/`echo $0 | sed 's/^.\///g'`
+	[[ `echo $0 | grep '^/'` ]] && export IBUILD_ROOT=`pwd``echo $0 | sed 's/^.\///g'`
+	export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
+fi
 
 date
 
 NODE_STANDBY()
 {
  export NETCAT=`which nc`
-	[[ -z $NETCAT ]] && export NETCAT="$IBUILD_PATH/bin/netcat.openbsd-u14.04"
+	[[ -z $NETCAT ]] && export NETCAT="$IBUILD_ROOT/bin/netcat.openbsd-u14.04"
  export HOST_MD5=`echo $HOSTNAME | md5sum | awk -F' ' {'print $1'}`
 
  touch $TASK_SPACE/itask.lock
@@ -56,7 +57,7 @@ NODE_STANDBY()
  
  if [[ ! -z $JOBS_REV ]] ; then
 	sleep 3
-	$IBUILD_PATH/autobuild/build.sh $JOBS_REV
+	$IBUILD_ROOT/autobuild/build.sh $JOBS_REV
  fi
  rm -f $TASK_SPACE/itask.jobs
 }

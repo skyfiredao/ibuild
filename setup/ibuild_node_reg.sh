@@ -32,18 +32,19 @@ export CPU=`cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u | a
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
 export TOWEEK=`date +%yw%V`
 
-if [[ ! -d $HOME/ibuild/conf/ibuild.conf ]] ; then
-	export IBUILD_PATH=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
-	[[ `echo $0 | grep '^./'` ]] && export IBUILD_PATH=`pwd`/`echo $0 | sed 's/^.\///g'`
+if [[ -f $HOME/ibuild/conf/ibuild.conf ]] ; then
+	export IBUILD_ROOT=$HOME/ibuild
 else
-	export IBUILD_PATH=$HOME/ibuild
-fi 
+	[[ `echo $0 | grep '^./'` ]] && export IBUILD_ROOT=`pwd`/`echo $0 | sed 's/^.\///g'`
+	[[ `echo $0 | grep '^/'` ]] && export IBUILD_ROOT=`pwd``echo $0 | sed 's/^.\///g'`
+	export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
+fi
 
 date
-svn up -q $IBUILD_PATH
+svn up -q $IBUILD_ROOT
 
-export SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_PATH/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
-export SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_PATH/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
+export SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
+export SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
 export SVN_REV_SRV=`svn info $SVN_OPTION svn://$SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
 
 if [[ -d $TASK_SPACE/itask-$TOWEEK ]] ; then
@@ -78,11 +79,11 @@ if [[ `svn st $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME | grep $HOSTNAME` ]] ; t
 	svn ci $SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME
 fi
 
-if [[ ! `crontab -l | grep ibuild_node_reg` && -f $IBUILD_PATH/setup/ibuild_node_reg.sh ]] ; then
+if [[ ! `crontab -l | grep ibuild_node_reg` && -f $IBUILD_ROOT/setup/ibuild_node_reg.sh ]] ; then
 	echo "# m h  dom mon dow   command
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-*/5 * * * * $IBUILD_PATH/setup/ibuild_node_reg.sh >/tmp/ibuild_node_reg.log 2>&1
+*/5 * * * * $IBUILD_ROOT/setup/ibuild_node_reg.sh >/tmp/ibuild_node_reg.log 2>&1
 " >/tmp/$USER.crontab
 	crontab -l | egrep -v '#|ibuild_node_reg.sh' >>/tmp/$USER.crontab
 	crontab /tmp/$USER.crontab
