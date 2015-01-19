@@ -23,6 +23,7 @@ export LC_ALL=C
 export USER=`whoami`
 export TASK_SPACE=/run/shm
 export IP=`/sbin/ifconfig eth0 | grep 'inet addr:' | awk -F':' {'print $2'} | awk -F' ' {'print $1'}`
+export MAC=`/sbin/ifconfig eth0 | grep HWaddr | awk -F'HWaddr ' {'print $2'}`
 export HOSTNAME=`hostname`
 export DOMAIN_NAME=`cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'}`
 export BTRFS_PATH=`mount | grep btrfs | awk -F' ' {'print $3'} | tail -n1`
@@ -66,6 +67,7 @@ echo "# build node info
 IP=$IP
 HOSTNAME=$HOSTNAME
 DOMAIN_NAME=$DOMAIN_NAME
+MAC=$MAC
 BTRFS_PATH=$BTRFS_PATH
 MEMORY=$MEMORY
 CPU=$CPU
