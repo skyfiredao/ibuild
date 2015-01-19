@@ -89,4 +89,5 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 fi
 
 $IBUILD_PATH/setup/ibuild_node_daemon.sh >/tmp/ibuild_node_daemon.log 2>&1 &
+$IBUILD_PATH/setup/sync_repo_local_mirror.sh >/tmp/sync_repo_local_mirror.log 2>&1 &
 
