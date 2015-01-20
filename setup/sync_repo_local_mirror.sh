@@ -40,7 +40,10 @@ else
 fi
 
 if [[ `cat $TASK_SPACE/repo_sync.lock` != $TOHOUR ]] ; then
-	echo $TOHOUR >$TASK_SPACE/repo_sync.lock
 	$IBUILD_ROOT/bin/repo sync -j$JOBS
+	echo $TOHOUR >$TASK_SPACE/repo_sync.lock
 fi
+
+date
+
 

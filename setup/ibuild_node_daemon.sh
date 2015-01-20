@@ -36,8 +36,6 @@ else
 	export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
 fi
 
-date
-
 NODE_STANDBY()
 {
  export NETCAT=`which nc`
@@ -63,9 +61,9 @@ NODE_STANDBY()
 
 while [ ! -f $TASK_SPACE/itask.lock ] ; 
 do
+	date
 	[[ -f $TASK_SPACE/exit.lock ]] && exit 0
 	NODE_STANDBY
-	
 done
 
 rm -f $TASK_SPACE/itask.lock
