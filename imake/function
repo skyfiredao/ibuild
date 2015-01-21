@@ -147,7 +147,6 @@ REPO_INFO()
  export BTRFS_NAME=$REPO_INIT_CMD_MD5_NAME
  export BUILD_PATH_TOP=$LOC_WORKSPACE/build/$BTRFS_NAME
 	mkdir -p $BUILD_PATH_TOP >/dev/null 2>&1
-
  export LOC_REF_REPO=/local/ref_repo/$REPO_INIT_CMD_MD5_NAME
 	[[ ! -d $LOC_REF_REPO ]] && SETUP_REF_REPO
 }

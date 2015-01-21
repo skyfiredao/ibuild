@@ -25,19 +25,16 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 	echo -e "Please put ibuild in your $HOME"
 	exit 0
 fi
-export ITASK_REV=$1
 
 source $IBUILD_ROOT/imake/function
 EXPORT_IBUILD_CONF
-EXPORT_IBUILD_SPEC $ITASK_REV
+EXPORT_IBUILD_SPEC
 
-REPO_INFO
-SETUP_BUILD_REPO
-
-$IBUILD_ROOT/imake/$IBUILD_MAKE_TOOL
-SETUP_BUILD_OUT
-
-
+cd $BUILD_PATH_TOP
+source build/envsetup.sh >$LOG_PATH/envsetup.log 2>&1
+lunch $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT >$LOG_PATH/lunch.log 2>&1
+make -j$JOBS >$LOG_PATH/full_build.log 2>&1
+make release >$LOG_PATH/release.log 2>&1
 
 
 
