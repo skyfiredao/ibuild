@@ -103,6 +103,6 @@ if [[ $SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
 	fi
 fi
 
-$IBUILD_PATH/setup/ibuild_node_daemon.sh >/tmp/ibuild_node_daemon.log 2>&1 &
+$IBUILD_PATH/setup/ibuild_node_daemon.sh $TASK_SPACE/itask-$TOWEEK >/tmp/ibuild_node_daemon.log 2>&1 &
 $IBUILD_PATH/setup/sync_repo_local_mirror.sh >/tmp/sync_repo_local_mirror.log 2>&1 &
 

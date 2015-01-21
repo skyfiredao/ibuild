@@ -25,6 +25,7 @@ export HOSTNAME=`hostname`
 export DOMAIN_NAME=`cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'}`
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
 export TOWEEK=`date +%yw%V`
+export ITASK_PATH=$1
 
 [[ -f $TASK_SPACE/itask.lock ]] && exit 0
 
@@ -41,7 +42,7 @@ NODE_STANDBY()
 	[[ -z $NETCAT ]] && export NETCAT="$IBUILD_ROOT/bin/netcat.openbsd-u14.04"
  export HOST_MD5=`echo $HOSTNAME | md5sum | awk -F' ' {'print $1'}`
 
- touch $TASK_SPACE/itask.lock
+ echo $ITASK_PATH >$TASK_SPACE/itask.lock
 
  $NETCAT -l 1234 >$TASK_SPACE/itask.jobs
  export JOBS_REV=`cat $TASK_SPACE/itask.jobs`
