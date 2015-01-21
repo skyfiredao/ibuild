@@ -21,6 +21,7 @@ export LC_CTYPE=C
 export LC_ALL=C
 export USER=`whoami`
 export TASK_SPACE=/run/shm
+	[[ -f $TASK_SPACE/itask.lock ]] && export ITASK_PATH=`cat $TASK_SPACE/itask.lock` 
 export IP=`/sbin/ifconfig | grep 'inet addr:' | grep -v 127.0.0.1 | awk -F':' {'print $2'} | awk -F' ' {'print $1'} | head -n1`
 export MAC=`/sbin/ifconfig | grep HWaddr | awk -F'HWaddr ' {'print $2'} | head -n1`
 export HOSTNAME=`hostname`
@@ -58,12 +59,24 @@ EXPORT_IBUILD_CONF()
 
 EXPORT_IBUILD_SPEC()
 {
- if [[ -z $1 && -L $TASK_SPACE/spec.build ]] ; then
-	export IBUILD_SPEC=`readlink $TASK_SPACE/spec.build`
- elif [[ -f $1 ]] ; then
-	export IBUILD_SPEC=$1
+ export ITASK_REV=$1
+ if [[ ! -z $ITASK_REV ]] ; then
+	export IBUILD_SPEC_NAME=`svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | head -n1 | awk -F'tasks/' {'print $2'}`
+	if [[ -f $ITASK_PATH/tasks/$IBUILD_SPEC_NAME ]] ; then
+		cp $ITASK_PATH/tasks/$IBUILD_SPEC_NAME $TASK_SPACE/
+		ln -sf $ITASK_PATH/$IBUILD_SPEC_NAME $TASK_SPACE/spec.build
+	else
+		SPLIT_LINE "$ITASK_PATH/$IBUILD_SPEC_NAME is not a spec.build"
+		exit 1
+	fi
+ fi
+
+ if [[ -L $TASK_SPACE/spec.build ]] ; then
+        export IBUILD_SPEC=`readlink $TASK_SPACE/spec.build`
+ elif [[ -f $TASK_SPACE/spec.build ]] ; then
+	export IBUILD_SPEC=$TASK_SPACE/spec.build
  else
-	echo "Can NOT find spec.build"
+	SPLIT_LINE "No spec.build in $TASK_SPACE"
 	exit 1
  fi
 
@@ -86,6 +99,12 @@ EXPORT_IBUILD_SPEC()
 # export =`grep '^=' $IBUILD_SPEC | awk -F'=' {'print $2'}`
 }
  
+SPLIT_LINE()
+{
+ export SPLIT_WORD=''
+ [[ ! -z $1 ]] && export SPLIT_WORD=" $1 "
+ echo -e "\n--------------------$SPLIT_WORD--------------------"
+}
 
 
 
@@ -95,11 +114,7 @@ EXPORT_IBUILD_SPEC()
 
 
 
-
-
-
-
-
-EXPORT_IBUILD_CONF
-EXPORT_IBUILD_SPEC
+# EXPORT_IBUILD_CONF
+# EXPORT_IBUILD_SPEC
+# SPLIT_LINE
 
