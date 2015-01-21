@@ -49,12 +49,15 @@ EXPORT_IBUILD_CONF()
  export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
  export LOC_REPO_MIRROR_PATH=`grep '^LOC_REPO_MIRROR_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_REPO_MIRROR_PATH=' {'print $2'}`
  export LOC_WORKSPACE=`grep '^LOC_WORKSPACE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_WORKSPACE=' {'print $2'}`
+# mkdir -p /local/{ccache,out} >/dev/null 2>&1
+ mkdir -p /local/workspace/{ref_repo,build} >/dev/null 2>&1
  [[ -z $CCACHE_DIR ]] && export CCACHE_DIR=`grep '^CCACHE_DIR=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_DIR=' {'print $2'}`
  [[ -z $CCACHE_UMASK ]] && export CCACHE_UMASK=`grep '^CCACHE_UMASK=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_UMASK=' {'print $2'}` 
  [[ -z $CCACHE_BASEDIR ]] && export CCACHE_BASEDIR=`grep '^CCACHE_BASEDIR=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_BASEDIR=' {'print $2'}`
  [[ -z $USE_CCACHE ]] && export USE_CCACHE=`grep '^USE_CCACHE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'USE_CCACHE=' {'print $2'}`
  export JDK6_PATH=`grep '^JDK6_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'JDK6_PATH=' {'print $2'}`
  export JDK7_PATH=`grep '^JDK7_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'JDK7_PATH=' {'print $2'}`
+ export REPO_CMD=`grep '^REPO_CMD=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'REPO_CMD=' {'print $2'}`
 }
 
 EXPORT_IBUILD_SPEC()
@@ -97,6 +100,14 @@ EXPORT_IBUILD_SPEC()
  export IBUILD_TARGET_PRODUCT=`grep '^IBUILD_TARGET_PRODUCT=' $IBUILD_SPEC | awk -F'IBUILD_TARGET_PRODUCT=' {'print $2'}`
  export IBUILD_REL_REV=`grep '^IBUILD_REL_REV=' $IBUILD_SPEC | awk -F'IBUILD_REL_REV=' {'print $2'}`
 # export =`grep '^=' $IBUILD_SPEC | awk -F'=' {'print $2'}`
+
+ export SPEC_NAME=`basename $IBUILD_SPEC`
+ export AUTOUT_PATH=$LOC_WORKSPACE/autout
+ export AUTOUT_NAME=`echo $SPEC_NAME | awk -F'spec.build.' {'print $2'}`
+ export LOG_PATH=$AUTOUT_PATH/log
+	mkdir -p $AUTOUT_PATH/$AUTOUT_NAME $LOG_PATH >/dev/null 2>&1
+	rm -f $LOG_PATH/* >/dev/null 2>&1
+	echo '#'$SPEC_NAME >$LOG_PATH/build_info.txt
 }
  
 SPLIT_LINE()
@@ -106,15 +117,86 @@ SPLIT_LINE()
  echo -e "\n--------------------$SPLIT_WORD--------------------"
 }
 
+BTRFS_CLEANUP()
+{
+ export BTRFS_TOP=`basename $1`
 
+ for BTRFS_SUBVOL in `sudo btrfs subvolume list $LOC_WORKSPACE | awk -F'path ' {'print $2'} | grep $BTRFS_TOP`
+ do
+	sleep 3
+	SPLIT_LINE "clean btrfs"
+	echo "btrfs subvolume delete $LOC_WORKSPACE/$BTRFS_SUBVOL"
+	sudo btrfs subvolume delete /local/$BTRFS_SUBVOL >>$LOG_PATH/btrfs_issue.log 2>&1 &
+ done
+ sudo btrfs subvolume list $LOC_WORKSPACE | grep $BTRFS_TOP >>$LOG_PATH/btrfs_issue.log 2>&1
+}
 
+REPO_INFO()
+{
+ export IBUILD_GRTSRV_PORT=`echo $IBUILD_GRTSRV | awk -F':' {'print $2'}`
+ export IBUILD_GRTSRV_URL=`echo $IBUILD_GRTSRV | awk -F':' {'print $1'}`
+ ssh -p $IBUILD_GRTSRV_PORT $IBUILD_GRTSRV >$LOG_PATH/$IBUILD_GRTSRV_URL.log 2>&1
 
+ [[ ! -z $IBUILD_GRTSRV_REPO ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" --repo-url=ssh://$IBUILD_GRTSRV_ID@$IBUILD_GRTSRV/$IBUILD_GRTSRV_REPO"
+ [[ ! -z $IBUILD_GRTSRV_INIT_OPTION ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" $IBUILD_GRTSRV_INIT_OPTION"
+ [[ ! -z $IBUILD_GRTSRV_BRANCH ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" -b $IBUILD_GRTSRV_BRANCH"
+ [[ ! -z $IBUILD_GRTSRV_MANIFEST && $IBUILD_GRTSRV_MANIFEST != default.xml ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" -m $IBUILD_GRTSRV_MANIFEST"
 
+ echo "$REPO_CMD init -u ssh://$IBUILD_GRTSRV_ID@$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD" >/tmp/$USER.repo_init.tmp
+ export REPO_INIT_CMD_MD5_NAME=`cat /tmp/$USER.repo_init.tmp | md5sum | awk -F' ' {'print $1'}`
+ export BTRFS_NAME=$REPO_INIT_CMD_MD5_NAME
+ export BUILD_PATH_TOP=$LOC_WORKSPACE/build/$BTRFS_NAME
+	mkdir -p $BUILD_PATH_TOP >/dev/null 2>&1
 
+ export LOC_REF_REPO=/local/ref_repo/$REPO_INIT_CMD_MD5_NAME
+	[[ ! -d $LOC_REF_REPO ]] && SETUP_REF_REPO
+}
+
+SETUP_REF_REPO()
+{
+ if [[ ! -d $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME ]] ; then
+	mv /tmp/$USER.repo_init.tmp $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME.info
+	cd $LOC_WORKSPACE/ref_repo/
+	btrfs subvolume create $REPO_INIT_CMD_MD5_NAME
+	chmod 755 $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
+	cd $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
+	/bin/bash $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME.info >$LOG_PATH/init.log 2>&1
+	REPO_SYNC $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
+ fi
+}
+
+REPO_SYNC()
+{
+ cd $1
+ export REPO_SYNC_LOG_NAME=sync-`basename $1`
+ $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log
+ rm -fr out
+ if [[ -d /local/out ]]; then
+        ln -sf /local/out
+ fi
+ find >file.list
+}
+
+SETUP_BUILD_REPO()
+{
+ BTRFS_CLEANUP $BUILD_PATH_TOP
+
+ for BTRFS_OLD_PATH in `ls $LOC_WORKSPACE/build/`
+ do
+	BTRFS_CLEANUP $LOC_WORKSPACE/build/$BTRFS_OLD_PATH
+ done
+
+ REPO_SYNC $LOC_REF_REPO
+}
 
 
 
 # EXPORT_IBUILD_CONF
 # EXPORT_IBUILD_SPEC
 # SPLIT_LINE
+# REPO_INFO
+# BTRFS_CLEANUP
+# SETUP_REF_REPO
+# REPO_SYNC
+# SETUP_BUILD_REPO
 
