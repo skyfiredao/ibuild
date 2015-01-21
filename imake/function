@@ -103,6 +103,8 @@ EXPORT_IBUILD_SPEC()
  export IBUILD_REL_REV=`grep '^IBUILD_REL_REV=' $IBUILD_SPEC | awk -F'IBUILD_REL_REV=' {'print $2'}`
  export IBUILD_AOSP_JDK=`grep '^IBUILD_AOSP_JDK=' $IBUILD_SPEC | awk -F'IBUILD_AOSP_JDK=' {'print $2'}`
  export JDK_PATH=`ls -d $JDK6_PATH $JDK7_PATH | grep $IBUILD_AOSP_JDK`
+ export IBUILD_ADD_STEP_1=`grep '^IBUILD_ADD_STEP_1=' $IBUILD_SPEC | awk -F'IBUILD_ADD_STEP_1=' {'print $2'}`
+ export IBUILD_ADD_STEP_1_LOG_NAME=`basename $IBUILD_ADD_STEP_1`
 # export =`grep '^=' $IBUILD_SPEC | awk -F'=' {'print $2'}`
 
  export SPEC_NAME=`basename $IBUILD_SPEC`
@@ -174,7 +176,8 @@ REPO_SYNC()
 {
  cd $1
  export REPO_SYNC_LOG_NAME=sync-`basename $1`
- $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log
+ time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+ time $IBUILD_ADD_STEP_1 >$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
  rm -fr out/*
  rm -fr out
  if [[ -d /local/out ]]; then
