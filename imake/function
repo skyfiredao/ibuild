@@ -76,6 +76,7 @@ EXPORT_IBUILD_SPEC()
 
  if [[ -L $TASK_SPACE/spec.build ]] ; then
         export IBUILD_SPEC=`readlink $TASK_SPACE/spec.build`
+	[[ ! -f $IBUILD_SPEC ]] && export IBUILD_SPEC=$TASK_SPACE/$IBUILD_SPEC
  elif [[ -f $TASK_SPACE/spec.build ]] ; then
 	export IBUILD_SPEC=$TASK_SPACE/spec.build
  else
