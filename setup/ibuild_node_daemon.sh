@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (C) <2014>  <Ding Wei>
+# Copyright (C) <2014,2015>  <Ding Wei>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,12 +28,11 @@ export TOWEEK=`date +%yw%V`
 
 [[ -f $TASK_SPACE/itask.lock ]] && exit 0
 
-if [[ -f $HOME/ibuild/conf/ibuild.conf ]] ; then
-	export IBUILD_ROOT=$HOME/ibuild
-else
-	[[ `echo $0 | grep '^./'` ]] && export IBUILD_ROOT=`pwd`/`echo $0 | sed 's/^.\///g'`
-	[[ `echo $0 | grep '^/'` ]] && export IBUILD_ROOT=`pwd``echo $0 | sed 's/^.\///g'`
-	export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
+export IBUILD_ROOT=$HOME/ibuild
+	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
+if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
+	echo -e "Please put ibuild in your $HOME"
+	exit 0
 fi
 
 NODE_STANDBY()
