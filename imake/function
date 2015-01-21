@@ -1,0 +1,105 @@
+#!/bin/bash
+# Copyright (C) <2014,2015>  <Ding Wei>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Change log
+# 150120 Create by Ding Wei
+source /etc/bash.bashrc
+export LC_CTYPE=C
+export LC_ALL=C
+export USER=`whoami`
+export TASK_SPACE=/run/shm
+export IP=`/sbin/ifconfig | grep 'inet addr:' | grep -v 127.0.0.1 | awk -F':' {'print $2'} | awk -F' ' {'print $1'} | head -n1`
+export MAC=`/sbin/ifconfig | grep HWaddr | awk -F'HWaddr ' {'print $2'} | head -n1`
+export HOSTNAME=`hostname`
+export DOMAIN_NAME=`cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'}`
+export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
+export TODAY=`date +%y%m%d`
+export TOWEEK=`date +%yw%V`
+export TOYEAR=`date +%Y`
+export SEED=$RANDOM
+export BUILD_TIME=`date +%y%m%d%H%M%S`
+export BUILD_SEC_TIME=`date +%s`
+export DISTRIB_ID=`grep '^DISTRIB_ID=' /etc/lsb-release | awk -F'=' {'print $2'}`
+export DISTRIB_RELEASE=`grep '^DISTRIB_RELEASE=' /etc/lsb-release | awk -F'=' {'print $2'}`
+
+export IBUILD_ROOT=$HOME/ibuild
+        [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
+if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
+	echo -e "Please put ibuild in your $HOME"
+	exit 0
+fi
+
+EXPORT_IBUILD_CONF()
+{
+ export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
+ export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
+ export LOC_REPO_MIRROR_PATH=`grep '^LOC_REPO_MIRROR_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_REPO_MIRROR_PATH=' {'print $2'}`
+ export LOC_WORKSPACE=`grep '^LOC_WORKSPACE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_WORKSPACE=' {'print $2'}`
+ [[ -z $CCACHE_DIR ]] && export CCACHE_DIR=`grep '^CCACHE_DIR=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_DIR=' {'print $2'}`
+ [[ -z $CCACHE_UMASK ]] && export CCACHE_UMASK=`grep '^CCACHE_UMASK=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_UMASK=' {'print $2'}` 
+ [[ -z $CCACHE_BASEDIR ]] && export CCACHE_BASEDIR=`grep '^CCACHE_BASEDIR=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_BASEDIR=' {'print $2'}`
+ [[ -z $USE_CCACHE ]] && export USE_CCACHE=`grep '^USE_CCACHE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'USE_CCACHE=' {'print $2'}`
+ export JDK6_PATH=`grep '^JDK6_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'JDK6_PATH=' {'print $2'}`
+ export JDK7_PATH=`grep '^JDK7_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'JDK7_PATH=' {'print $2'}`
+}
+
+EXPORT_IBUILD_SPEC()
+{
+ if [[ -z $1 && -L $TASK_SPACE/spec.build ]] ; then
+	export IBUILD_SPEC=`readlink $TASK_SPACE/spec.build`
+ elif [[ -f $1 ]] ; then
+	export IBUILD_SPEC=$1
+ else
+	echo "Can NOT find spec.build"
+	exit 1
+ fi
+
+ export EMAIL_PM=`grep '^EMAIL_PM=' $IBUILD_SPEC | awk -F'EMAIL_PM=' {'print $2'}`
+ export EMAIL_REL=`grep '^EMAIL_REL=' $IBUILD_SPEC | awk -F'EMAIL_REL=' {'print $2'}`
+ export IBUILD_AUTOUT_FILES=`grep '^IBUILD_AUTOUT_FILES=' $IBUILD_SPEC | awk -F'IBUILD_AUTOUT_FILES=' {'print $2'}`
+ export IBUILD_GRTSRV=`grep '^IBUILD_GRTSRV=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV=' {'print $2'}`
+ export IBUILD_GRTSRV_BRANCH=`grep '^IBUILD_GRTSRV_BRANCH=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_BRANCH=' {'print $2'}`
+ export IBUILD_GRTSRV_INIT_OPTION=`grep '^IBUILD_GRTSRV_INIT_OPTION=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_INIT_OPTION=' {'print $2'}`
+ export IBUILD_GRTSRV_MANIFEST=`grep '^IBUILD_GRTSRV_MANIFEST=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_MANIFEST=' {'print $2'}`
+ export IBUILD_GRTSRV_REPO=`grep '^IBUILD_GRTSRV_REPO=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_REPO=' {'print $2'}`
+ export IBUILD_GRTSRV_URL=`grep '^IBUILD_GRTSRV_URL=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_URL=' {'print $2'}`
+ export IBUILD_MAKE_OPTION=`grep '^IBUILD_MAKE_OPTION=' $IBUILD_SPEC | awk -F'IBUILD_MAKE_OPTION=' {'print $2'}`
+ export IBUILD_MAKE_TOOL=`grep '^IBUILD_MAKE_TOOL=' $IBUILD_SPEC | awk -F'IBUILD_MAKE_TOOL=' {'print $2'}`
+ export IBUILD_MODE=`grep '^IBUILD_MODE=' $IBUILD_SPEC | awk -F'IBUILD_MODE=' {'print $2'}`
+ export IBUILD_UPLOAD_URL=`grep '^IBUILD_UPLOAD_URL=' $IBUILD_SPEC | awk -F'IBUILD_UPLOAD_URL=' {'print $2'}`
+ export IBUILD_TARGET_BUILD_VARIANT=`grep '^IBUILD_TARGET_BUILD_VARIANT=' $IBUILD_SPEC | awk -F'IBUILD_TARGET_BUILD_VARIANT=' {'print $2'}`
+ export IBUILD_TARGET_PRODUCT=`grep '^IBUILD_TARGET_PRODUCT=' $IBUILD_SPEC | awk -F'IBUILD_TARGET_PRODUCT=' {'print $2'}`
+ export IBUILD_REL_REV=`grep '^IBUILD_REL_REV=' $IBUILD_SPEC | awk -F'IBUILD_REL_REV=' {'print $2'}`
+# export =`grep '^=' $IBUILD_SPEC | awk -F'=' {'print $2'}`
+}
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+EXPORT_IBUILD_CONF
+EXPORT_IBUILD_SPEC
+
