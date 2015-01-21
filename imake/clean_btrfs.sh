@@ -29,13 +29,15 @@ fi
 export LOC_WORKSPACE=`grep '^LOC_WORKSPACE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_WORKSPACE=' {'print $2'}`
 if [[ -z $1 ]] ; then
 	echo ------------------------
-	btrfs subvolume list $LOC_WORKSPACE
+	sudo btrfs subvolume list $LOC_WORKSPACE
 	echo ------------------------
 	echo $0 a
 	echo btrfs subvolume delete
 	echo ------------------------
 	exit 0
 fi
+
+echo "sudo btrfs subvolume list $LOC_WORKSPACE"
 
 for BTRFS_SUBVOL in `sudo btrfs subvolume list $LOC_WORKSPACE | egrep -v 'ref_repo' | awk -F'path ' {'print $2'}`
 do

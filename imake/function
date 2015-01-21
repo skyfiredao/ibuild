@@ -57,6 +57,7 @@ EXPORT_IBUILD_CONF()
  [[ -z $USE_CCACHE ]] && export USE_CCACHE=`grep '^USE_CCACHE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'USE_CCACHE=' {'print $2'}`
  export JDK6_PATH=`grep '^JDK6_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'JDK6_PATH=' {'print $2'}`
  export JDK7_PATH=`grep '^JDK7_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'JDK7_PATH=' {'print $2'}`
+ export IBUILD_GRTSRV_ID=`grep '^IBUILD_GRTSRV_ID=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_GRTSRV_ID=' {'print $2'}`
  export REPO_CMD=`grep '^REPO_CMD=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'REPO_CMD=' {'print $2'}`
 }
 
@@ -122,12 +123,13 @@ BTRFS_CLEANUP()
 {
  export BTRFS_TOP=`basename $1`
 
- for BTRFS_SUBVOL in `sudo btrfs subvolume list $LOC_WORKSPACE | awk -F'path ' {'print $2'} | grep $BTRFS_TOP`
+ for BTRFS_SUBVOL in `sudo btrfs subvolume list $LOC_WORKSPACE | egrep -v 'ref_repo' | awk -F'path ' {'print $2'} | grep $BTRFS_TOP`
  do
 	sleep 3
-	SPLIT_LINE "clean btrfs"
+	SPLIT_LINE clean_btrfs
 	echo "sudo btrfs subvolume delete $LOC_WORKSPACE/$BTRFS_SUBVOL"
-	sudo btrfs subvolume delete /local/$BTRFS_SUBVOL >>$LOG_PATH/btrfs_issue.log 2>&1 &
+	rm -f $LOC_WORKSPACE/$BTRFS_SUBVOL.info
+	sudo btrfs subvolume delete $LOC_WORKSPACE/$BTRFS_SUBVOL >>$LOG_PATH/btrfs_issue.log 2>&1 &
  done
  sudo btrfs subvolume list $LOC_WORKSPACE | grep $BTRFS_TOP >>$LOG_PATH/btrfs_issue.log 2>&1
 }
@@ -135,11 +137,13 @@ BTRFS_CLEANUP()
 REPO_INFO()
 {
  export IBUILD_GRTSRV_PORT=`echo $IBUILD_GRTSRV | awk -F':' {'print $2'}`
- export IBUILD_GRTSRV_URL=`echo $IBUILD_GRTSRV | awk -F':' {'print $1'}`
- ssh -p $IBUILD_GRTSRV_PORT $IBUILD_GRTSRV >$LOG_PATH/$IBUILD_GRTSRV_URL.log 2>&1
+ export IBUILD_GRTSRV_NAME=`echo $IBUILD_GRTSRV | awk -F':' {'print $1'}`
+ ssh -p $IBUILD_GRTSRV_PORT $IBUILD_GRTSRV_NAME >$LOG_PATH/$IBUILD_GRTSRV_NAME.log 2>&1
 
+ export REPO_INIT_CMD=''
  [[ ! -z $IBUILD_GRTSRV_REPO ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" --repo-url=ssh://$IBUILD_GRTSRV_ID@$IBUILD_GRTSRV/$IBUILD_GRTSRV_REPO"
  [[ ! -z $IBUILD_GRTSRV_INIT_OPTION ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" $IBUILD_GRTSRV_INIT_OPTION"
+ [[ ! -z $LOC_REPO_MIRROR_PATH ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" --reference=$LOC_REPO_MIRROR_PATH"
  [[ ! -z $IBUILD_GRTSRV_BRANCH ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" -b $IBUILD_GRTSRV_BRANCH"
  [[ ! -z $IBUILD_GRTSRV_MANIFEST && $IBUILD_GRTSRV_MANIFEST != default.xml ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" -m $IBUILD_GRTSRV_MANIFEST"
 
@@ -147,7 +151,6 @@ REPO_INFO()
  export REPO_INIT_CMD_MD5_NAME=`cat /tmp/$USER.repo_init.tmp | md5sum | awk -F' ' {'print $1'}`
  export BTRFS_NAME=$REPO_INIT_CMD_MD5_NAME
  export BUILD_PATH_TOP=$LOC_WORKSPACE/build/$BTRFS_NAME
-	mkdir -p $BUILD_PATH_TOP >/dev/null 2>&1
  export LOC_REF_REPO=/local/ref_repo/$REPO_INIT_CMD_MD5_NAME
 	[[ ! -d $LOC_REF_REPO ]] && SETUP_REF_REPO
 }
@@ -179,14 +182,17 @@ REPO_SYNC()
 
 SETUP_BUILD_REPO()
 {
- BTRFS_CLEANUP $BUILD_PATH_TOP
+ BTRFS_CLEANUP $LOC_WORKSPACE/build
 
  for BTRFS_OLD_PATH in `ls $LOC_WORKSPACE/build/`
  do
 	BTRFS_CLEANUP $LOC_WORKSPACE/build/$BTRFS_OLD_PATH
  done
 
- REPO_SYNC $LOC_REF_REPO
+ SPLIT_LINE btrfs_snapshot
+ btrfs subvolume snapshot $LOC_REF_REPO $BUILD_PATH_TOP >>$LOG_PATH/btrfs_issue.log 2>&1
+
+ REPO_SYNC $BUILD_PATH_TOP
 }
 
 
