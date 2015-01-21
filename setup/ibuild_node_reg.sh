@@ -60,6 +60,11 @@ fi
 if [[ ! -d $TASK_SPACE/itask-$TOWEEK/inode ]] ; then
 	svn mkdir $TASK_SPACE/itask-$TOWEEK/inode
 	svn ci $SVN_OPTION -m "auto: add inode in $IP" $TASK_SPACE/itask-$TOWEEK/inode
+	if [[ $? != 0 ]] ; then
+		rm -fr $TASK_SPACE/itask*
+		echo -e "Waiting for next cycle because conflict"
+		exit 1
+	fi
 fi
 
 echo "# build node info
