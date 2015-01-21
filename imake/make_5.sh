@@ -30,6 +30,14 @@ source $IBUILD_ROOT/imake/function
 EXPORT_IBUILD_CONF
 EXPORT_IBUILD_SPEC
 
+if [[ -d $JDK_PATH ]] ; then
+	sudo rm -f /usr/local/jdk
+	sudo ln -sf $JDK_PATH /usr/local/jdk
+	export PATH=$JDK_PATH/bin:$PATH:
+	export CLASSPATH=$JDK_PATH/lib:.
+	export JAVA_HOME=$JDK_PATH
+fi
+
 cd $BUILD_PATH_TOP
 source build/envsetup.sh >$LOG_PATH/envsetup.log 2>&1
 lunch $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT >$LOG_PATH/lunch.log 2>&1
