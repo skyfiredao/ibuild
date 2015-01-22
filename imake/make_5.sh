@@ -53,7 +53,5 @@ else
 	BUILD_ERROR
 fi
 
-REPO_SYNC $LOC_REF_REPO
-
 
 
