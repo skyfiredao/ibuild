@@ -55,7 +55,10 @@ NODE_STANDBY()
  
  if [[ ! -z $JOBS_REV ]] ; then
 	sleep 3
-	$IBUILD_ROOT/autobuild/build.sh $JOBS_REV
+	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask-$TOWEEK/jobs.txt
+	if [[ `cat $TASK_SPACE/itask-$TOWEEK/jobs.txt | grep $JOBS_MD5 | grep $HOST_MD5` ]] ; then
+		$IBUILD_ROOT/autobuild/build.sh $JOBS_REV >/tmp/build-$JOBS_REV.log 2>&1
+	fi
  fi
  rm -f $TASK_SPACE/itask.jobs
 }
