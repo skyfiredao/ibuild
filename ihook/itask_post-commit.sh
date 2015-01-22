@@ -19,16 +19,13 @@
 # post-commit
 export IHOOK_REPOS="$1"
 export IHOOK_REV="$2"
+export IHOOK_TXN_NAME="$3"
 [[ -z $IHOOK_REV ]] && exit 0
 
 source /etc/bash.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
-export USER=`whoami`
-export SEED=$USER.$REV
 export TASK_SPACE=/run/shm
-
-[[ -f $TASK_SPACE/ihook.lock ]] && exit 0
 
 export IBUILD_ROOT=$HOME/ibuild
 	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
@@ -37,11 +34,5 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
         exit 0
 fi
 
-export SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
-export SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
-
-touch $TASK_SPACE/ihook.lock
-touch /tmp/$IHOOK_REPOS.$IHOOK_REV
-rm -f $TASK_SPACE/ihook.lock
-
+$IBUILD_ROOT/imake/queue.sh $IHOOK_REV >/tmp/ihook-r$IHOOK_REV.log 2>&1 &
 
