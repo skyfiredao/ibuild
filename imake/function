@@ -109,11 +109,13 @@ EXPORT_IBUILD_SPEC()
 
  export SPEC_NAME=`basename $IBUILD_SPEC`
  export AUTOUT_PATH=$LOC_WORKSPACE/autout
+ export AUTOUT_UPLOAD_PATH=$AUTOUT_PATH/upload
  export AUTOUT_NAME=`echo $SPEC_NAME | awk -F'spec.build.' {'print $2'}`
  export LOG_PATH=$AUTOUT_PATH/log
-	mkdir -p $AUTOUT_PATH/$AUTOUT_NAME $LOG_PATH >/dev/null 2>&1
+	mkdir -p $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_UPLOAD_PATH $LOG_PATH >/dev/null 2>&1
 	rm -f $LOG_PATH/* >/dev/null 2>&1
 	echo '#'$SPEC_NAME >$LOG_PATH/build_info.txt
+	cat $TASK_SPACE/spec.build >>$LOG_PATH/build_info.txt
 }
  
 SPLIT_LINE()
@@ -204,7 +206,119 @@ SETUP_BUILD_REPO()
  REPO_SYNC $BUILD_PATH_TOP
 }
 
+CCACHE_HOTFIX()
+{
+ if [[ -f prebuilts/misc/linux-x86/ccache/ccache ]] ; then
+	/bin/cp $IBUILD_ROOT/bin/ccache-LDFLAGS-3.2 prebuilts/misc/linux-x86/ccache/ccache >/dev/null 2>&1
+ fi
+}
 
+SETUP_IVER()
+{
+ local ORIG_MAINFEST_URL=$1
+ local IVER_MAINFEST_NAME=$2.xml
+
+ if [[ -d $TASK_SPACE/iversion-$TOWEEK ]] ; then
+	export IBUILD_SVN_REV_LOC=`svn info $TASK_SPACE/iversion-$TOWEEK | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+	if [[ $IBUILD_SVN_REV_SRV != $IBUILD_SVN_REV_LOC ]] ; then
+		svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOWEEK
+	fi
+else
+	rm -fr $TASK_SPACE/iversion-*
+	svn mkdir -q $IBUILD_SVN_OPTION -m "auto: add iversion/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK >/dev/null 2>&1
+	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK $TASK_SPACE/iversion-$TOWEEK
+ fi
+ cp $ORIG_MAINFEST_URL $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME
+ svn add $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME
+ svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVER_MAINFEST_NAME" $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME
+ if [[ $? = 0 ]] ; then
+	export IVER=i`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+ else
+	SPLIT_LINE iversion_issue
+	echo $IVER_MAINFEST_NAME
+	export IVER=i$BUILD_TIME$SEED
+ fi
+}
+
+SETUP_ICASE()
+{
+ local ICASE_UPLOAD_URL=$1
+
+ if [[ -z $END_SEC_TIME ]] ; then
+	export END_TIME=`date +%y%m%d%H%M%S`
+	export END_SEC_TIME=`date +%s`
+ fi
+
+ echo "RESULT=$RESULT
+SLAVE_HOST=`hostname`
+START_TIME=$BUILD_TIME
+END_TIME=$END_TIME
+IVER=$IVER
+BUILD_TIME=`echo $END_SEC_TIME - $BUILD_SEC_TIME | bc`
+REL_PATH=$TODAY/$AUTOUT_NAME
+GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
+GERRIT_CHANGE_ID=$GERRIT_CHANGE_ID
+GERRIT_CHANGE_URL=$GERRIT_CHANGE_URL
+GERRIT_CHANGE_OWNER_EMAIL=$GERRIT_CHANGE_OWNER_EMAIL
+GERRIT_CHANGE_OWNER_NAME=$GERRIT_CHANGE_OWNER_NAME
+GERRIT_PATCHSET_NUMBER=$GERRIT_PATCHSET_NUMBER
+GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION
+GERRIT_PROJECT=$GERRIT_PROJECT
+UPLOAD_URL=http://$IBUILD_SVN_SRV/ibuild/$ICASE_UPLOAD_URL
+" >>$LOG_PATH/build_info.txt
+
+ cat $LOG_PATH/build_info.txt | sort -u | grep -v ^$ >$LOG_PATH/build_info.tmp
+ mv $LOG_PATH/build_info.tmp $LOG_PATH/build_info.txt
+ 
+ if [[ -d $TASK_SPACE/icase-$TOWEEK ]] ; then
+	export IBUILD_SVN_REV_LOC=`svn info $TASK_SPACE/icase-$TOWEEK | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+	if [[ $IBUILD_SVN_REV_SRV != $IBUILD_SVN_REV_LOC ]] ; then
+		svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/icase-$TOWEEK
+	fi
+else
+	rm -fr $TASK_SPACE/icase-*
+	svn mkdir -q $IBUILD_SVN_OPTION -m "auto: add icase/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK >/dev/null 2>&1
+	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/icase-$TOWEEK
+ fi
+
+ cp $LOG_PATH/build_info.txt $TASK_SPACE/icase-$TOWEEK/$IVER.build_info.txt
+ svn add $TASK_SPACE/icase-$TOWEEK/$IVER.build_info.txt
+ svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVER_MAINFEST_NAME" $TASK_SPACE/icase-$TOWEEK/$IVER.build_info.txt
+ cp $LOG_PATH/build_info.txt $IBUILD_UPLOAD_URL/$ICASE_UPLOAD_URL/
+}
+
+SETUP_BUILD_OUT()
+{
+ cd $BUILD_PATH_TOP
+ SPLIT_LINE export_manifest
+ time $REPO_CMD manifest -r -o $AUTOUT_PATH/$AUTOUT_NAME/manifest.xml
+
+ SETUP_IVER $AUTOUT_PATH/$AUTOUT_NAME/manifest.xml $BUILD_TIME.$AUTOUT_NAME
+ cp -Ra $LOG_PATH $AUTOUT_PATH/$AUTOUT_NAME/
+ mv $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_PATH/$IVER.$AUTOUT_NAME
+
+ if [[ ! -f $AUTOUT_UPLOAD_PATH/README ]] ; then
+	if [[ `echo $IBUILD_UPLOAD_URL | grep ssh` ]] ; then
+		SPLIT_LINE "$IBUILD_UPLOAD_URL"
+		sshfs -o StrictHostKeyChecking-no $IBUILD_UPLOAD_URL $AUTOUT_UPLOAD_PATH
+	fi
+ fi
+
+ if [[ ! -f $AUTOUT_UPLOAD_PATH/README ]] ; then
+	export IBUILD_UPLOAD_STATUS=false
+ fi
+
+ mkdir -p $IBUILD_UPLOAD_URL/$TODAY
+ SPLIT_LINE upload_$TODAY_$IVER.$AUTOUT_NAME
+ time cp -R $AUTOUT_PATH/$IVER.$AUTOUT_NAME $IBUILD_UPLOAD_URL/$TODAY/
+
+ SETUP_ICASE $TODAY/$IVER.$AUTOUT_NAME
+}
+
+BUILD_ERROR()
+{
+ touch $LOG_PATH/BUILD_ERROR
+}
 
 # EXPORT_IBUILD_CONF
 # EXPORT_IBUILD_SPEC
@@ -214,4 +328,5 @@ SETUP_BUILD_REPO()
 # SETUP_REF_REPO
 # REPO_SYNC
 # SETUP_BUILD_REPO
-
+# CCACHE_HOTFIX
+# SETUP_BUILD_OUT

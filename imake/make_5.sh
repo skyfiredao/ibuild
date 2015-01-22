@@ -45,20 +45,15 @@ rm -fr out/* >/dev/null 2>&1
 
 SPLIT_LINE "make -j$JOBS"
 time make -j$JOBS >$LOG_PATH/full_build.log 2>&1
-
-SPLIT_LINE make_release
-time make release >$LOG_PATH/release.log 2>&1
+if [[ $? = 0 ]] ; then
+	SPLIT_LINE make_release
+	time make release >$LOG_PATH/release.log 2>&1
+else
+	export RESULT=FAILED
+	BUILD_ERROR
+fi
 
 REPO_SYNC $LOC_REF_REPO
-
-
-
-
-
-
-
-
-
 
 
 
