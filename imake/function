@@ -284,7 +284,7 @@ else
  cp $LOG_PATH/build_info.txt $TASK_SPACE/icase-$TOWEEK/$IVER.build_info.txt
  svn add $TASK_SPACE/icase-$TOWEEK/$IVER.build_info.txt
  svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVER_MAINFEST_NAME" $TASK_SPACE/icase-$TOWEEK/$IVER.build_info.txt
- cp $LOG_PATH/build_info.txt $IBUILD_UPLOAD_URL/$ICASE_UPLOAD_URL/
+ cp $LOG_PATH/build_info.txt $AUTOUT_UPLOAD_PATH/$ICASE_UPLOAD_URL/
 }
 
 SETUP_BUILD_OUT()
@@ -300,7 +300,8 @@ SETUP_BUILD_OUT()
  if [[ ! -f $AUTOUT_UPLOAD_PATH/README ]] ; then
 	if [[ `echo $IBUILD_UPLOAD_URL | grep ssh` ]] ; then
 		SPLIT_LINE "$IBUILD_UPLOAD_URL"
-		sshfs -o StrictHostKeyChecking-no $IBUILD_UPLOAD_URL $AUTOUT_UPLOAD_PATH
+		export IBUILD_UPLOAD_URL_NOSSH=`echo $IBUILD_UPLOAD_URL | awk -F'ssh://' {'print $2'}` 
+		sshfs $IBUILD_UPLOAD_URL_NOSSH $AUTOUT_UPLOAD_PATH
 	fi
  fi
 
@@ -308,9 +309,9 @@ SETUP_BUILD_OUT()
 	export IBUILD_UPLOAD_STATUS=false
  fi
 
- mkdir -p $IBUILD_UPLOAD_URL/$TODAY
+ mkdir -p $AUTOUT_UPLOAD_PATH/$TODAY
  SPLIT_LINE upload_$TODAY_$IVER.$AUTOUT_NAME
- time cp -R $AUTOUT_PATH/$IVER.$AUTOUT_NAME $IBUILD_UPLOAD_URL/$TODAY/
+ time cp -R $AUTOUT_PATH/$IVER.$AUTOUT_NAME $AUTOUT_UPLOAD_PATH/$TODAY/
 
  SETUP_ICASE $TODAY/$IVER.$AUTOUT_NAME
 }
