@@ -21,12 +21,11 @@ export LC_CTYPE=C
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
 export TASK_SPACE=/run/shm
 export TOHOUR=`date +%H`
-
 export IBUILD_ROOT=$HOME/ibuild
 	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
-        echo -e "Please put ibuild in your $HOME"
-        exit 0
+	echo -e "Please put ibuild in your $HOME"
+	exit 0
 fi
 
 export LOC_REPO_MIRROR_PATH=`grep '^LOC_REPO_MIRROR_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_REPO_MIRROR_PATH=' {'print $2'}`
@@ -44,5 +43,4 @@ if [[ `cat $TASK_SPACE/repo_sync.lock` != $TOHOUR ]] ; then
 fi
 
 date
-
 
