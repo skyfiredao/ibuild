@@ -50,6 +50,8 @@ mkdir -p /local/{ccache,ref_repo,out}
 chmod 775 /local /local/{ccache,ref_repo,out}
 chmod +s /sbin/btrfs*
 
+useradd irobot -s /usr/sbin/nologin
+
 mkdir -p /root/.ssh
 echo "StrictHostKeyChecking=no" > /root/.ssh/config
 

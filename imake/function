@@ -291,9 +291,19 @@ SETUP_BUILD_OUT()
 {
  cd $BUILD_PATH_TOP
  SPLIT_LINE export_manifest
- time $REPO_CMD manifest -r -o $AUTOUT_PATH/$AUTOUT_NAME/manifest.xml
+ time $REPO_CMD manifest -r -o $LOG_PATH/manifest.xml
+ if [[ $RESULT != FAILED ]] ; then
+	cd out
+	if [[ -d release-$IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT ]] ; then
+		export REL_PKG_NAME=release-$IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT
+	else
+		export REL_PKG_NAME=`ls | grep 'release-' | head -n1`
+	fi
+	[[ ! -z $REL_PKG_NAME ]] && tar cf $REL_PKG_NAME.tar $REL_PKG_NAME
+	cp $REL_PKG_NAME.tar $AUTOUT_PATH/$AUTOUT_NAME/
+ fi
 
- SETUP_IVER $AUTOUT_PATH/$AUTOUT_NAME/manifest.xml $BUILD_TIME.$AUTOUT_NAME
+ SETUP_IVER $LOG_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
  cp -Ra $LOG_PATH $AUTOUT_PATH/$AUTOUT_NAME/
  mv $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_PATH/$IVER.$AUTOUT_NAME
 
