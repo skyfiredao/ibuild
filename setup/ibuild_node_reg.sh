@@ -38,7 +38,6 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 	exit 0
 fi
 
-date
 svn up -q $IBUILD_ROOT
 
 export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`

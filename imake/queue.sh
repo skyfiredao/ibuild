@@ -16,9 +16,11 @@
 #
 # Change log
 # 150120 Create by Ding Wei
+[[ -f /tmp/EXIT ]] && exit
 source /etc/bash.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
+export TASK_SPACE=/dev/shm
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then

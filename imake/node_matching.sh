@@ -16,6 +16,8 @@
 #
 # Change log
 # 150122 Create by Ding Wei
+[[ -f /tmp/EXIT ]] && exit
+
 source /etc/bash.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
@@ -46,7 +48,7 @@ MATCHING()
  fi
 
  export NODE_TOTAL=`cat $IBUILD_ROOT/conf/priority/level-[$LEVEL_NUMBER].conf | wc -l`
- export NODE_LOAD=`cat $TASK_SPACE/node.load | wc -l`
+ export NODE_LOAD=`cat $TASK_SPACE/node.load | sort -u | wc -l`
 
  if [[ $NODE_TOTAL = $NODE_LOAD ]] ; then
 	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.lock
@@ -70,12 +72,14 @@ MATCHING()
 
 ASSIGN_JOB()
 {
- if [[ `echo $TASK_SPACE/itask-r$ITASK_REV.jobs | grep $ITASK_REV_MD5 | grep $NODE_MD5` ]] then
-	cat $TASK_SPACE/itask-r$ITASK_REV.jobs >>$ITASK_PATH/jobs.txt
+ if [[ `cat $TASK_SPACE/itask-r$ITASK_REV.jobs | grep $ITASK_REV_MD5 | grep $NODE_MD5` ]] ; then
+	echo "$ITASK_REV|$NODE|$ITASK_REV_MD5|$NODE_MD5" >>$ITASK_PATH/jobs.txt
 	svn ci -q $IBUILD_SVN_OPTION -m "auto: assign itask-r$ITASK_REV to $NODE" $ITASK_PATH/jobs.txt
+	rm -f $TASK_SPACE/queue/$ITASK_REV
  fi
  rm -f $TASK_SPACE/inode.lock/$NODE
  echo $NODE >>$TASK_SPACE/node.load
+ EXIT
 }
 
 export ITASK_QUEUE=$1
@@ -84,7 +88,7 @@ for ITASK_REV in `ls $ITASK_QUEUE`
 do
 	export ITASK_PATH=`ls -d $TASK_SPACE/itask-* | head -n1`
 	export ITASK_REV_MD5=`echo $ITASK_REV | md5sum | awk -F' ' {'print $1'}`
-	export ITASK_SPEC_URL=`svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'}`
+	export ITASK_SPEC_URL=`svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1`
 
 	if [[ ! `echo $ITASK_SPEC_URL | grep '^/itask/tasks'` ]] ; then
 		rm -f $ITASK_QUEUE/$ITASK_REV

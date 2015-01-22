@@ -42,5 +42,3 @@ if [[ `cat $TASK_SPACE/repo_sync.lock` != $TOHOUR ]] ; then
 	echo $TOHOUR >$TASK_SPACE/repo_sync.lock
 fi
 
-date
-

@@ -20,19 +20,11 @@
 export IHOOK_REPOS="$1"
 export IHOOK_REV="$2"
 export IHOOK_TXN_NAME="$3"
-[[ -z $IHOOK_REV ]] && exit 0
 
-source /etc/bash.bashrc
 export LC_CTYPE=C
-export LC_ALL=C
-export TASK_SPACE=/run/shm
-
+export HOME=/root
 export IBUILD_ROOT=$HOME/ibuild
-	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
-if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
-        echo -e "Please put ibuild in your $HOME"
-        exit 0
-fi
+source /etc/bash.bashrc
 
 $IBUILD_ROOT/imake/queue.sh $IHOOK_REV >/tmp/ihook-r$IHOOK_REV.log 2>&1 &
 

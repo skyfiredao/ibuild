@@ -46,8 +46,8 @@ fi
 export NETCAT=`which nc`
 	[[ -z $NETCAT ]] && export NETCAT="$IBUILD_ROOT/bin/netcat.openbsd-u14.04"
 
-sudo rm -f /root/ibuild >/dev/null 2>&1
-sudo ln -sf $HOME/ibuild /root/ibuild >/dev/null 2>&1
+# sudo rm -f /root/ibuild >/dev/null 2>&1
+# sudo ln -sf $HOME/ibuild /root/ibuild >/dev/null 2>&1
 
 EXPORT_IBUILD_CONF()
 {
@@ -71,12 +71,13 @@ EXPORT_IBUILD_SPEC()
 {
  export ITASK_REV=$1
  if [[ ! -z $ITASK_REV ]] ; then
+	svn up -q $IBUILD_SVN_OPTION $ITASK_PATH
 	export IBUILD_SPEC_NAME=`svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | head -n1 | awk -F'tasks/' {'print $2'}`
 	if [[ -f $ITASK_PATH/tasks/$IBUILD_SPEC_NAME ]] ; then
 		cp $ITASK_PATH/tasks/$IBUILD_SPEC_NAME $TASK_SPACE/
-		ln -sf $ITASK_PATH/$IBUILD_SPEC_NAME $TASK_SPACE/spec.build
+		ln -sf $TASK_SPACE/$IBUILD_SPEC_NAME $TASK_SPACE/spec.build
 	else
-		SPLIT_LINE "$ITASK_PATH/$IBUILD_SPEC_NAME is not a spec.build"
+		SPLIT_LINE "$ITASK_PATH/tasks/$IBUILD_SPEC_NAME is not a spec.build"
 		exit 1
 	fi
  fi
