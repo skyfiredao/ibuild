@@ -41,7 +41,12 @@ fi
 cd $BUILD_PATH_TOP
 source build/envsetup.sh >$LOG_PATH/envsetup.log 2>&1
 lunch $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT >$LOG_PATH/lunch.log 2>&1
+rm -fr out/* >/dev/null 2>&1
+
+SPLIT_LINE "make -j$JOBS"
 time make -j$JOBS >$LOG_PATH/full_build.log 2>&1
+
+SPLIT_LINE make_release
 time make release >$LOG_PATH/release.log 2>&1
 
 REPO_SYNC $LOC_REF_REPO

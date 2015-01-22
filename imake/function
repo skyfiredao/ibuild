@@ -176,10 +176,13 @@ REPO_SYNC()
 {
  cd $1
  export REPO_SYNC_LOG_NAME=sync-`basename $1`
+
+ SPLIT_LINE repo_sync
  time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+
+ SPLIT_LINE "$IBUILD_ADD_STEP_1"
  time $IBUILD_ADD_STEP_1 >$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
- rm -fr out/*
- rm -fr out
+ rm -f out
  if [[ -d /local/out ]]; then
         ln -sf /local/out
  fi
