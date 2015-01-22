@@ -156,29 +156,50 @@ ccache -M 50G
 
 # setup svn server
 if [[ `echo $RUN_OPTION | egrep 'S'` ]] ; then
-	mkdir -p /local/svn.srv
-	svnadmin create /local/svn.srv/ibuild
-	svnserve -d -r /local/svn.srv/ibuild
+	mkdir -p /local/svn.srv/{conf,repo}
+	cd /local/svn.srv/repo
+	svnadmin create ibuild
+	cp ibuild/conf/* /local/svn.srv/conf/
+	cd /local/svn.srv/repo/ibuild/conf
+	for CONF in `ls /local/svn.srv/conf/`
+	do
+		rm -f $CONF
+		ln -sf ../../../conf/$CONF
+	done
+
+	cd /local/svn.srv/repo
+	for SVN_REPO in 'icase ichange ispec itask iversion'
+	do
+		svnadmin create $SVN_REPO
+		rm -f $SVN_REPO/conf/*
+		cp -R /local/svn.srv/repo/ibuild/conf/* /local/svn.srv/repo/$SVN_REPO/conf
+	done
+	/usr/bin/svnserve -d -r /local/svn.srv/repo
 fi
 
 echo '
 Our suggestion:
-HT(Hyper-Threading) plus 40-60% performance
+Enable HT(Hyper-Threading) plus 40-60% performance
 run "lshw -c disk" check your disk
+
 Setup Ubuntu 14.04 x86_64 / in HDD 50G with ext4
-Setup 4G swap
-Setup /home in HDD with free space btrfs
-Setup /local in SSD with whole space ext4
-Shared /home/ref_repo
-Use your workspace in /home/$USER/My...
+Setup 8G swap
+Setup /home or /local/workspace in HDD with free space btrfs
+Setup /local/out in SSD with whole space ext4 more than 50G
+Setup /local/ccache in SSD with whole space ext4 more than 50G
 Shared /local/ccache
-Link out to your /local/$USER/out
+Shared /home/ref_repo or /local/workspace/ref_repo
+Use your workspace in /home/$USER/workspace or /local/workspace/$USER
+Link out to your /local/out/$USER/
+
 change SSD_DISK queue and scheduler (option)
 	echo noop > /sys/block/SSD_DISK/queue/scheduler
-add TRIM in crontab for SSD_DISK
+add TRIM in crontab for SSD_DISK (option)
 	fstrim -v /local
 add discard,noatime in fstab when use ext4
+/dev/sdb1       /local/ccache   ext4 discard,noatime            0       2
+/dev/sdb2       /local/out      ext4 discard,noatime            0       2
 
-sensors
+Use sensors monitor your system hardware
 '
 
