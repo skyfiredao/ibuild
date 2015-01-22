@@ -43,6 +43,12 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 	exit 0
 fi
 
+export NETCAT=`which nc`
+	[[ -z $NETCAT ]] && export NETCAT="$IBUILD_ROOT/bin/netcat.openbsd-u14.04"
+
+sudo rm -f /root/ibuild >/dev/null 2>&1
+sudo ln -sf $HOME/ibuild /root/ibuild >/dev/null 2>&1
+
 EXPORT_IBUILD_CONF()
 {
  export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
