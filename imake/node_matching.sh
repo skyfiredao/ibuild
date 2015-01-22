@@ -36,18 +36,21 @@ EXIT()
  rm -f $TASK_SPACE/itask-r$ITASK_REV.lock
  rm -f $TASK_SPACE/itask-r$ITASK_REV.jobs
  rm -f $TASK_SPACE/itask.lock
+ rm -f /tmp/ihook-r$ITASK_REV.log
+ exit
 }
 
 MATCHING()
 {
  export LEVEL_NUMBER=$1
  echo $ITASK_PATH >$TASK_SPACE/itask.lock
+ touch $TASK_SPACE/node.load
  
  if [[ ! -d $TASK_SPACE/inode.lock ]] ; then
 	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/inode $TASK_SPACE/inode.lock
  fi
 
- export NODE_TOTAL=`cat $IBUILD_ROOT/conf/priority/level-[$LEVEL_NUMBER].conf | wc -l`
+ export NODE_TOTAL=`cat $IBUILD_ROOT/conf/priority/level-[$LEVEL_NUMBER].conf | sort -u | wc -l`
  export NODE_LOAD=`cat $TASK_SPACE/node.load | sort -u | wc -l`
 
  if [[ $NODE_TOTAL = $NODE_LOAD ]] ; then
@@ -73,7 +76,7 @@ MATCHING()
 ASSIGN_JOB()
 {
  if [[ `cat $TASK_SPACE/itask-r$ITASK_REV.jobs | grep $ITASK_REV_MD5 | grep $NODE_MD5` ]] ; then
-	echo "$ITASK_REV|$NODE|$ITASK_REV_MD5|$NODE_MD5" >>$ITASK_PATH/jobs.txt
+	echo "$ITASK_REV|$NODE|$NODE_IP|$ITASK_REV_MD5|$NODE_MD5" >>$ITASK_PATH/jobs.txt
 	svn ci -q $IBUILD_SVN_OPTION -m "auto: assign itask-r$ITASK_REV to $NODE" $ITASK_PATH/jobs.txt
 	rm -f $TASK_SPACE/queue/$ITASK_REV
  fi
@@ -92,20 +95,18 @@ do
 
 	if [[ ! `echo $ITASK_SPEC_URL | grep '^/itask/tasks'` ]] ; then
 		rm -f $ITASK_QUEUE/$ITASK_REV
-		EXIT
-	fi
-
-	svn export -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/$ITASK_SPEC_URL $TASK_SPACE/itask-r$ITASK_REV.lock
-	export IBUILD_PRIORITY=`grep '^IBUILD_PRIORITY=' $TASK_SPACE/itask-r$ITASK_REV.lock | awk -F'IBUILD_PRIORITY=' {'print $2'}`
-
-	if [[ -z $IBUILD_PRIORITY ]] ; then
-		export LEVEL_NUMBER=1-9
 	else
-		export LEVEL_NUMBER=$IBUILD_PRIORITY
-	fi
+		svn export -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/$ITASK_SPEC_URL $TASK_SPACE/itask-r$ITASK_REV.lock
+		export IBUILD_PRIORITY=`grep '^IBUILD_PRIORITY=' $TASK_SPACE/itask-r$ITASK_REV.lock | awk -F'IBUILD_PRIORITY=' {'print $2'}`
 
-	MATCHING $LEVEL_NUMBER
-	EXIT
+		if [[ -z $IBUILD_PRIORITY ]] ; then
+			export LEVEL_NUMBER=1-9
+		else
+			export LEVEL_NUMBER=$IBUILD_PRIORITY
+		fi
+
+		MATCHING $LEVEL_NUMBER
+	fi
 done
 
 

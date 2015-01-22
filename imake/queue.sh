@@ -34,7 +34,7 @@ touch $TASK_SPACE/queue/$1
 
 while [[ `ls $TASK_SPACE/queue` ]] ;
 do
-	$IBUILD_ROOT/imake/node_matching.sh $TASK_SPACE/queue
+	bash -x $IBUILD_ROOT/imake/node_matching.sh $TASK_SPACE/queue
 	sleep `expr $RANDOM % 7 + 3`
 done
 
