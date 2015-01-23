@@ -16,8 +16,6 @@
 #
 # Change log
 # 150122 Create by Ding Wei
-[[ -f /tmp/EXIT ]] && exit
-
 source /etc/bash.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
@@ -35,27 +33,31 @@ EXIT()
 {
  rm -f $TASK_SPACE/itask-r$ITASK_REV.lock
  rm -f $TASK_SPACE/itask-r$ITASK_REV.jobs
- rm -f $TASK_SPACE/itask.lock
+ rm -f $TASK_SPACE/queue.lock
  rm -f /tmp/ihook-r$ITASK_REV.log
  exit
 }
 
 MATCHING()
 {
+ echo $ITASK_REV >$TASK_SPACE/queue.lock
+
  export LEVEL_NUMBER=$1
- echo $ITASK_PATH >$TASK_SPACE/itask.lock
- touch $TASK_SPACE/node.load
+ export FREE_NODE=''
  
  if [[ ! -d $TASK_SPACE/inode.lock ]] ; then
 	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/inode $TASK_SPACE/inode.lock
  fi
 
- export NODE_TOTAL=`cat $IBUILD_ROOT/conf/priority/level-[$LEVEL_NUMBER].conf | sort -u | wc -l`
- export NODE_LOAD=`cat $TASK_SPACE/node.load | sort -u | wc -l`
+ for NODE in `cat $IBUILD_ROOT/conf/priority/level-[$LEVEL_NUMBER].conf`
+ do
+	if [[ -f $TASK_SPACE/inode.lock/$NODE ]] ; then
+		export FREE_NODE=true
+	fi
+ done
 
- if [[ $NODE_TOTAL = $NODE_LOAD ]] ; then
+ if [[ -z $FREE_NODE ]] ; then
 	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.lock
-	rm -f $TASK_SPACE/node.load
  fi 
 
  for NODE in `cat $IBUILD_ROOT/conf/priority/level-[$LEVEL_NUMBER].conf`
@@ -78,35 +80,30 @@ ASSIGN_JOB()
  if [[ `cat $TASK_SPACE/itask-r$ITASK_REV.jobs | grep $ITASK_REV_MD5 | grep $NODE_MD5` ]] ; then
 	echo "$ITASK_REV|$NODE|$NODE_IP|$ITASK_REV_MD5|$NODE_MD5" >>$ITASK_PATH/jobs.txt
 	svn ci -q $IBUILD_SVN_OPTION -m "auto: assign itask-r$ITASK_REV to $NODE" $ITASK_PATH/jobs.txt
-	rm -f $TASK_SPACE/queue/$ITASK_REV
+	rm -f $QUEUE_SPACE/$ITASK_REV
  fi
  rm -f $TASK_SPACE/inode.lock/$NODE
- echo $NODE >>$TASK_SPACE/node.load
  EXIT
 }
 
-export ITASK_QUEUE=$1
+export QUEUE_SPACE=$1
 
-for ITASK_REV in `ls $ITASK_QUEUE`
+for ITASK_REV in `ls $QUEUE_SPACE`
 do
-	export ITASK_PATH=`ls -d $TASK_SPACE/itask-* | head -n1`
+	[[ -f /tmp/EXIT ]] && exit
+	export ITASK_PATH=`ls -d $TASK_SPACE/itask-* | tail -n1`
 	export ITASK_REV_MD5=`echo $ITASK_REV | md5sum | awk -F' ' {'print $1'}`
 	export ITASK_SPEC_URL=`svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1`
 
-	if [[ ! `echo $ITASK_SPEC_URL | grep '^/itask/tasks'` ]] ; then
-		rm -f $ITASK_QUEUE/$ITASK_REV
+	svn export -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/$ITASK_SPEC_URL $TASK_SPACE/itask-r$ITASK_REV.lock
+	export IBUILD_PRIORITY=`grep '^IBUILD_PRIORITY=' $TASK_SPACE/itask-r$ITASK_REV.lock | awk -F'IBUILD_PRIORITY=' {'print $2'}`
+	if [[ -z $IBUILD_PRIORITY ]] ; then
+		export LEVEL_NUMBER=1-9
 	else
-		svn export -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/$ITASK_SPEC_URL $TASK_SPACE/itask-r$ITASK_REV.lock
-		export IBUILD_PRIORITY=`grep '^IBUILD_PRIORITY=' $TASK_SPACE/itask-r$ITASK_REV.lock | awk -F'IBUILD_PRIORITY=' {'print $2'}`
-
-		if [[ -z $IBUILD_PRIORITY ]] ; then
-			export LEVEL_NUMBER=1-9
-		else
-			export LEVEL_NUMBER=$IBUILD_PRIORITY
-		fi
-
-		MATCHING $LEVEL_NUMBER
+		export LEVEL_NUMBER=$IBUILD_PRIORITY
 	fi
+
+	MATCHING $LEVEL_NUMBER
 done
 
 
