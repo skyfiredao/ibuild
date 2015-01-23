@@ -30,12 +30,7 @@ fi
 
 export LOC_REPO_MIRROR_PATH=`grep '^LOC_REPO_MIRROR_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_REPO_MIRROR_PATH=' {'print $2'}`
 
-if [[ -L $LOC_REPO_MIRROR_PATH ]] ; then
-	export LOC_REPO_MIRROR_PATH=`readlink $LOC_REPO_MIRROR_PATH`
-	cd $LOC_REPO_MIRROR_PATH
-else
-	cd $LOC_REPO_MIRROR_PATH
-fi
+cd $LOC_REPO_MIRROR_PATH
 
 if [[ `cat $TASK_SPACE/repo_sync.lock` != $TOHOUR ]] ; then
 	$IBUILD_ROOT/bin/repo sync -j$JOBS
