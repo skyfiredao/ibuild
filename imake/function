@@ -247,11 +247,11 @@ else
  svn add $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME
  svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVER_MAINFEST_NAME" $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME
  if [[ $? = 0 ]] ; then
-	export IVER=i`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+	export IVER=r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
  else
 	SPLIT_LINE iversion_issue
 	echo $IVER_MAINFEST_NAME
-	export IVER=i$BUILD_TIME$SEED
+	export IVER=r$BUILD_TIME$SEED
  fi
 }
 
@@ -320,7 +320,8 @@ SETUP_BUILD_OUT()
 
  SETUP_IVER $LOG_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
  cp -Ra $LOG_PATH $AUTOUT_PATH/$AUTOUT_NAME/
- mv $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_PATH/$IVER.$AUTOUT_NAME
+ export SHORT_AUTOUT_NAME=`echo $AUTOUT_NAME | sed 's/g6.default.//g'`
+ mv $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME
 
  if [[ ! -f $AUTOUT_UPLOAD_PATH/README ]] ; then
 	if [[ `echo $IBUILD_UPLOAD_URL | grep ssh` ]] ; then
@@ -335,13 +336,13 @@ SETUP_BUILD_OUT()
  fi
 
  mkdir -p $AUTOUT_UPLOAD_PATH/$TODAY
- SPLIT_LINE upload_$TODAY_$IVER.$AUTOUT_NAME
- cp /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVER.$AUTOUT_NAME/log/
- time cp -R $AUTOUT_PATH/$IVER.$AUTOUT_NAME $AUTOUT_UPLOAD_PATH/$TODAY/
+ SPLIT_LINE upload_$TODAY_$IVER.$SHORT_AUTOUT_NAME
+ cp /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME/log/
+ time cp -R $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME $AUTOUT_UPLOAD_PATH/$TODAY/
  export STATUS_CP=$?
 
- SETUP_ICASE $TODAY/$IVER.$AUTOUT_NAME
- [[ $STATUS_CP = 0 ]] && rm -fr $AUTOUT_PATH/$IVER.$AUTOUT_NAME &
+ SETUP_ICASE $TODAY/$IVER.$SHORT_AUTOUT_NAME
+ [[ $STATUS_CP = 0 ]] && rm -fr $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME &
 }
 
 BUILD_ERROR()

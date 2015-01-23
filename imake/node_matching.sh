@@ -33,7 +33,7 @@ EXIT()
 {
  rm -f $TASK_SPACE/itask-r$ITASK_REV.lock
  rm -f $TASK_SPACE/itask-r$ITASK_REV.jobs
- rm -f /tmp/ihook-r$ITASK_REV.log
+ rm -f /tmp/ihook.log
  exit
 }
 
