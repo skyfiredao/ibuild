@@ -32,6 +32,10 @@ touch $TASK_SPACE/itask.lock
 EXPORT_IBUILD_CONF
 EXPORT_IBUILD_SPEC $ITASK_REV
 
+hostname
+echo $IP
+date
+
 REPO_INFO
 SETUP_BUILD_REPO
 

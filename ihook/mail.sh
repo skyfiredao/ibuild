@@ -33,7 +33,7 @@ fi
 
 export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
 export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
-iexport IBUILD_FOUNDER_EMAIL=`grep '^IBUILD_FOUNDER_EMAIL=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_FOUNDER_EMAIL=' {'print $2'}`
+export IBUILD_FOUNDER_EMAIL=`grep '^IBUILD_FOUNDER_EMAIL=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_FOUNDER_EMAIL=' {'print $2'}`
 
 export ICASE_REV=$1
 export ICASE_URL=`svn log -v -r $ICASE_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1`
@@ -43,7 +43,7 @@ if [[ ! `echo $ICASE_URL | grep '^/icase/'` ]] ; then
 	exit
 fi
 
-svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/$TOYEAR/$TOWEEK $TASK_SPACE/icase.lock
+svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/icase.lock
 
 export EMAIL_PM=`grep '^EMAIL_PM=' $TASK_SPACE/icase.lock/$BUILD_INFO | awk -F'EMAIL_PM=' {'print $2'}`
 export EMAIL_REL=`grep '^EMAIL_REL=' $TASK_SPACE/icase.lock/$BUILD_INFO | awk -F'EMAIL_REL=' {'print $2'}`

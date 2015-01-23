@@ -26,5 +26,9 @@ export HOME=/root
 export IBUILD_ROOT=$HOME/ibuild
 source /etc/bash.bashrc
 
+echo --------------------------------------- >>/tmp/ihook.log
+echo $IHOOK_REPOS $IHOOK_REV $IHOOK_TXN_NAME >>/tmp/ihook.log
+echo --------------------------------------- >>/tmp/ihook.log
+
 $IBUILD_ROOT/ihook/mail.sh $IHOOK_REV >>/tmp/ihook.log 2>&1 &
 

@@ -70,7 +70,7 @@ EXPORT_IBUILD_CONF()
  [[ -z $USE_CCACHE ]] && export USE_CCACHE=`grep '^USE_CCACHE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'USE_CCACHE=' {'print $2'}`
  export JDK6_PATH=`grep '^JDK6_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'JDK6_PATH=' {'print $2'}`
  export JDK7_PATH=`grep '^JDK7_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'JDK7_PATH=' {'print $2'}`
- export IBUILD_GRTSRV_ID=`grep '^IBUILD_GRTSRV_ID=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_GRTSRV_ID=' {'print $2'}`
+ export IBUILD_GRTSRV_ID_DEFAULT=`grep '^IBUILD_GRTSRV_ID=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_GRTSRV_ID=' {'print $2'}`
  export REPO_CMD=`grep '^REPO_CMD=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'REPO_CMD=' {'print $2'}`
 }
 
@@ -102,6 +102,8 @@ EXPORT_IBUILD_SPEC()
  export EMAIL_PM=`grep '^EMAIL_PM=' $IBUILD_SPEC | awk -F'EMAIL_PM=' {'print $2'}`
  export EMAIL_REL=`grep '^EMAIL_REL=' $IBUILD_SPEC | awk -F'EMAIL_REL=' {'print $2'}`
  export IBUILD_AUTOUT_FILES=`grep '^IBUILD_AUTOUT_FILES=' $IBUILD_SPEC | awk -F'IBUILD_AUTOUT_FILES=' {'print $2'}`
+ export IBUILD_GRTSRV_ID=`grep '^IBUILD_GRTSRV_ID=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_ID=' {'print $2'}`
+	[[ -z $IBUILD_GRTSRV_ID ]] && export export IBUILD_GRTSRV_ID=$IBUILD_GRTSRV_ID_DEFAULT
  export IBUILD_GRTSRV=`grep '^IBUILD_GRTSRV=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV=' {'print $2'}`
  export IBUILD_GRTSRV_BRANCH=`grep '^IBUILD_GRTSRV_BRANCH=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_BRANCH=' {'print $2'}`
  export IBUILD_GRTSRV_INIT_OPTION=`grep '^IBUILD_GRTSRV_INIT_OPTION=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_INIT_OPTION=' {'print $2'}`
@@ -161,7 +163,7 @@ REPO_INFO()
  ssh -p $IBUILD_GRTSRV_PORT $IBUILD_GRTSRV_ID@$IBUILD_GRTSRV_NAME >$LOG_PATH/$IBUILD_GRTSRV_NAME.log 2>&1
 
  export REPO_INIT_CMD=''
- [[ ! -z $IBUILD_GRTSRV_REPO ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" --repo-url=ssh://$IBUILD_GRTSRV_ID@$IBUILD_GRTSRV/$IBUILD_GRTSRV_REPO"
+ [[ ! -z $IBUILD_GRTSRV_REPO ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" --repo-url=ssh://$IBUILD_GRTSRV_ID_DEFAULT@$IBUILD_GRTSRV_REPO"
  [[ ! -z $IBUILD_GRTSRV_INIT_OPTION ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" $IBUILD_GRTSRV_INIT_OPTION"
  [[ ! -z $LOC_REPO_MIRROR_PATH ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" --reference=$LOC_REPO_MIRROR_PATH"
  [[ ! -z $IBUILD_GRTSRV_BRANCH ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" -b $IBUILD_GRTSRV_BRANCH"
@@ -230,8 +232,8 @@ CCACHE_HOTFIX()
 
 SETUP_IVER()
 {
- local ORIG_MAINFEST_URL=$1
- local IVER_MAINFEST_NAME=$2.xml
+ export ORIG_MAINFEST_URL=$1
+ export IVER_MAINFEST_NAME=$2.xml
 
  if [[ -d $TASK_SPACE/iversion-$TOWEEK ]] ; then
 	export IBUILD_SVN_REV_LOC=`svn info $TASK_SPACE/iversion-$TOWEEK | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
