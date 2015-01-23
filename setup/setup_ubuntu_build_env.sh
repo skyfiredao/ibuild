@@ -46,11 +46,12 @@ if [[ $USER != root ]] ; then
 	exit 0
 fi
 
-mkdir -p /local/{ccache,ref_repo,out}
-chmod 775 /local /local/{ccache,ref_repo,out}
+mkdir -p /local/{ccache,out}
+mkdir -p /local/workspace/ref_repo
+chmod 775 /local /local/{ccache,workspace,out}
 chmod +s /sbin/btrfs*
 
-useradd irobot -s /usr/sbin/nologin
+# useradd irobot -s /usr/sbin/nologin
 
 mkdir -p /root/.ssh
 echo "StrictHostKeyChecking=no" > /root/.ssh/config
