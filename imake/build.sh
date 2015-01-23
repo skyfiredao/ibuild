@@ -17,6 +17,7 @@
 # Change log
 # 150120 Create by Ding Wei
 source /etc/bash.bashrc
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH
 export LC_CTYPE=C
 export LC_ALL=C
 export IBUILD_ROOT=$HOME/ibuild

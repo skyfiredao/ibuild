@@ -151,7 +151,7 @@ BTRFS_CLEANUP()
 	SPLIT_LINE clean_btrfs
 	echo "sudo btrfs subvolume delete $LOC_WORKSPACE/$BTRFS_SUBVOL"
 	rm -f $LOC_WORKSPACE/$BTRFS_SUBVOL.info
-	sudo btrfs subvolume delete $LOC_WORKSPACE/$BTRFS_SUBVOL >>$LOG_PATH/btrfs_issue.log 2>&1 &
+	sudo btrfs subvolume delete $LOC_WORKSPACE/$BTRFS_SUBVOL >>$LOG_PATH/btrfs_issue.log 2>&1
  done
  sudo btrfs subvolume list $LOC_WORKSPACE | grep $BTRFS_TOP >>$LOG_PATH/btrfs_issue.log 2>&1
 }
