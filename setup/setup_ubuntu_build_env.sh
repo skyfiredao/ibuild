@@ -25,8 +25,13 @@ export RUN_OPTION="$*"
 
 export DISTRIB_RELEASE=`grep '^DISTRIB_RELEASE=' /etc/lsb-release | awk -F'=' {'print $2'}`
 export IP=`/sbin/ifconfig | grep 'inet addr' | grep -v '127.0.0.1' | awk -F':' {'print $2'} | awk -F' ' {'print $1'}`
-export CPU=`cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u | awk -F' ' {'print $3$5$6'}`
+export CPU=`cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u`
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
+
+if [[ `sudo -l | grep ALL | grep NOPASSWD` ]] ; then
+	echo "No sudo NOPASSWD permission"
+	exit 0
+fi
 
 export IBUILD_ROOT=$HOME/ibuild
 	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
@@ -35,38 +40,43 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
         exit 0
 fi
 
-export SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
-export SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
-export SVN_REV_SRV=`svn info $SVN_OPTION svn://$SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
+export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
+export SVN_REV_SRV=`svn info $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
 
+cd /tmp
+wget http://$IBUILD_SVN_SRV/linux/repo
+wget http://$IBUILD_SVN_SRV/linux/ccache-LDFLAGS-3.2
+wget http://$IBUILD_SVN_SRV/linux/jdk1.6.0_45.bz2
+wget http://$IBUILD_SVN_SRV/linux/bin.tar.bz2
+sudo cp repo /usr/bin/
+sudo cp ccache-LDFLAGS-3.2 /usr/bin/ccache
+sudo tar xfj jdk1.6.0_45.bz2 -C /usr/local/
+sudo tar xfj bin.tar.bz2 -C $HOME/
 export REPO=`which repo`
 
-if [[ $USER != root ]] ; then
-	echo "Please sudo su switch to root"
-	exit 0
-fi
-
-mkdir -p /local/{ccache,out}
-mkdir -p /local/workspace/ref_repo
-chmod 775 /local /local/{ccache,workspace,out}
-chmod +s /sbin/btrfs*
+sudo mkdir -p /local/{ccache,out}
+sudo mkdir -p /local/workspace/{ref_repo,build,autout,upload}
+sudo chmod 775 /local /local/{ccache,workspace,out}
+sudo chown $USER -R /local
+# chmod +s /sbin/btrfs*
 
 # useradd irobot -s /usr/sbin/nologin
 
-mkdir -p /root/.ssh
-echo "StrictHostKeyChecking=no" > /root/.ssh/config
+mkdir -p $HOME/.ssh
+echo "StrictHostKeyChecking=no" > $HOME/.ssh/config
 
 if [[ `readlink /bin/sh` = dash && -f /bin/bash ]] ; then
-	rm -f /bin/sh
-	ln -sf /bin/bash /bin/sh
+	sudo rm -f /bin/sh
+	sudo ln -sf /bin/bash /bin/sh
 fi
 
-apt-get -y install aptitude
-apt-get update
-aptitude -y full-upgrade
+sudo apt-get -y install aptitude
+sudo apt-get update
+sudo aptitude -y full-upgrade
 
 # install basic build tool
-aptitude -y install ant binutils binutils-dev binutils-static bison \
+sudo aptitude -y install ant binutils binutils-dev binutils-static bison \
 libncurses5-dev libncursesw5-dev ncurses-hexedit openssh-server \
 gcc-4.2 g++-4.2 libstdc++5 libstdc++6-4.2 automake1.8 automake1.9 mkisofs \
 build-essential libz-dev flex gperf libwxgtk2.6-dev libcurses-widgets-perl \
@@ -82,54 +92,59 @@ libmpc-dev libmpfr-dev libgmp3c2 libsdl-dev libesd0-dev libwxgtk2.8-dev \
 ckermit indent uboot-mkimage python-argparse libltdl3
 
 # install system util
-aptitude -y install pbzip2 wget htop iotop zip unzip screen sysv-rc-conf \
+sudo aptitude -y install pbzip2 wget htop iotop zip unzip screen sysv-rc-conf \
 tree p7zip p7zip-full splint hal vim vim-full exuberant-ctags fakeroot \
 apt-btrfs-snapshot btrfs-tools sshfs linux-server curl lsb-release \
 tmux gnuplot dos2unix python2.5 meld kpartx parted gnu-fdisk
 
 # install version control tool
-aptitude -y install git git-core tig subversion subversion-tools \
+sudo aptitude -y install git git-core tig subversion subversion-tools \
 python-svn libsvn-perl
 
 # install openjdk 7 for AOSP L build
 # install Sun JDK 1.6 for AOSP build before L
-aptitude -y install openjdk-7-jdk sun-java6-jdk
+sudo aptitude -y install openjdk-7-jdk sun-java6-jdk
 
 # install system monitor tool
-aptitude -y install lm-sensors ganglia-monitor ganglia-modules-linux
-sensors-detect
+sudo aptitude -y install lm-sensors ganglia-monitor ganglia-modules-linux
+
+# install think oneself clever design for A.....
+sudo aptitude install python maven2
+
+sudo sensors-detect
 
 # install web server for monitor if need
 if [[ `echo $RUN_OPTION | egrep 'S|A'` ]] ; then
-	aptitude -y install nginx php5-fpm gmetad ganglia-webfrontend
+	sudo aptitude -y install nginx php5-fpm gmetad ganglia-webfrontend
 fi
 
 # install debug tool
 if [[ `echo $RUN_OPTION | egrep 'D|A'` ]] ; then
-	aptitude -y install minicom valgrind
+	sudo aptitude -y install minicom valgrind
 fi
 
 # install lightweight window manager with remote desktop
 if [[ `echo $RUN_OPTION | egrep 'R|A'` ]] ; then
-	add-apt-repository ppa:x2go/stable
-	apt-get update
-	aptitude -y install openbox icewm blackbox tightvncserver \
+	sudo add-apt-repository ppa:x2go/stable
+	sudo apt-get update
+	sudo aptitude -y install openbox icewm blackbox tightvncserver \
 	x2goserver x2goserver-xsession x2goclient wmii2 dwm wmctrl xfce4
 fi
 
-svn co $SVN_OPTION -q $SVN_SRV/tools/tools /local/tools
-export RUN_PATH=/local/tools/setup
-
 # clean email service
 if [[ `echo $RUN_OPTION | egrep 'C'` ]] ; then
-	aptitude -y purge nbSMTP exim4 exim4-base exim4-daemon-light libpam-smbpass
+	sudo aptitude -y purge nbSMTP exim4 exim4-base exim4-daemon-light libpam-smbpass
 fi
 
-ln -sf /usr/lib/jvm/java-6-sun /usr/local/jdk1.6
-ln -s /usr/bin/fromdos /usr/local/bin/dos2unix
+if [[ -d /usr/lib/jvm/java-6-sun ]] ; then
+	sudo ln -sf /usr/lib/jvm/java-6-sun /usr/local/jdk1.6
+elif [[ -d /usr/local/jdk1.6.0_45 ]] ; then
+	sudo ln -sf /usr/local/jdk1.6.0_45 /usr/local/jdk1.6
+fi
+sudo ln -s /usr/bin/fromdos /usr/local/bin/dos2unix
 
-ln -sf /usr/lib/jvm/java-7-openjdk-amd64 /usr/local/jdk1.7
-ln -sf /usr/local/jdk1.6 /usr/local/jdk
+sudo ln -sf /usr/lib/jvm/java-7-openjdk-amd64 /usr/local/jdk1.7
+sudo ln -sf /usr/local/jdk1.6 /usr/local/jdk
 
 echo "
 # export LC_ALL=C
@@ -146,10 +161,13 @@ alias h=htop
 alias screen='screen -R -DD'
 alias ccache=/usr/bin/ccache
 export VISUAL=vim
-" >>/etc/bash.ibuild.bashrc
+" >>/tmp/bash.ibuild.bashrc
+sudo cp /tmp/bash.ibuild.bashrc /etc
 
 if [[ ! `grep ibuild /etc/bash.bashrc` ]] ; then
-	echo ". /etc/bash.ibuild.bashrc" >>/etc/bash.bashrc
+	cp /etc/bash.bashrc /tmp
+	echo ". /etc/bash.ibuild.bashrc" >>/tmp/bash.bashrc
+	sudo cp /tmp/bash.bashrc /etc
 fi
 
 . /etc/bash.ibuild.bashrc
