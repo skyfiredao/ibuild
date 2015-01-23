@@ -31,7 +31,7 @@ ECHO()
 [[ ! `which svn` ]] && ECHO 'no svn'
 [[ ! `which git` ]] && ECHO 'no git'
 [[ ! -f /etc/bash.ibuild.bashrc || ! `grep bash.ibuild.bashrc /etc/bash.bashrc` ]] && ECHO 'no /etc/bash.ibuild.bashrc'
-[[ `ccache -V | grep 3.2` ]] && ECHO 'no ccache 3.2'
+[[ ! `ccache -V | grep 3.2` ]] && ECHO 'no ccache 3.2'
 [[ ! -f ~/.gitconfig ]] && ECHO 'no ~/.gitconfig'
 [[ ! -f ~/.ssh/id_rsa-irobot ]] && ECHO 'no irobot ssh key'
 [[ ! -d ~/.m2 ]] && ECHO 'no ~/.m2'

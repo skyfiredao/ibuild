@@ -47,6 +47,10 @@ NODE_STANDBY()
 
  $NETCAT -l 1234 >$TASK_SPACE/itask.jobs
  export JOBS_REV=`cat $TASK_SPACE/itask.jobs`
+ if [[ -z $JOBS_REV ]] ; then
+	rm -f $TASK_SPACE/itask.lock
+	exit
+ fi
  export JOBS_MD5=`echo $JOBS_REV | md5sum | awk -F' ' {'print $1'}`
  export NOW=`date +%y%m%d%H%M%S`
  

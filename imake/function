@@ -50,6 +50,9 @@ fi
 export NETCAT=`which nc`
 	[[ -z $NETCAT ]] && export NETCAT="$IBUILD_ROOT/bin/netcat.openbsd-u14.04"
 
+$NETCAT 127.0.0.1 1234
+pkill -9 nc >/dev/null 2>&1
+
 # sudo rm -f /root/ibuild >/dev/null 2>&1
 # sudo ln -sf $HOME/ibuild /root/ibuild >/dev/null 2>&1
 
@@ -192,6 +195,7 @@ REPO_SYNC()
 
  SPLIT_LINE repo_sync
  time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+ CCACHE_HOTFIX
 
  SPLIT_LINE "$IBUILD_ADD_STEP_1"
  time $IBUILD_ADD_STEP_1 >$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
@@ -343,6 +347,13 @@ SETUP_BUILD_OUT()
 BUILD_ERROR()
 {
  touch $LOG_PATH/BUILD_ERROR
+}
+
+CLEAN_EXIT()
+{
+ rm -fr $TASK_SPACE/spec.build*
+ rm -f $TASK_SPACE/itask.lock
+ exit
 }
 
 # EXPORT_IBUILD_CONF
