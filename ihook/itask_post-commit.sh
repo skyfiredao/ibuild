@@ -26,5 +26,5 @@ export HOME=/root
 export IBUILD_ROOT=$HOME/ibuild
 source /etc/bash.bashrc
 
-$IBUILD_ROOT/imake/queue.sh $IHOOK_REV >/tmp/ihook-r$IHOOK_REV.log 2>&1 &
+$IBUILD_ROOT/ihook/queue.sh $IHOOK_REV >>/tmp/ihook.log 2>&1 &
 
