@@ -33,10 +33,14 @@ if [[ `sudo -l | grep ALL | grep NOPASSWD` ]] ; then
 	exit 0
 fi
 
+sudo apt-get update
+sudo apt-get -y install subversion openssh-server aptitude
+
 export IBUILD_ROOT=$HOME/ibuild
 	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
         echo -e "Please put ibuild in your $HOME"
+        echo -e "svn co svn://YOUR_SVN_SRV/ibuild/ibuild"
         exit 0
 fi
 
@@ -44,7 +48,7 @@ export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | a
 export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
 export SVN_REV_SRV=`svn info $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
 
-cd /tmp
+cd $HOME
 wget http://$IBUILD_SVN_SRV/linux/repo
 wget http://$IBUILD_SVN_SRV/linux/ccache-LDFLAGS-3.2
 wget http://$IBUILD_SVN_SRV/linux/jdk1.6.0_45.bz2
@@ -61,8 +65,6 @@ sudo chmod 775 /local /local/{ccache,workspace,out}
 sudo chown $USER -R /local
 # chmod +s /sbin/btrfs*
 
-# useradd irobot -s /usr/sbin/nologin
-
 mkdir -p $HOME/.ssh
 echo "StrictHostKeyChecking=no" > $HOME/.ssh/config
 
@@ -71,8 +73,7 @@ if [[ `readlink /bin/sh` = dash && -f /bin/bash ]] ; then
 	sudo ln -sf /bin/bash /bin/sh
 fi
 
-sudo apt-get -y install aptitude
-sudo apt-get update
+# update current system to last
 sudo aptitude -y full-upgrade
 
 # install basic build tool
@@ -111,11 +112,13 @@ sudo aptitude -y install lm-sensors ganglia-monitor ganglia-modules-linux
 # install think oneself clever design for A.....
 sudo aptitude install python maven2
 
+# setup hardware sensors
 sudo sensors-detect
 
 # install web server for monitor if need
 if [[ `echo $RUN_OPTION | egrep 'S|A'` ]] ; then
 	sudo aptitude -y install nginx php5-fpm gmetad ganglia-webfrontend
+	useradd irobot -s /usr/sbin/nologin
 fi
 
 # install debug tool
@@ -140,11 +143,13 @@ if [[ -d /usr/lib/jvm/java-6-sun ]] ; then
 	sudo ln -sf /usr/lib/jvm/java-6-sun /usr/local/jdk1.6
 elif [[ -d /usr/local/jdk1.6.0_45 ]] ; then
 	sudo ln -sf /usr/local/jdk1.6.0_45 /usr/local/jdk1.6
+else
+	echo 'No jdk1.6'
 fi
 sudo ln -s /usr/bin/fromdos /usr/local/bin/dos2unix
 
 sudo ln -sf /usr/lib/jvm/java-7-openjdk-amd64 /usr/local/jdk1.7
-sudo ln -sf /usr/local/jdk1.6 /usr/local/jdk
+sudo ln -sf /usr/local/jdk1.7 /usr/local/jdk
 
 echo "
 # export LC_ALL=C
