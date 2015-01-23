@@ -49,7 +49,7 @@ fi
 
 svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/tasks $TASK_SPACE/$USER.tasks.lock
 cp $SPEC_URL $TASK_SPACE/$USER.tasks.lock/$BUILD_TIME$RADOM.$SPEC_NAME
-svn add $TASK_SPACE/$USER.tasks.lock/$BUILD_TIME$RADOM.$SPEC_NAME
-svn ci -q $IBUILD_SVN_OPTION -m "auto: submit $SPEC_NAME" $TASK_SPACE/$USER.tasks.lock/$BUILD_TIME$RADOM.$SPEC_NAME
+svn add $TASK_SPACE/$USER.tasks.lock/$BUILD_TIME$RADOM.$SPEC_NAME >/dev/null 2>&1
+svn ci $IBUILD_SVN_OPTION -m "auto: submit $SPEC_NAME" $TASK_SPACE/$USER.tasks.lock/$BUILD_TIME$RADOM.$SPEC_NAME
 [[ $? = 0 ]] && rm -fr $TASK_SPACE/$USER.tasks.lock
 

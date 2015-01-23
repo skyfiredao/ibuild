@@ -33,15 +33,12 @@ EXIT()
 {
  rm -f $TASK_SPACE/itask-r$ITASK_REV.lock
  rm -f $TASK_SPACE/itask-r$ITASK_REV.jobs
- rm -f $TASK_SPACE/queue.lock
  rm -f /tmp/ihook-r$ITASK_REV.log
  exit
 }
 
 MATCHING()
 {
- echo $ITASK_REV >$TASK_SPACE/queue.lock
-
  export LEVEL_NUMBER=$1
  export FREE_NODE=''
  
@@ -90,7 +87,9 @@ export QUEUE_SPACE=$1
 
 for ITASK_REV in `ls $QUEUE_SPACE`
 do
-	[[ -f /tmp/EXIT ]] && exit
+	[[ -f /tmp/EXIT ]] && EXIT
+	echo $ITASK_REV >$TASK_SPACE/queue.lock
+
 	export ITASK_PATH=`ls -d $TASK_SPACE/itask-* | tail -n1`
 	export ITASK_REV_MD5=`echo $ITASK_REV | md5sum | awk -F' ' {'print $1'}`
 	export ITASK_SPEC_URL=`svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1`

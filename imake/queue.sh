@@ -51,4 +51,4 @@ do
 	sleep `expr $RANDOM % 7 + 3`
 done
 
-
+rm -f $TASK_SPACE/queue.lock
