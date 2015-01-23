@@ -110,7 +110,7 @@ sudo aptitude -y install openjdk-7-jdk sun-java6-jdk
 sudo aptitude -y install lm-sensors ganglia-monitor ganglia-modules-linux
 
 # install think oneself clever design for A.....
-sudo aptitude install python maven2
+sudo aptitude -y install python maven2
 
 # setup hardware sensors
 sudo sensors-detect
