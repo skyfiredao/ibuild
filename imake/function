@@ -187,6 +187,7 @@ SETUP_REF_REPO()
 	cd $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
 	/bin/bash $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME.info >$LOG_PATH/init.log 2>&1
 	REPO_SYNC $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
+	cp $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME.info $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME/ >/dev/null.2>&1
  fi
 }
 
@@ -266,6 +267,8 @@ SETUP_ICASE()
 	export END_SEC_TIME=`date +%s`
  fi
 
+ [[ -z $RESULT ]] && export RESULT=PASSED
+
  echo "RESULT=$RESULT
 SLAVE_HOST=`hostname`
 START_TIME=$BUILD_TIME
@@ -281,7 +284,7 @@ GERRIT_CHANGE_OWNER_NAME=$GERRIT_CHANGE_OWNER_NAME
 GERRIT_PATCHSET_NUMBER=$GERRIT_PATCHSET_NUMBER
 GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION
 GERRIT_PROJECT=$GERRIT_PROJECT
-UPLOAD_URL=http://$IBUILD_SVN_SRV/ibuild/$ICASE_UPLOAD_URL
+DOWNLOAD_URL=http://$IBUILD_SVN_SRV/ibuild/$ICASE_UPLOAD_URL
 " >>$LOG_PATH/build_info.txt
 
  cat $LOG_PATH/build_info.txt | sort -u | grep -v ^$ >$LOG_PATH/build_info.tmp
@@ -310,6 +313,9 @@ SETUP_BUILD_OUT()
  SPLIT_LINE export_manifest
  time $REPO_CMD manifest -r -o $LOG_PATH/manifest.xml
  if [[ $RESULT != FAILED ]] ; then
+	if [[ -f images_$IBUILD_TARGET_PRODUCT.txz ]] ; then
+		cp images_$IBUILD_TARGET_PRODUCT.txz $AUTOUT_PATH/$AUTOUT_NAME/ 
+	fi
 	cd out
 	if [[ -d release-$IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT ]] ; then
 		export REL_PKG_NAME=release-$IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT
@@ -317,7 +323,11 @@ SETUP_BUILD_OUT()
 		export REL_PKG_NAME=`ls | grep 'release-' | head -n1`
 	fi
 	[[ ! -z $REL_PKG_NAME ]] && tar cf $REL_PKG_NAME.tar $REL_PKG_NAME
-	cp $REL_PKG_NAME.tar $AUTOUT_PATH/$AUTOUT_NAME/
+	if [[ -f $REL_PKG_NAME.tar ]] ; then 
+		cp $REL_PKG_NAME.tar $AUTOUT_PATH/$AUTOUT_NAME/
+	else
+		SPLIT_LINE no_$REL_PKG_NAME.tar
+	fi
  fi
 
  SETUP_IVER $LOG_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
@@ -350,11 +360,12 @@ SETUP_BUILD_OUT()
 BUILD_ERROR()
 {
  touch $LOG_PATH/BUILD_ERROR
+ export RESULT=FAILED
 }
 
 CLEAN_EXIT()
 {
- rm -fr $TASK_SPACE/spec.build*
+ rm -fr $TASK_SPACE/*spec.build*
  rm -f $TASK_SPACE/itask.lock
  exit
 }

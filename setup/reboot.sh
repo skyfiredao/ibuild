@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (C) <2014,2015>  <Ding Wei>
+# Copyright (C) <2014>  <Ding Wei>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,20 +15,26 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Change log
-# 150119: Ding Wei created it
-# post-commit
-export IHOOK_REPOS="$1"
-export IHOOK_REV="$2"
-export IHOOK_TXN_NAME="$3"
+# 150126 Create by Ding Wei
 
 export LC_CTYPE=C
-export HOME=/root
-export IBUILD_ROOT=$HOME/ibuild
-source /etc/bash.bashrc
+export LC_ALL=C
+export USER=`whoami`
+export TASK_SPACE=/dev/shm
+export TOWEEK=`date +%yw%V`
 
-echo --------------------------------------- >>/tmp/ihook.log
-echo $IHOOK_REPOS $IHOOK_REV $IHOOK_TXN_NAME >>/tmp/ihook.log
-echo --------------------------------------- >>/tmp/ihook.log
+if [[ `date +%u` = 1 && ! -f $TASK_SPACE/update-$TOWEEK ]] ; then
+	sudo aptitude update
+	sudo aptitude -y full-upgrade
+	rm -f $TASK_SPACE/update-*
+	touch $TASK_SPACE/update-$TOWEEK
+fi
 
-$IBUILD_ROOT/ihook/mail_icase.sh $IHOOK_REV >>/tmp/ihook.log 2>&1 &
+if [[ -f $TASK_SPACE/reboot && ! -f $TASK_SPACE/spec.build ]] ; then
+	nc 127.0.0.1 1234
+	sudo pkill -9 nc
+	sync
+	sync
+	sudo reboot
+fi
 

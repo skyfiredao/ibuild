@@ -39,6 +39,8 @@ export ITASK_SPEC_URL=`svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD
 
 if [[ `echo $ITASK_SPEC_URL | grep '^/itask/tasks'` ]] ; then
 	touch $QUEUE_SPACE/$ITASK_REV
+elif [[ `echo $ITASK_SPEC_URL | grep 'jobs.txt$'` ]] ; then
+	$IBUILD_ROOT/ihook/mail_itask.sh $QUEUE_SPACE
 else
 	exit
 fi

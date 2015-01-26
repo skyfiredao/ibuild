@@ -49,7 +49,6 @@ if [[ $? = 0 ]] ; then
 	SPLIT_LINE make_release
 	time make release >$LOG_PATH/release.log 2>&1
 else
-	export RESULT=FAILED
 	BUILD_ERROR
 fi
 

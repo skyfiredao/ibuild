@@ -45,6 +45,8 @@ export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.co
 export IBUILD_SVN_REV_SRV=`svn info $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
 export IBUILD_SVN_SRV_HOSTNAME=`echo $IBUILD_SVN_SRV | awk -F'.' {'print $1'}`
 
+$IBUILD_ROOT/setup/reboot.sh >/tmp/reboot.log 2>&1
+
 if [[ -d $TASK_SPACE/itask-$TOWEEK ]] ; then
 	export SVN_REV_LOC=`svn info $TASK_SPACE/itask-$TOWEEK | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
 	if [[ $IBUILD_SVN_REV_SRV != $SVN_REV_LOC ]] ; then
