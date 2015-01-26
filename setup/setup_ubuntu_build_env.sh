@@ -28,7 +28,7 @@ export IP=`/sbin/ifconfig | grep 'inet addr' | grep -v '127.0.0.1' | awk -F':' {
 export CPU=`cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u`
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
 
-if [[ `sudo -l | grep ALL | grep NOPASSWD` ]] ; then
+if [[ ! `sudo -l | grep ALL | grep NOPASSWD` ]] ; then
 	echo "No sudo NOPASSWD permission"
 	exit 0
 fi
@@ -53,10 +53,12 @@ wget http://$IBUILD_SVN_SRV/linux/repo
 wget http://$IBUILD_SVN_SRV/linux/ccache-LDFLAGS-3.2
 wget http://$IBUILD_SVN_SRV/linux/jdk1.6.0_45.bz2
 wget http://$IBUILD_SVN_SRV/linux/bin.tar.bz2
-sudo cp repo /usr/bin/
-sudo cp ccache-LDFLAGS-3.2 /usr/bin/ccache
+chmod +x repo ccache-LDFLAGS-3.2
+sudo /bin/mv repo /usr/bin/
+sudo /bin/mv ccache-LDFLAGS-3.2 /usr/bin/ccache
 sudo tar xfj jdk1.6.0_45.bz2 -C /usr/local/
 sudo tar xfj bin.tar.bz2 -C $HOME/
+rm jdk1.6.0_45.bz2 bin.tar.bz2
 export REPO=`which repo`
 
 sudo mkdir -p /local/{ccache,out}
@@ -154,8 +156,7 @@ sudo ln -s /usr/bin/fromdos /usr/local/bin/dos2unix
 sudo ln -sf /usr/lib/jvm/java-7-openjdk-amd64 /usr/local/jdk1.7
 sudo ln -sf /usr/local/jdk1.7 /usr/local/jdk
 
-echo "
-# export LC_ALL=C
+echo "# export LC_ALL=C
 export LC_CTYPE=C
 export PATH=/usr/local/jdk/bin:\$PATH:
 export CLASSPATH=/usr/local/jdk/lib:.
