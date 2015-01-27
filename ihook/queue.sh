@@ -40,7 +40,7 @@ export ITASK_SPEC_URL=`svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD
 if [[ `echo $ITASK_SPEC_URL | grep '^/itask/tasks'` ]] ; then
 	touch $QUEUE_SPACE/$ITASK_REV
 elif [[ `echo $ITASK_SPEC_URL | grep 'jobs.txt$'` ]] ; then
-	$IBUILD_ROOT/ihook/mail_itask.sh $QUEUE_SPACE
+	$IBUILD_ROOT/ihook/mail_itask.sh $ITASK_REV
 else
 	exit
 fi
@@ -49,7 +49,7 @@ fi
 
 while [[ `ls $QUEUE_SPACE` || -f /tmp/EXIT ]] ;
 do
-	bash -x $IBUILD_ROOT/ihook/node_matching.sh $QUEUE_SPACE
+	$IBUILD_ROOT/ihook/node_matching.sh $QUEUE_SPACE
 	sleep `expr $RANDOM % 7 + 3`
 done
 

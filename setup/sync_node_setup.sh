@@ -34,8 +34,9 @@ export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.co
 
 mkdir -p ~/.ssh
 cd ~/.ssh
-scp $IBUILD_SVN_SRV:.ssh/* .
-scp $IBUILD_SVN_SRV:.gitconfig ~/
+if [[ ! -f id_rsa-irobot ]] ; then
+	scp $IBUILD_SVN_SRV:.ssh/* .
+fi
 [[ ! -f ~/.gitconfig ]] && ln -sf ~/.ssh/gitconfig ~/.gitconfig
 
 chown $USER -R /local/workspace

@@ -23,6 +23,7 @@ export TASK_SPACE=/dev/shm
 export TODAY=`date +%y%m%d`
 export TOWEEK=`date +%yw%V`
 export TOYEAR=`date +%Y`
+export HOME=/root
 
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'

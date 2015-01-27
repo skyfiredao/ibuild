@@ -30,5 +30,5 @@ echo --------------------------------------- >>/tmp/ihook.log
 echo $IHOOK_REPOS $IHOOK_REV $IHOOK_TXN_NAME >>/tmp/ihook.log
 echo --------------------------------------- >>/tmp/ihook.log
 
-$IBUILD_ROOT/ihook/mail_icase.sh $IHOOK_REV >>/tmp/ihook.log 2>&1 &
+bash -x $IBUILD_ROOT/ihook/mail_icase.sh $IHOOK_REV >>/tmp/ihook.log 2>&1 &
 

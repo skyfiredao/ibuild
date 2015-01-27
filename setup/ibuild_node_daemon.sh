@@ -61,7 +61,7 @@ NODE_STANDBY()
 	sleep 3
 	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask-$TOWEEK/jobs.txt
 	svn up -q $IBUILD_ROOT
-	if [[ `cat $TASK_SPACE/itask-$TOWEEK/jobs.txt | grep $JOBS_MD5 | grep $HOST_MD5` ]] ; then
+	if [[ `cat $TASK_SPACE/itask-$TOWEEK/jobs.txt | grep ^$JOBS_REV | grep $HOSTNAME` ]] ; then
 		$IBUILD_ROOT/imake/build.sh $JOBS_REV >/tmp/build-$JOBS_REV.log 2>&1
 	fi
  fi

@@ -74,7 +74,7 @@ MATCHING()
 ASSIGN_JOB()
 {
  if [[ `cat $TASK_SPACE/itask-r$ITASK_REV.jobs | grep $ITASK_REV_MD5 | grep $NODE_MD5` ]] ; then
-	echo "$ITASK_REV|$NODE|$NODE_IP|$ITASK_REV_MD5|$NODE_MD5" >>$ITASK_PATH/jobs.txt
+	echo "$ITASK_REV|$NODE|$NODE_IP|$ITASK_SPEC_NAME" >>$ITASK_PATH/jobs.txt
 	svn ci -q $IBUILD_SVN_OPTION -m "auto: assign itask-r$ITASK_REV to $NODE" $ITASK_PATH/jobs.txt
 	rm -f $QUEUE_SPACE/$ITASK_REV
  fi
@@ -92,6 +92,7 @@ do
 	export ITASK_PATH=`ls -d $TASK_SPACE/itask-* | tail -n1`
 	export ITASK_REV_MD5=`echo $ITASK_REV | md5sum | awk -F' ' {'print $1'}`
 	export ITASK_SPEC_URL=`svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1`
+	export ITASK_SPEC_NAME=`basename $ITASK_SPEC_URL`
 
 	svn export -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/$ITASK_SPEC_URL $TASK_SPACE/itask-r$ITASK_REV.lock
 	export IBUILD_PRIORITY=`grep '^IBUILD_PRIORITY=' $TASK_SPACE/itask-r$ITASK_REV.lock | awk -F'IBUILD_PRIORITY=' {'print $2'}`
