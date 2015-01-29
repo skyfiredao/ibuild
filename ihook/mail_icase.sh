@@ -38,16 +38,17 @@ export IBUILD_FOUNDER_EMAIL=`grep '^IBUILD_FOUNDER_EMAIL=' $IBUILD_ROOT/conf/ibu
 
 export ICASE_REV=$1
 export ICASE_URL=`svn log -v -r $ICASE_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1`
-export BUILD_INFO=`basename $ICASE_URL`
-
 if [[ ! `echo $ICASE_URL | grep '^/icase/'` ]] ; then
 	exit
 fi
 
 svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/icase.lock
 
-export BUILD_INFO_URL="$TASK_SPACE/icase.lock/$BUILD_INFO"
-export BUILD_SPEC=`head -n1 $BUILD_INFO_URL`
+export BUILD_INFO_NAME=`basename $ICASE_URL`
+export BUILD_INFO=$TASK_SPACE/icase.lock/$BUILD_INFO_NAME
+
+export RESULT=`grep '^RESULT=' $BUILD_INFO | awk -F'RESULT=' {'print $2'}`
+export BUILD_SPEC=`grep spec.build $BUILD_INFO | awk -F'#' {'print $2'} | head -n1`
 export EMAIL_PM=`grep '^EMAIL_PM=' $BUILD_INFO | awk -F'EMAIL_PM=' {'print $2'}`
 export EMAIL_REL=`grep '^EMAIL_REL=' $BUILD_INFO | awk -F'EMAIL_REL=' {'print $2'}`
 export BUILD_TIME=`grep '^BUILD_TIME=' $BUILD_INFO | awk -F'BUILD_TIME=' {'print $2'}`
@@ -60,9 +61,10 @@ export IBUILD_GRTSRV_URL=`grep '^IBUILD_GRTSRV_URL=' $BUILD_INFO | awk -F'IBUILD
 export IBUILD_TARGET_BUILD_VARIANT=`grep '^IBUILD_TARGET_BUILD_VARIANT=' $BUILD_INFO | awk -F'IBUILD_TARGET_BUILD_VARIANT=' {'print $2'}`
 export IBUILD_TARGET_PRODUCT=`grep '^IBUILD_TARGET_PRODUCT=' $BUILD_INFO | awk -F'IBUILD_TARGET_PRODUCT=' {'print $2'}`
 export IVER=`grep '^IVER=' $BUILD_INFO | awk -F'IVER=' {'print $2'}`
-export RESULT=`grep '^RESULT=' $BUILD_INFO | awk -F'RESULT=' {'print $2'}`
 export SLAVE_HOST=`grep '^SLAVE_HOST=' $BUILD_INFO | awk -F'SLAVE_HOST=' {'print $2'}`
+export SLAVE_IP=`grep '^SLAVE_IP=' $BUILD_INFO | awk -F'SLAVE_IP=' {'print $2'}`
 export DOWNLOAD_URL=`grep '^DOWNLOAD_URL=' $BUILD_INFO | awk -F'DOWNLOAD_URL=' {'print $2'}`
+export DOWNLOAD_PKG_NAME=`grep '^DOWNLOAD_PKG_NAME=' $BUILD_INFO | awk -F'DOWNLOAD_PKG_NAME=' {'print $2'}`
 
 export GERRIT_CHANGE_ID=`grep '^GERRIT_CHANGE_ID=' $BUILD_INFO | awk -F'GERRIT_CHANGE_ID=' {'print $2'}`
 export GERRIT_CHANGE_NUMBER=`grep '^GERRIT_CHANGE_NUMBER=' $BUILD_INFO | awk -F'GERRIT_CHANGE_NUMBER=' {'print $2'}`
@@ -78,26 +80,36 @@ export MAIL_LIST=$IBUILD_FOUNDER_EMAIL
 [[ ! -z $EMAIL_REL ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_REL"
 [[ ! -z $GERRIT_CHANGE_OWNER_EMAIL ]] && export MAIL_LIST="$MAIL_LIST,$GERRIT_CHANGE_OWNER_EMAIL"
 
-echo -e "
-Hi, $GERRIT_CHANGE_OWNER_NAME
+echo -e "Hi, $GERRIT_CHANGE_OWNER_NAME
 
-After ${BUILD_TIME}min, node $SLAVE_HOST build $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT $RESULT
+After ${BUILD_TIME_MIN}min, node $SLAVE_HOST ($SLAVE_IP) build $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT $RESULT
 All of log and packages download URL:
 $DOWNLOAD_URL
+" >/tmp/$ICASE_REV.mail
 
+[[ ! -z $DOWNLOAD_PKG_NAME ]] && echo "wget $DOWNLOAD_URL/$DOWNLOAD_PKG_NAME" >>/tmp/$ICASE_REV.mail
+[[ $RESULT != PASSED ]] && echo "Error Log: $DOWNLOAD_URL/log/error.log" >>/tmp/$ICASE_REV.mail
+
+echo -e "
 It based on $IBUILD_GRTSRV/$IBUILD_GRTSRV_URL -b $IBUILD_GRTSRV_BRANCH
 
 Other info:
-$BUILD_SPEC
-$GERRIT_PROJECT
-$GERRIT_CHANGE_ID
-$GERRIT_PATCHSET_NUMBER
-$GERRIT_PATCHSET_REVISION
-$GERRIT_CHANGE_URL
+$BUILD_SPEC" >>/tmp/$ICASE_REV.mail
+
+[[ ! -z $GERRIT_PROJECT ]] && echo "$GERRIT_PROJECT" >>/tmp/$ICASE_REV.mail
+[[ ! -z $GERRIT_CHANGE_ID ]] && echo "$GERRIT_CHANGE_ID" >>/tmp/$ICASE_REV.mail
+[[ ! -z $GERRIT_PATCHSET_NUMBER ]] && echo "$GERRIT_PATCHSET_NUMBER" >>/tmp/$ICASE_REV.mail
+[[ ! -z $GERRIT_PATCHSET_REVISION ]] && echo "$GERRIT_PATCHSET_REVISION" >>/tmp/$ICASE_REV.mail
+[[ ! -z $GERRIT_CHANGE_URL ]] && echo "$GERRIT_CHANGE_URL" >>/tmp/$ICASE_REV.mail
+
+echo -e "
 
 -dw
 from ibuild system
 [Daedalus]
-" | mail -s "[ibuild][$RESULT] $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT in $SLAVE_HOST" $MAIL_LIST
+" >>/tmp/$ICASE_REV.mail
 
+cat /tmp/$ICASE_REV.mail | mail -s "[ibuild][$RESULT] $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT in $SLAVE_HOST" $MAIL_LIST
+
+rm -f /tmp/$ICASE_REV.mail
 

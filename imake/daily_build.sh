@@ -15,15 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Change log
-# 150120 Create by Ding Wei
+# 150128 Create by Ding Wei
 source /etc/bash.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
-export TASK_SPACE=/dev/shm
 export USER=`whoami`
+export TASK_SPACE=/dev/shm
 export TOHOUR=`date +%H`
-echo $TOHOUR >$TASK_SPACE/repo_sync.lock
-sudo chmod -x /usr/bin/repo
 
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
@@ -31,24 +29,30 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 	echo -e "Please put ibuild in your $HOME"
 	exit 0
 fi
-
 export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
 export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
 
-mkdir -p ~/.ssh
-cd ~/.ssh
-if [[ ! -f id_rsa-irobot ]] ; then
-	scp $IBUILD_SVN_SRV:.ssh/* .
+if [[ `cat $TASK_SPACE/daily_build.lock` != $TOHOUR ]] ; then
+	echo $TOHOUR >$TASK_SPACE/daily_build.lock
+else
+	exit
 fi
-[[ ! -f ~/.gitconfig ]] && ln -sf ~/.ssh/gitconfig ~/.gitconfig
 
-chown $USER -R /local/workspace
-sudo mkdir -p /mnt/tmp
-sudo chown $USER /mnt/tmp
-sshfs irobot@$IBUILD_SVN_SRV:/local /mnt/tmp 
+if [[ -d $TASK_SPACE/ispec.lock ]] ; then
+	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/ispec.lock
+else
+	rm -fr $TASK_SPACE/ispec.lock
+	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec $TASK_SPACE/ispec.lock
+fi
 
-time rsync -av /mnt/tmp/workspace/. /local/workspace/ >>/tmp/sync.log
+if [[ -f $TASK_SPACE/ispec.lock/cron/$TOHOUR.spec ]] ; then
+	for SPEC_FILTER in `cat $TASK_SPACE/ispec.lock/cron/$TOHOUR.spec | sort -u`
+	do
+		for SPEC_NAME in `ls $TASK_SPACE/ispec.lock/spec | grep $SPEC_FILTER`
+		do
+			$IBUILD_ROOT/imake/add_task.sh $TASK_SPACE/ispec.lock/spec/$SPEC_NAME
+		done
+	done
+fi
 
-sudo chmod +x /usr/bin/repo
-sudo umount /mnt/tmp
 

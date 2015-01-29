@@ -106,6 +106,7 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
 	if [[ `svn st $TASK_SPACE/itask-$TOWEEK/inode | grep ^D` ]] ; then
 		svn ci $IBUILD_SVN_OPTION -m "auto: clean" $TASK_SPACE/itask-$TOWEEK/inode/
 	fi
+	$IBUILD_ROOT/imake/daily_build.sh >/tmp/daily_build.log 2>&1 &
 else
 	$IBUILD_ROOT/setup/ibuild_node_daemon.sh $TASK_SPACE/itask-$TOWEEK >/tmp/ibuild_node_daemon.log 2>&1 &
 fi

@@ -271,6 +271,7 @@ SETUP_ICASE()
 
  echo "RESULT=$RESULT
 SLAVE_HOST=`hostname`
+SLAVE_IP=$IP
 START_TIME=$BUILD_TIME
 END_TIME=$END_TIME
 IVER=$IVER
@@ -285,6 +286,7 @@ GERRIT_PATCHSET_NUMBER=$GERRIT_PATCHSET_NUMBER
 GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION
 GERRIT_PROJECT=$GERRIT_PROJECT
 DOWNLOAD_URL=http://$IBUILD_SVN_SRV/ibuild/$ICASE_UPLOAD_URL
+DOWNLOAD_PKG_NAME=$DOWNLOAD_PKG_NAME
 " >>$LOG_PATH/build_info.txt
 
  cat $LOG_PATH/build_info.txt | sort -u | grep -v ^$ >$LOG_PATH/build_info.tmp
@@ -315,6 +317,7 @@ SETUP_BUILD_OUT()
  if [[ $RESULT != FAILED ]] ; then
 	if [[ -f images_$IBUILD_TARGET_PRODUCT.txz ]] ; then
 		cp images_$IBUILD_TARGET_PRODUCT.txz $AUTOUT_PATH/$AUTOUT_NAME/ 
+		export DOWNLOAD_PKG_NAME=images_$IBUILD_TARGET_PRODUCT.txz
 	fi
 	cd out
 	if [[ -d release-$IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT ]] ; then
@@ -325,6 +328,7 @@ SETUP_BUILD_OUT()
 	[[ ! -z $REL_PKG_NAME ]] && tar cf $REL_PKG_NAME.tar $REL_PKG_NAME
 	if [[ -f $REL_PKG_NAME.tar ]] ; then 
 		cp $REL_PKG_NAME.tar $AUTOUT_PATH/$AUTOUT_NAME/
+		export DOWNLOAD_PKG_NAME=$REL_PKG_NAME.tar
 	else
 		SPLIT_LINE no_$REL_PKG_NAME.tar
 	fi
@@ -361,6 +365,8 @@ BUILD_ERROR()
 {
  touch $LOG_PATH/BUILD_ERROR
  export RESULT=FAILED
+ export ERROR_FILTER='cannot |not |No |no |failed|error:|lost|duplicate annotation|unreported|illegal |expected|duplicate attribute|has private access|uses or overrides|expected constructor|undefined reference|duplicate case label|unqualified enumeration|die|incompatible types|incompatible types|already defined|has private access|overrides|illegal start of expression|doesn|This attribute must be localized|unbound prefix|cannot find symbol|ERROR Resource entry|No resource found that matches the given name|Link to hidden class|Parameter of hidden type|too many initializers|Resource is not public|illegal start of expression'
+ 
 }
 
 CLEAN_EXIT()

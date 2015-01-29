@@ -21,13 +21,12 @@
 export JSON_PATH=$1
 export GERRIT_SRV=$2
         [[ -z $GERRIT_SRV ]] && export GERRIT_SRV="your_default_gerrit"
-        
 export IBUILD_ROOT=$HOME/ibuild
 	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
-        echo -e "Please put ibuild in your $HOME"
-        exit 0
-fi
+	echo -e "Please put ibuild in your $HOME"
+	exit 0
+fi        
 
 export ITRACK_PATH=$IBUILD_ROOT/ichange
 
@@ -110,6 +109,7 @@ do
 done
 
 echo "input json to svn"
+cd $TASK_SPACE/itrack/$GERRIT_SRV.tmp
 for ORDER in `ls | grep json | sed 's/.json//g'`
 do
         export g_revision=`cat $ORDER.json | egrep '"revision":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1`

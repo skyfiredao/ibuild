@@ -36,6 +36,7 @@ EXPORT_IBUILD_SPEC $ITASK_REV
 hostname
 echo $IP
 date
+echo itask:$ITASK_REV
 
 REPO_INFO
 SETUP_BUILD_REPO
