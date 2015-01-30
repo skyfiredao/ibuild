@@ -45,9 +45,10 @@ rm -fr out/* >/dev/null 2>&1
 
 SPLIT_LINE "make -j$JOBS"
 time make -j$JOBS >$LOG_PATH/full_build.log 2>&1
-if [[ $? = 0 ]] ; then
+export MAKE_STATUS=$?
+if [[ $MAKE_STATUS = 0 ]] ; then
 	SPLIT_LINE make_release
-	time make release >$LOG_PATH/release.log 2>&1
+	time make -j$JOBS release >$LOG_PATH/release.log 2>&1
 else
 	BUILD_ERROR
 fi

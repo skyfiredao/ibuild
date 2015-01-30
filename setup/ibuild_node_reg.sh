@@ -31,6 +31,7 @@ export MEMORY=`free -g | grep Mem | awk -F' ' {'print $2'}`
 export CPU=`cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u`
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
 export TOWEEK=`date +%yw%V`
+export TODAY=`date +%y%m%d`
 export IBUILD_ROOT=$HOME/ibuild
 	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
@@ -103,9 +104,18 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
 			svn rm $TASK_SPACE/itask-$TOWEEK/inode/$CHK_HOST
 		fi
 	done
+
 	if [[ `svn st $TASK_SPACE/itask-$TOWEEK/inode | grep ^D` ]] ; then
 		svn ci $IBUILD_SVN_OPTION -m "auto: clean" $TASK_SPACE/itask-$TOWEEK/inode/
 	fi
+
+	if [[ ! -f $TASK_SPACE/ganglia-$TODAY ]] ; then
+		rm -f $TASK_SPACE/ganglia-*
+		touch $TASK_SPACE/ganglia-$TODAY
+		sudo /etc/init.d/gmetad restart
+		sudo /etc/init.d/ganglia-monitor restart
+	fi
+
 	$IBUILD_ROOT/imake/daily_build.sh >/tmp/daily_build.log 2>&1 &
 else
 	$IBUILD_ROOT/setup/ibuild_node_daemon.sh $TASK_SPACE/itask-$TOWEEK >/tmp/ibuild_node_daemon.log 2>&1 &

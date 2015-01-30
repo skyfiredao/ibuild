@@ -32,8 +32,12 @@ export LOC_REPO_MIRROR_PATH=`grep '^LOC_REPO_MIRROR_PATH=' $IBUILD_ROOT/conf/ibu
 
 cd $LOC_REPO_MIRROR_PATH
 
+if [[ `ps aux | grep rsync | grep -v grep` ]] ; then
+	exit
+fi
+
 if [[ `cat $TASK_SPACE/repo_sync.lock` != $TOHOUR ]] ; then
-	$IBUILD_ROOT/bin/repo sync -j$JOBS
 	echo $TOHOUR >$TASK_SPACE/repo_sync.lock
+	$IBUILD_ROOT/bin/repo sync -j$JOBS
 fi
 

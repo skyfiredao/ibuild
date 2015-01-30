@@ -23,7 +23,6 @@ export TASK_SPACE=/dev/shm
 export USER=`whoami`
 export TOHOUR=`date +%H`
 echo $TOHOUR >$TASK_SPACE/repo_sync.lock
-sudo chmod -x /usr/bin/repo
 
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
@@ -47,8 +46,8 @@ sudo mkdir -p /mnt/tmp
 sudo chown $USER /mnt/tmp
 sshfs irobot@$IBUILD_SVN_SRV:/local /mnt/tmp 
 
+rm -f $IBUILD_ROOT/bin/repo
 time rsync -av /mnt/tmp/workspace/. /local/workspace/ >>/tmp/sync.log
 
-sudo chmod +x /usr/bin/repo
 sudo umount /mnt/tmp
 
