@@ -45,8 +45,8 @@ else
 	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec $TASK_SPACE/ispec.lock
 fi
 
-if [[ -f $TASK_SPACE/ispec.lock/cron/$TOHOUR.spec ]] ; then
-	for SPEC_FILTER in `cat $TASK_SPACE/ispec.lock/cron/$TOHOUR.spec | sort -u`
+if [[ -f $TASK_SPACE/ispec.lock/timer/$TOHOUR.spec ]] ; then
+	for SPEC_FILTER in `cat $TASK_SPACE/ispec.lock/timer/$TOHOUR.spec | sort -u`
 	do
 		for SPEC_NAME in `ls $TASK_SPACE/ispec.lock/spec | grep $SPEC_FILTER`
 		do

@@ -28,6 +28,11 @@ if [[ `date +%u` = 1 && ! -f $TASK_SPACE/update-$TOWEEK ]] ; then
 	sudo aptitude -y full-upgrade
 	rm -f $TASK_SPACE/update-*
 	touch $TASK_SPACE/update-$TOWEEK
+	echo "full-upgrade: "`date` >>$TASK_SPACE/count
+fi
+
+if [[ `cat $TASK_SPACE/count | wc -l` = 30 ]] ; then
+	touch $TASK_SPACE/reboot
 fi
 
 if [[ -f $TASK_SPACE/reboot && ! -f $TASK_SPACE/spec.build ]] ; then

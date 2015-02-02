@@ -138,7 +138,7 @@ SPLIT_LINE()
 {
  export SPLIT_WORD=''
  [[ ! -z $1 ]] && export SPLIT_WORD=" $1 "
- echo -e "\n--------------------$SPLIT_WORD--------------------"
+ echo -e "\n-------------------------$SPLIT_WORD"
 }
 
 BTRFS_CLEANUP()
@@ -148,12 +148,16 @@ BTRFS_CLEANUP()
  for BTRFS_SUBVOL in `sudo btrfs subvolume list $LOC_WORKSPACE | egrep -v 'ref_repo' | awk -F'path ' {'print $2'} | grep $BTRFS_TOP`
  do
 	sleep 3
-	SPLIT_LINE clean_btrfs
-	echo "sudo btrfs subvolume delete $LOC_WORKSPACE/$BTRFS_SUBVOL"
+	SPLIT_LINE clean_$LOC_WORKSPACE/$BTRFS_SUBVOL
 	rm -f $LOC_WORKSPACE/$BTRFS_SUBVOL.info
-	sudo btrfs subvolume delete $LOC_WORKSPACE/$BTRFS_SUBVOL >>$LOG_PATH/btrfs_issue.log 2>&1
+	time sudo btrfs subvolume delete $LOC_WORKSPACE/$BTRFS_SUBVOL >>$LOG_PATH/fs_issue.log 2>&1
+	LOG_STATUS $? clean_$LOC_WORKSPACE/$BTRFS_SUBVOL $LOG_PATH/fs_issue.log
  done
- sudo btrfs subvolume list $LOC_WORKSPACE | grep $BTRFS_TOP >>$LOG_PATH/btrfs_issue.log 2>&1
+
+ if [[ `sudo btrfs subvolume list $LOC_WORKSPACE | grep $BTRFS_TOP` ]] ; then
+	sudo btrfs subvolume list $LOC_WORKSPACE | grep $BTRFS_TOP >>$LOG_PATH/fs_issue.log 2>&1
+	echo "fs_issue: "`date` >>$TASK_SPACE/count
+ fi
 }
 
 REPO_INFO()
@@ -182,7 +186,7 @@ SETUP_REF_REPO()
  if [[ ! -d $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME ]] ; then
 	mv /tmp/$USER.repo_init.tmp $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME.info
 	cd $LOC_WORKSPACE/ref_repo/
-	btrfs subvolume create $REPO_INIT_CMD_MD5_NAME
+	btrfs subvolume create $REPO_INIT_CMD_MD5_NAME >/dev/null 2>&1
 	chmod 755 $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
 	cd $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
 	/bin/bash $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME.info >$LOG_PATH/init.log 2>&1
@@ -198,10 +202,13 @@ REPO_SYNC()
 
  SPLIT_LINE repo_sync
  time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+ LOG_STATUS $? repo_sync $LOG_PATH/$REPO_SYNC_LOG_NAME.log
  CCACHE_HOTFIX
 
  SPLIT_LINE "$IBUILD_ADD_STEP_1"
  time $IBUILD_ADD_STEP_1 >$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
+ LOG_STATUS $? $IBUILD_ADD_STEP_1 $LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log
+
  rm -f out
  if [[ -d /local/out ]]; then
         ln -sf /local/out
@@ -218,8 +225,9 @@ SETUP_BUILD_REPO()
 	BTRFS_CLEANUP $LOC_WORKSPACE/build/$BTRFS_OLD_PATH
  done
 
- SPLIT_LINE btrfs_snapshot
- btrfs subvolume snapshot $LOC_REF_REPO $BUILD_PATH_TOP >>$LOG_PATH/btrfs_issue.log 2>&1
+ SPLIT_LINE snapshot_$BUILD_PATH_TOP 
+ time btrfs subvolume snapshot $LOC_REF_REPO $BUILD_PATH_TOP >>$LOG_PATH/fs_issue.log 2>&1
+ LOG_STATUS $? snapshot_$BUILD_PATH_TOP $LOG_PATH/fs_issue.log
 
  REPO_SYNC $BUILD_PATH_TOP
 }
@@ -247,7 +255,8 @@ else
 	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK $TASK_SPACE/iversion-$TOWEEK
  fi
  cp $ORIG_MAINFEST_URL $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME
- svn add $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME
+ SPLIT_LINE $IVER_MAINFEST_NAME
+ svn add $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME >/dev/null 2>&1
  svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVER_MAINFEST_NAME" $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME
  if [[ $? = 0 ]] ; then
 	export IVER=r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
@@ -267,7 +276,7 @@ SETUP_ICASE()
 	export END_SEC_TIME=`date +%s`
  fi
 
- [[ -z $RESULT ]] && export RESULT=PASSED
+ [[ -z $RESULT ]] && export RESULT=ISSUE
 
  echo "RESULT=$RESULT
 SLAVE_HOST=`hostname`
@@ -311,9 +320,9 @@ else
 
 SETUP_BUILD_OUT()
 {
- cd $BUILD_PATH_TOP
+ [[ -d $BUILD_PATH_TOP ]] && cd $BUILD_PATH_TOP
  SPLIT_LINE export_manifest
- time $REPO_CMD manifest -r -o $LOG_PATH/manifest.xml
+ time $REPO_CMD manifest -r -o $LOG_PATH/manifest.xml >/dev/null 2>&1
  if [[ $RESULT != FAILED ]] ; then
 	if [[ -f images_$IBUILD_TARGET_PRODUCT.txz ]] ; then
 		cp images_$IBUILD_TARGET_PRODUCT.txz $AUTOUT_PATH/$AUTOUT_NAME/ 
@@ -330,7 +339,7 @@ SETUP_BUILD_OUT()
 		cp $REL_PKG_NAME.tar $AUTOUT_PATH/$AUTOUT_NAME/
 		export DOWNLOAD_PKG_NAME=$REL_PKG_NAME.tar
 	else
-		SPLIT_LINE no_$REL_PKG_NAME.tar
+		SPLIT_LINE no_release_package
 	fi
  fi
 
@@ -341,7 +350,6 @@ SETUP_BUILD_OUT()
 
  if [[ ! -f $AUTOUT_UPLOAD_PATH/README ]] ; then
 	if [[ `echo $IBUILD_UPLOAD_URL | grep ssh` ]] ; then
-		SPLIT_LINE "$IBUILD_UPLOAD_URL"
 		export IBUILD_UPLOAD_URL_NOSSH=`echo $IBUILD_UPLOAD_URL | awk -F'ssh://' {'print $2'}` 
 		sshfs $IBUILD_UPLOAD_URL_NOSSH $AUTOUT_UPLOAD_PATH >$LOG_PATH/sshfs.log 2>&1
 	fi
@@ -364,9 +372,20 @@ SETUP_BUILD_OUT()
 BUILD_ERROR()
 {
  touch $LOG_PATH/BUILD_ERROR
- export RESULT=FAILED
- export ERROR_FILTER='cannot |not |No |no |failed|error:|lost|duplicate annotation|unreported|illegal |expected|duplicate attribute|has private access|uses or overrides|expected constructor|undefined reference|duplicate case label|unqualified enumeration|die|incompatible types|incompatible types|already defined|has private access|overrides|illegal start of expression|doesn|This attribute must be localized|unbound prefix|cannot find symbol|ERROR Resource entry|No resource found that matches the given name|Link to hidden class|Parameter of hidden type|too many initializers|Resource is not public|illegal start of expression'
- 
+
+ export CHECK_LOG=$1
+ export CHECK_LOG_NAME=`basename $CHECK_LOG`
+ export ERROR_FILTER='cannot |not |No |no |failed|Error |error:|lost|duplicate annotation|unreported|illegal |expected|duplicate attribute|has private access|uses or overrides|expected constructor|undefined reference|duplicate case label|unqualified enumeration|die|incompatible types|incompatible types|already defined|has private access|overrides|illegal start of expression|doesn|This attribute must be localized|unbound prefix|cannot find symbol|ERROR Resource entry|No resource found that matches the given name|Link to hidden class|Parameter of hidden type|too many initializers|Resource is not public|illegal start of expression|make: ***|Stop'
+
+ if [[ `echo $CHECK_LOG | grep full_build` ]] ; then
+	if [[ `cat $CHECK_LOG | wc -l` -ge 100 ]] ; then
+		cat $CHECK_LOG | grep -v -i warning | grep -v "?" | grep -v "\^" | egrep "$ERROR_FILTER" | uniq >>$LOG_PATH/error.log
+	else
+		cat $CHECK_LOG >>$LOG_PATH/error.log
+	fi
+ else
+	cat $CHECK_LOG || echo "$CHECK_LOG does not exist" >>$LOG_PATH/error.log
+ fi
 }
 
 CLEAN_EXIT()
@@ -376,13 +395,24 @@ CLEAN_EXIT()
  exit
 }
 
-# EXPORT_IBUILD_CONF
-# EXPORT_IBUILD_SPEC
-# SPLIT_LINE
-# REPO_INFO
-# BTRFS_CLEANUP
-# SETUP_REF_REPO
-# REPO_SYNC
-# SETUP_BUILD_REPO
-# CCACHE_HOTFIX
-# SETUP_BUILD_OUT
+LOG_STATUS()
+{
+ export CHECK_STATUS=$1
+ export CHECK_SUBJECT=$2
+ export CHECK_LOG=$3
+
+ if [[ $CHECK_STATUS != 0 ]] ; then
+	SPLIT_LINE "LOG_STATUS $CHECK_SUBJECT"
+	BUILD_ERROR $CHECK_LOG
+	export RESULT=FAILED
+        echo $CHECK_LOG >$LOG_PATH/BUILD_ERROR
+	SETUP_BUILD_OUT
+	sleep 5 && pkill -9 $IBUILD_MAKE_TOOL >/dev/null 2>&1 &
+
+	SPLIT_LINE STOP_BUILD
+	exit $CHECK_STATUS
+ else
+	export RESULT=PASSED
+ fi
+}
+

@@ -16,7 +16,7 @@
 #
 # Change log
 # 150120 Create by Ding Wei
-source /etc/bash.bashrc
+source /etc/bash.bashrc >/dev/null 2>&1
 export LC_CTYPE=C
 export LC_ALL=C
 export IBUILD_ROOT=$HOME/ibuild
@@ -26,9 +26,9 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 	exit 0
 fi
 
-source $IBUILD_ROOT/imake/function
-EXPORT_IBUILD_CONF
-EXPORT_IBUILD_SPEC
+source $IBUILD_ROOT/imake/function >/dev/null 2>&1
+EXPORT_IBUILD_CONF >/dev/null 2>&1
+EXPORT_IBUILD_SPEC >/dev/null 2>&1
 
 if [[ -d $JDK_PATH ]] ; then
 	sudo rm -f /usr/local/jdk
@@ -39,19 +39,22 @@ if [[ -d $JDK_PATH ]] ; then
 fi
 
 cd $BUILD_PATH_TOP
+SPLIT_LINE envsetup
 source build/envsetup.sh >$LOG_PATH/envsetup.log 2>&1
+LOG_STATUS $? envsetup.sh $LOG_PATH/envsetup.log
+
+SPLIT_LINE lunch
 lunch $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT >$LOG_PATH/lunch.log 2>&1
+LOG_STATUS $? lunch $LOG_PATH/lunch.log
+
 rm -fr out/* >/dev/null 2>&1
 
 SPLIT_LINE "make -j$JOBS"
 time make -j$JOBS >$LOG_PATH/full_build.log 2>&1
-export MAKE_STATUS=$?
-if [[ $MAKE_STATUS = 0 ]] ; then
-	SPLIT_LINE make_release
-	time make -j$JOBS release >$LOG_PATH/release.log 2>&1
-else
-	BUILD_ERROR
-fi
+LOG_STATUS $? make_j$JOBS $LOG_PATH/full_build.log
 
+SPLIT_LINE make_release
+time make -j$JOBS release >$LOG_PATH/release.log 2>&1
+LOG_STATUS $? make_release $LOG_PATH/release.log
 
 

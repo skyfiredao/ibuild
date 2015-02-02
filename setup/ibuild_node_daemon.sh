@@ -63,6 +63,7 @@ NODE_STANDBY()
 	svn up -q $IBUILD_ROOT
 	if [[ `cat $TASK_SPACE/itask-$TOWEEK/jobs.txt | grep ^$JOBS_REV | grep $HOSTNAME` ]] ; then
 		$IBUILD_ROOT/imake/build.sh $JOBS_REV >/tmp/build-$JOBS_REV.log 2>&1
+		echo "build: "`date` >>$TASK_SPACE/count
 	fi
  fi
  rm -f $TASK_SPACE/itask.jobs

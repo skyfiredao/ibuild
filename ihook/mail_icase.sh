@@ -83,12 +83,13 @@ export MAIL_LIST=$IBUILD_FOUNDER_EMAIL
 echo -e "Hi, $GERRIT_CHANGE_OWNER_NAME
 
 After ${BUILD_TIME_MIN}min, node $SLAVE_HOST ($SLAVE_IP) build $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT $RESULT
+
 All of log and packages download URL:
 $DOWNLOAD_URL
 " >/tmp/$ICASE_REV.mail
 
-[[ ! -z $DOWNLOAD_PKG_NAME ]] && echo "wget $DOWNLOAD_URL/$DOWNLOAD_PKG_NAME" >>/tmp/$ICASE_REV.mail
-[[ $RESULT != PASSED ]] && echo "Error Log: $DOWNLOAD_URL/log/error.log" >>/tmp/$ICASE_REV.mail
+[[ ! -z $DOWNLOAD_PKG_NAME ]] && echo -e "wget $DOWNLOAD_URL/$DOWNLOAD_PKG_NAME" >>/tmp/$ICASE_REV.mail
+[[ $RESULT != PASSED ]] && echo -e "Error Log:\n$DOWNLOAD_URL/log/error.log" >>/tmp/$ICASE_REV.mail
 
 echo -e "
 It based on $IBUILD_GRTSRV/$IBUILD_GRTSRV_URL -b $IBUILD_GRTSRV_BRANCH
