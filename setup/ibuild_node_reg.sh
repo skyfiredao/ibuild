@@ -116,7 +116,7 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
 		sudo /etc/init.d/ganglia-monitor restart
 	fi
 
-	$IBUILD_ROOT/imake/daily_build.sh >/tmp/daily_build.log 2>&1 &
+	$IBUILD_ROOT/imake/daily_build.sh >>/tmp/daily_build.log 2>&1 &
 else
 	$IBUILD_ROOT/setup/ibuild_node_daemon.sh $TASK_SPACE/itask-$TOWEEK >/tmp/ibuild_node_daemon.log 2>&1 &
 fi

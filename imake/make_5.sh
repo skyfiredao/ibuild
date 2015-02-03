@@ -40,11 +40,11 @@ fi
 
 cd $BUILD_PATH_TOP
 SPLIT_LINE envsetup
-source build/envsetup.sh >$LOG_PATH/envsetup.log 2>&1
+time source build/envsetup.sh >$LOG_PATH/envsetup.log 2>&1
 LOG_STATUS $? envsetup.sh $LOG_PATH/envsetup.log
 
 SPLIT_LINE lunch
-lunch $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT >$LOG_PATH/lunch.log 2>&1
+time lunch $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT >$LOG_PATH/lunch.log 2>&1
 LOG_STATUS $? lunch $LOG_PATH/lunch.log
 
 rm -fr out/* >/dev/null 2>&1

@@ -27,7 +27,6 @@ export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
 export TOWEEK=`date +%yw%V`
 export ITASK_PATH=$1
 
-[[ -f $TASK_SPACE/itask.lock ]] && exit 0
 export IBUILD_ROOT=$HOME/ibuild
 	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
@@ -37,16 +36,25 @@ fi
 
 date
 
+CHK_ITASK_LOCK()
+{
+ if [[ -f $TASK_SPACE/itask.lock ]] ; then
+	echo -e "$TASK_SPACE/itask.lock"
+	exit 0
+ fi
+}
+
 NODE_STANDBY()
 {
  export NETCAT=`which nc`
 	[[ -z $NETCAT ]] && export NETCAT="$IBUILD_ROOT/bin/netcat.openbsd-u14.04"
  export HOST_MD5=`echo $HOSTNAME | md5sum | awk -F' ' {'print $1'}`
 
- echo $ITASK_PATH >$TASK_SPACE/itask.lock
-
  $NETCAT -l 1234 >$TASK_SPACE/itask.jobs
  export JOBS_REV=`cat $TASK_SPACE/itask.jobs`
+ CHK_ITASK_LOCK
+ 
+ echo $ITASK_PATH >$TASK_SPACE/itask.lock
  if [[ -z $JOBS_REV ]] ; then
 	rm -f $TASK_SPACE/itask.lock
 	exit
@@ -69,11 +77,16 @@ NODE_STANDBY()
  rm -f $TASK_SPACE/itask.jobs
 }
 
+CHK_ITASK_LOCK
+
 while [ ! -f $TASK_SPACE/itask.lock ] ; 
 do
-	[[ -f $TASK_SPACE/exit.lock ]] && exit 0
+	if [[ -f $TASK_SPACE/exit.lock ]] ; then
+		$NETCAT 127.0.0.1 1234
+		pkill -9 nc
+		exit 0
+	fi
 	NODE_STANDBY
-	
 done
 
 rm -f $TASK_SPACE/itask.lock

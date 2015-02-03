@@ -19,6 +19,7 @@
 source /etc/bash.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
+export TASK_SPACE=/dev/shm
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
@@ -37,13 +38,37 @@ if [[ -z $1 ]] ; then
 	exit 0
 fi
 
+CLEAN_REF_REPO()
+{
+ for REF_REPO_MD5 in `ls $LOC_WORKSPACE/ref_repo | egrep -v 'info'`
+ do
+	if [[ ! -f $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5/Makefile ]] ; then
+		export SEED=$RANDOM
+		echo -------------------------
+		echo $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5
+		echo $LOC_WORKSPACE/build/bad.$SEED
+		cat $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5.info
+		echo -------------------------
+		mv $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5 $LOC_WORKSPACE/build/bad.$SEED
+		mv $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5.info $LOC_WORKSPACE/build/bad.$SEED/
+	fi
+ done
+}
+
+if [[ ! -f $TASK_SPACE/spec.build ]] ; then
+	CLEAN_REF_REPO
+else
+	echo $TASK_SPACE/spec.build
+	exit
+fi
+
 echo "sudo btrfs subvolume list $LOC_WORKSPACE"
 
 for BTRFS_SUBVOL in `sudo btrfs subvolume list $LOC_WORKSPACE | egrep -v 'ref_repo' | awk -F'path ' {'print $2'}`
 do
 	sleep 3
 	echo "sudo btrfs subvolume delete $BTRFS_SUBVOL"
-	sudo btrfs subvolume delete $BTRFS_SUBVOL &
+	sudo btrfs subvolume delete $LOC_WORKSPACE/$BTRFS_SUBVOL &
 done
 
 
