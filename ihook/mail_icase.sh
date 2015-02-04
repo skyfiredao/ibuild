@@ -44,14 +44,14 @@ fi
 
 svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/icase.lock
 
-export BUILD_INFO_NAME=`basename $ICASE_URL`
+export BUILD_INFO_NAME=`basename $ICASE_URL | head -n1`
 export BUILD_INFO=$TASK_SPACE/icase.lock/$BUILD_INFO_NAME
 
-export RESULT=`grep '^RESULT=' $BUILD_INFO | awk -F'RESULT=' {'print $2'}`
+export RESULT=`grep '^RESULT=' $BUILD_INFO | awk -F'RESULT=' {'print $2'} | head -n1`
 export BUILD_SPEC=`grep spec.build $BUILD_INFO | awk -F'#' {'print $2'} | head -n1`
 export EMAIL_PM=`grep '^EMAIL_PM=' $BUILD_INFO | awk -F'EMAIL_PM=' {'print $2'}`
 export EMAIL_REL=`grep '^EMAIL_REL=' $BUILD_INFO | awk -F'EMAIL_REL=' {'print $2'}`
-export BUILD_TIME=`grep '^BUILD_TIME=' $BUILD_INFO | awk -F'BUILD_TIME=' {'print $2'}`
+export BUILD_TIME=`grep '^BUILD_TIME=' $BUILD_INFO | awk -F'BUILD_TIME=' {'print $2'} | head -n1`
 export BUILD_TIME_MIN=`echo $BUILD_TIME / 60 | bc`
 export START_TIME=`grep '^START_TIME=' $BUILD_INFO | awk -F'START_TIME=' {'print $2'}`
 export END_TIME=`grep '^END_TIME=' $BUILD_INFO | awk -F'END_TIME=' {'print $2'}`
@@ -63,8 +63,8 @@ export IBUILD_TARGET_PRODUCT=`grep '^IBUILD_TARGET_PRODUCT=' $BUILD_INFO | awk -
 export IVER=`grep '^IVER=' $BUILD_INFO | awk -F'IVER=' {'print $2'}`
 export SLAVE_HOST=`grep '^SLAVE_HOST=' $BUILD_INFO | awk -F'SLAVE_HOST=' {'print $2'}`
 export SLAVE_IP=`grep '^SLAVE_IP=' $BUILD_INFO | awk -F'SLAVE_IP=' {'print $2'}`
-export DOWNLOAD_URL=`grep '^DOWNLOAD_URL=' $BUILD_INFO | awk -F'DOWNLOAD_URL=' {'print $2'}`
-export DOWNLOAD_PKG_NAME=`grep '^DOWNLOAD_PKG_NAME=' $BUILD_INFO | awk -F'DOWNLOAD_PKG_NAME=' {'print $2'}`
+export DOWNLOAD_URL=`grep '^DOWNLOAD_URL=' $BUILD_INFO | awk -F'DOWNLOAD_URL=' {'print $2'} | head -n1`
+export DOWNLOAD_PKG_NAME=`grep '^DOWNLOAD_PKG_NAME=' $BUILD_INFO | awk -F'DOWNLOAD_PKG_NAME=' {'print $2'} | head -n1`
 
 export GERRIT_CHANGE_ID=`grep '^GERRIT_CHANGE_ID=' $BUILD_INFO | awk -F'GERRIT_CHANGE_ID=' {'print $2'}`
 export GERRIT_CHANGE_NUMBER=`grep '^GERRIT_CHANGE_NUMBER=' $BUILD_INFO | awk -F'GERRIT_CHANGE_NUMBER=' {'print $2'}`

@@ -33,6 +33,7 @@ export DOMAIN_NAME=`cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'}`
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
 export TODAY=`date +%y%m%d`
 export TOWEEK=`date +%yw%V`
+	[[ -z $ITASK_PATH ]] && export ITASK_PATH=$TASK_SPACE/itask-$TOWEEK
 export TOYEAR=`date +%Y`
 export SEED=$RANDOM
 export BUILD_TIME=`date +%y%m%d%H%M%S`
@@ -122,12 +123,28 @@ EXPORT_IBUILD_SPEC()
  export JDK_PATH=`ls -d $JDK6_PATH $JDK7_PATH | grep $IBUILD_AOSP_JDK`
  export IBUILD_ADD_STEP_1=`grep '^IBUILD_ADD_STEP_1=' $IBUILD_SPEC | awk -F'IBUILD_ADD_STEP_1=' {'print $2'}`
  export IBUILD_ADD_STEP_1_LOG_NAME=`basename $IBUILD_ADD_STEP_1`
+ export IBUILD_ADD_STEP_2=`grep '^IBUILD_ADD_STEP_2=' $IBUILD_SPEC | awk -F'IBUILD_ADD_STEP_2=' {'print $2'}`
+ export IBUILD_ADD_STEP_2_LOG_NAME=`basename $IBUILD_ADD_STEP_2`
+
+ export GERRIT_CHANGE_NUMBER=`grep '^GERRIT_CHANGE_NUMBER=' $IBUILD_SPEC | awk -F'GERRIT_CHANGE_NUMBER=' {'print $2'}`
+ export GERRIT_CHANGE_ID=`grep '^GERRIT_CHANGE_ID=' $IBUILD_SPEC | awk -F'GERRIT_CHANGE_ID=' {'print $2'}`
+ export GERRIT_CHANGE_URL=`grep '^GERRIT_CHANGE_URL=' $IBUILD_SPEC | awk -F'GERRIT_CHANGE_URL=' {'print $2'}`
+ export GERRIT_CHANGE_OWNER_EMAIL=`grep '^GERRIT_CHANGE_OWNER_EMAIL=' $IBUILD_SPEC | awk -F'GERRIT_CHANGE_OWNER_EMAIL=' {'print $2'}`
+ export GERRIT_CHANGE_OWNER_NAME=`grep '^GERRIT_CHANGE_OWNER_NAME=' $IBUILD_SPEC | awk -F'GERRIT_CHANGE_OWNER_NAME=' {'print $2'}`
+ export GERRIT_PATCHSET_NUMBER=`grep '^GERRIT_PATCHSET_NUMBER=' $IBUILD_SPEC | awk -F'GERRIT_PATCHSET_NUMBER=' {'print $2'}`
+ export GERRIT_PATCHSET_REVISION=`grep '^GERRIT_PATCHSET_REVISION=' $IBUILD_SPEC | awk -F'GERRIT_PATCHSET_REVISION=' {'print $2'}`
+ export GERRIT_PROJECT=`grep '^GERRIT_PROJECT=' $IBUILD_SPEC | awk -F'GERRIT_PROJECT=' {'print $2'}`
+
 # export =`grep '^=' $IBUILD_SPEC | awk -F'=' {'print $2'}`
 
  export SPEC_NAME=`basename $IBUILD_SPEC`
  export AUTOUT_PATH=$LOC_WORKSPACE/autout
  export AUTOUT_UPLOAD_PATH=$AUTOUT_PATH/upload
  export AUTOUT_NAME=`echo $SPEC_NAME | awk -F'spec.build.' {'print $2'}`
+ for CLEAN_AUTOUT in `ls $AUTOUT_PATH | egrep -v 'upload'`
+ do
+	rm -fr $AUTOUT_PATH/$CLEAN_AUTOUT >/dev/null 2>&1
+ done
  export LOG_PATH=$AUTOUT_PATH/log
 	mkdir -p $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_UPLOAD_PATH $LOG_PATH >/dev/null 2>&1
 	rm -f $LOG_PATH/* >/dev/null 2>&1
@@ -146,12 +163,26 @@ BTRFS_CLEANUP()
 {
  export BTRFS_TOP=`basename $1`
 
- for BTRFS_SUBVOL in `sudo btrfs subvolume list $LOC_WORKSPACE | egrep -v 'ref_repo' | awk -F'path ' {'print $2'} | grep $BTRFS_TOP`
+ for REF_REPO_MD5 in `ls $LOC_WORKSPACE/ref_repo | egrep -v 'info'`
+ do
+	if [[ ! -f $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5/Makefile ]] ; then
+		export SEED=$RANDOM
+		echo -------------------------
+		echo $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5
+		echo $LOC_WORKSPACE/build/bad.$SEED
+		cat $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5.info
+		echo -------------------------
+		mv $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5 $LOC_WORKSPACE/build/bad.$SEED
+		mv $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5.info $LOC_WORKSPACE/build/bad.$SEED/
+	fi
+ done
+
+ for BTRFS_SUBVOL in `sudo btrfs subvolume list $LOC_WORKSPACE | egrep -v 'ref_repo' | awk -F'path ' {'print $2'} | grep $BTRFS_TOP | awk -F'build/' {'print $2'}`
  do
 	sleep 3
 	SPLIT_LINE clean_$LOC_WORKSPACE/$BTRFS_SUBVOL
 	rm -f $LOC_WORKSPACE/$BTRFS_SUBVOL.info
-	time sudo btrfs subvolume delete $LOC_WORKSPACE/$BTRFS_SUBVOL >>$LOG_PATH/fs_issue.log 2>&1
+	time sudo btrfs subvolume delete $LOC_WORKSPACE/build/$BTRFS_SUBVOL >>$LOG_PATH/fs_issue.log 2>&1
 	LOG_STATUS $? clean_$LOC_WORKSPACE/$BTRFS_SUBVOL $LOG_PATH/fs_issue.log
  done
 
@@ -208,7 +239,7 @@ REPO_SYNC()
 
  if [[ ! -z $IBUILD_ADD_STEP_1 ]] ; then
 	SPLIT_LINE "$IBUILD_ADD_STEP_1"
-	time $IBUILD_ADD_STEP_1 >$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
+	time $IBUILD_ADD_STEP_1 -j$JOBS >$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
 	LOG_STATUS $? $IBUILD_ADD_STEP_1 $LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log
  fi
 
@@ -360,7 +391,7 @@ SETUP_BUILD_OUT()
 fi
 
  mkdir -p $AUTOUT_UPLOAD_PATH/$TODAY
- SPLIT_LINE upload_$TODAY_$IVER.$SHORT_AUTOUT_NAME
+ SPLIT_LINE "upload $TODAY $IVER.$SHORT_AUTOUT_NAME"
  cp /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME/log/
  cp /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME/
  time cp -R $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME $AUTOUT_UPLOAD_PATH/$TODAY/
@@ -420,4 +451,12 @@ LOG_STATUS()
 	export RESULT=PASSED
  fi
 }
+
+REPO_DOWNLOAD()
+{
+ SPLIT_LINE "repo download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER"
+ $REPO_CMD download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER >>$LOG_PATH/repo_download.log 2>&1
+ LOG_STATUS $? repo_download $LOG_PATH/repo_download.log
+}
+
 

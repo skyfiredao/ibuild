@@ -41,7 +41,7 @@ fi
 if [[ -d $TASK_SPACE/ispec.lock ]] ; then
 	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/ispec.lock
 else
-	rm -fr $TASK_SPACE/ispec.lock
+	rm -f $TASK_SPACE/ispec.lock
 	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec $TASK_SPACE/ispec.lock
 fi
 

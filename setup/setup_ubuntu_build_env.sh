@@ -76,7 +76,7 @@ if [[ `readlink /bin/sh` = dash && -f /bin/bash ]] ; then
 fi
 
 # If you are chinese
-ln -sf /usr/share/zoneinfo/posix/Asia/Shanghai /etc/localtime
+sudo ln -sf /usr/share/zoneinfo/posix/Asia/Shanghai /etc/localtime
 
 # update current system to last
 sudo aptitude -y full-upgrade

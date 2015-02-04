@@ -30,4 +30,5 @@ echo --------------------------------------- >>/tmp/ihook.log
 echo $IHOOK_REPOS $IHOOK_REV $IHOOK_TXN_NAME >>/tmp/ihook.log
 echo --------------------------------------- >>/tmp/ihook.log
 
+bash -x $IBUILD_ROOT/ihook/watch.sh $IHOOK_REV debug >>/tmp/ihook.log 2>&1 &
 

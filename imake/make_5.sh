@@ -43,6 +43,12 @@ SPLIT_LINE envsetup
 time source build/envsetup.sh >$LOG_PATH/envsetup.log 2>&1
 LOG_STATUS $? envsetup.sh $LOG_PATH/envsetup.log
 
+if [[ ! -z $IBUILD_ADD_STEP_2 ]] ; then
+	SPLIT_LINE "$IBUILD_ADD_STEP_2"
+	time $IBUILD_ADD_STEP_2 >$LOG_PATH/$IBUILD_ADD_STEP_2_LOG_NAME.log 2>&1
+	LOG_STATUS $? $IBUILD_ADD_STEP_2 $LOG_PATH/$IBUILD_ADD_STEP_2_LOG_NAME.log
+fi
+
 SPLIT_LINE lunch
 time lunch $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT >$LOG_PATH/lunch.log 2>&1
 LOG_STATUS $? lunch $LOG_PATH/lunch.log

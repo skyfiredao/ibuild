@@ -34,8 +34,8 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 	exit 0
 fi
 
-if [[ -d $TASK_SPACE/$USER.tasks.lock ]] ; then
-	echo -e "$TASK_SPACE/$USER.tasks.lock"
+if [[ -d $TASK_SPACE/$USER.tasks.lock.$SEED ]] ; then
+	echo -e "$TASK_SPACE/$USER.tasks.lock.$SEED"
 	exit
 fi
 
@@ -47,10 +47,11 @@ if [[ ! -f $SPEC_URL ]] ; then
 	exit
 fi
 
-svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/tasks $TASK_SPACE/$USER.tasks.lock
-cp $SPEC_URL $TASK_SPACE/$USER.tasks.lock/$BUILD_TIME$RADOM.$SPEC_NAME
-svn add $TASK_SPACE/$USER.tasks.lock/$BUILD_TIME$RADOM.$SPEC_NAME >/dev/null 2>&1
-svn ci $IBUILD_SVN_OPTION -m "auto: submit $SPEC_NAME" $TASK_SPACE/$USER.tasks.lock/$BUILD_TIME$RADOM.$SPEC_NAME >/tmp/add_task.log 2>&1
-[[ $? = 0 ]] && rm -fr $TASK_SPACE/$USER.tasks.lock
+svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/tasks $TASK_SPACE/$USER.tasks.lock.$SEED
+cp $SPEC_URL $TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME
+svn add $TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME >/dev/null 2>&1
+svn ci $IBUILD_SVN_OPTION -m "auto: submit $SPEC_NAME" $TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME >/tmp/add_task.log 2>&1
+[[ $? = 0 ]] && rm -fr $TASK_SPACE/$USER.tasks.lock.$SEED
 grep 'Committed revision' /tmp/add_task.log
+sleep 1
 
