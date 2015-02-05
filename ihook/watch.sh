@@ -39,16 +39,17 @@ mkdir -p $WATCH_SPACE >/dev/null 2>&1
 chmod 777 -R $WATCH_SPACE
 
 export ICHANGE_REV=$1
-export WATCH_TMP=ichange.$ICHANGE_REV.tmp
+export WATCH_TMP=tmp.ichange.$ICHANGE_REV
+mkdir -p $TASK_SPACE/$WATCH_TMP
 
-svn log -v -r $ICHANGE_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ichange >$TASK_SPACE/$WATCH_TMP
-export WATCH_GERRIT_SERVER=`cat $TASK_SPACE/$WATCH_TMP | grep ichange | awk -F"$TOYEAR" {'print $2'} | awk -F'/' {'print $2'} | sort -u | head -n1`
-export WATCH_GERRIT_BRANCH=`cat $TASK_SPACE/$WATCH_TMP | grep ichange | grep $TOWEEK | awk -F"$WATCH_GERRIT_SERVER/" {'print $2'} | awk -F"/$TOWEEK.all-change" {'print $1'} | sort -u | head -n1`
+svn log -v -r $ICHANGE_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ichange >$TASK_SPACE/$WATCH_TMP/svn.log
+export WATCH_GERRIT_SERVER=`cat $TASK_SPACE/$WATCH_TMP/svn.log | grep ichange | awk -F"$TOYEAR" {'print $2'} | awk -F'/' {'print $2'} | sort -u | head -n1`
+export WATCH_GERRIT_BRANCH=`cat $TASK_SPACE/$WATCH_TMP/svn.log | grep ichange | grep $TOWEEK | awk -F"$WATCH_GERRIT_SERVER/" {'print $2'} | awk -F"/$TOWEEK.all-change" {'print $1'} | sort -u | head -n1`
 	[[ `echo $WATCH_GERRIT_BRANCH | grep all-change` ]] && export WATCH_GERRIT_BRANCH=''
-export WATCH_GERRIT_STAGE=`cat $TASK_SPACE/$WATCH_TMP | egrep 'Code-Review|change-abandoned|change-merged|change-restored|comment-added|merge-failed|patchset-created|reviewer-added|ref-updated' | awk -F"$TOWEEK." {'print $2'}`
+export WATCH_GERRIT_STAGE=`cat $TASK_SPACE/$WATCH_TMP/svn.log | egrep 'Code-Review|change-abandoned|change-merged|change-restored|comment-added|merge-failed|patchset-created|reviewer-added|ref-updated' | awk -F"$TOWEEK." {'print $2'}`
 
-svn blame $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ichange/ichange/$TOYEAR/$WATCH_GERRIT_SERVER/$WATCH_GERRIT_BRANCH/$TOWEEK.all-change >$TASK_SPACE/$WATCH_TMP
-export ICHANGE_ENTRY=`cat $TASK_SPACE/$WATCH_TMP | grep " $ICHANGE_REV " | awk -F' ' {'print $3'} | tail -n1`
+svn blame $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ichange/ichange/$TOYEAR/$WATCH_GERRIT_SERVER/$WATCH_GERRIT_BRANCH/$TOWEEK.all-change >$TASK_SPACE/$WATCH_TMP/svn.blame
+export ICHANGE_ENTRY=`cat $TASK_SPACE/$WATCH_TMP/svn.blame | grep " $ICHANGE_REV " | awk -F' ' {'print $3'} | tail -n1`
 export WATCH_GERRIT_revision=`echo $ICHANGE_ENTRY | awk -F'|' {'print $1'}`
 export WATCH_GERRIT_id=`echo $ICHANGE_ENTRY | awk -F'|' {'print $2'}`
 export WATCH_GERRIT_email=`echo $ICHANGE_ENTRY | awk -F'|' {'print $3'}`
@@ -67,11 +68,12 @@ fi
 
 SPEC_EXT()
 {
- mkdir -p $TASK_SPACE/ispec.$ICHANGE_REV.tmp >/dev/null 2>&1
+ export ISPEC_TMP=tmp.ispec.$ICHANGE_REV
+ mkdir -p $TASK_SPACE/$ISPEC_TMP >/dev/null 2>&1
  export SPEC_EXT_URL=$1
  export SPEC_EXT_NAME=`basename $SPEC_EXT_URL`
- cp $SPEC_EXT_URL $TASK_SPACE/ispec.$ICHANGE_REV.tmp/$SPEC_EXT_NAME
- cat << _EOF_ >>$TASK_SPACE/ispec.$ICHANGE_REV.tmp/$SPEC_EXT_NAME
+ cp $SPEC_EXT_URL $TASK_SPACE/$ISPEC_TMP/$SPEC_EXT_NAME
+ cat << _EOF_ >>$TASK_SPACE/$ISPEC_TMP/$SPEC_EXT_NAME
 GERRIT_CHANGE_NUMBER=$WATCH_GERRIT_change_number
 GERRIT_CHANGE_ID=$WATCH_GERRIT_id
 GERRIT_CHANGE_URL=$GERRIT_CHANGE_URL
@@ -81,8 +83,7 @@ GERRIT_PATCHSET_NUMBER=$WATCH_GERRIT_patchSet_number
 GERRIT_PATCHSET_REVISION=$WATCH_GERRIT_revision
 GERRIT_PROJECT=$WATCH_GERRIT_PROJECT
 _EOF_
- echo $TASK_SPACE/ispec.$ICHANGE_REV.tmp/$SPEC_EXT_NAME
- cp $TASK_SPACE/ispec.$ICHANGE_REV.tmp/$SPEC_EXT_NAME /tmp/
+ echo $TASK_SPACE/$ISPEC_TMP/$SPEC_EXT_NAME
 }
 
 ITASK_SUBMIT()
@@ -94,8 +95,8 @@ ITASK_SUBMIT()
  for SPEC_NAME in `ls $ISPEC_PATH/spec | grep $WATCHDOG_SPEC`
  do
 	SPEC_EXT $ISPEC_PATH/spec/$SPEC_NAME
-	$DEBUG $ISPEC_PATH/itask $TASK_SPACE/ispec.$ICHANGE_REV.tmp/$SPEC_NAME
-	$DEBUG rm -fr $TASK_SPACE/ispec.$ICHANGE_REV.tmp
+	$DEBUG $ISPEC_PATH/itask $TASK_SPACE/$ISPEC_TMP/$SPEC_NAME
+	$DEBUG rm -fr $TASK_SPACE/$ISPEC_TMP
  done
  echo $SPEC_NAME $ICHANGE_ENTRY >>/tmp/ITASK_SUBMIT.log
 }
@@ -129,5 +130,5 @@ do
 done
 
 rm -f $WATCHDOG_PATH/tmp
-rm -f $TASK_SPACE/$WATCH_TMP
+rm -fr $TASK_SPACE/$WATCH_TMP
 

@@ -62,7 +62,8 @@ rm jdk1.6.0_45.bz2 bin.tar.bz2
 export REPO=`which repo`
 
 sudo mkdir -p /local/{ccache,out}
-sudo mkdir -p /local/workspace/{ref_repo,build,autout,upload}
+sudo mkdir -p /local/workspace/{ref_repo,build,autout}
+sudo mkdir -p /local/workspace/autout/{log,upload}
 sudo chmod 775 /local /local/{ccache,workspace,out}
 sudo chown $USER -R /local
 # chmod +s /sbin/btrfs*
@@ -156,7 +157,7 @@ sudo ln -s /usr/bin/fromdos /usr/local/bin/dos2unix
 sudo ln -sf /usr/lib/jvm/java-7-openjdk-amd64 /usr/local/jdk1.7
 sudo ln -sf /usr/local/jdk1.7 /usr/local/jdk
 
-echo "# export LC_ALL=C
+echo "export LC_ALL=C
 export LC_CTYPE=C
 export PATH=/usr/local/jdk/bin:\$PATH:
 export CLASSPATH=/usr/local/jdk/lib:.

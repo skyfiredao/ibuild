@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (C) <2014,2015>  <Ding Wei>
+# Copyright (C) <2014>  <Ding Wei>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,20 +15,36 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Change log
-# 150119: Ding Wei created it
-# post-commit
-export IHOOK_REPOS="$1"
-export IHOOK_REV="$2"
-export IHOOK_TXN_NAME="$3"
+# 150205 Create by Ding Wei
 
 export LC_CTYPE=C
-export HOME=/root
-export IBUILD_ROOT=$HOME/ibuild
-source /etc/bash.bashrc
+export LC_ALL=C
+export SRC_PATH=$1
+export DEST_PATH=$2
 
-echo --------------------------------------- >>/tmp/ihook-icase.log
-echo $IHOOK_REPOS $IHOOK_REV $IHOOK_TXN_NAME >>/tmp/ihook-icase.log
-echo --------------------------------------- >>/tmp/ihook-icase.log
+SYNC_STEP()
+{
+ if [[ ! -d $SRC_PATH || ! -d $DEST_PATH ]] ; then
+	exit
+ fi
 
-bash -x $IBUILD_ROOT/ihook/mail_icase.sh $IHOOK_REV >>/tmp/ihook-icase.log 2>&1 &
+ rsync -av --delete $SRC_PATH/ $DEST_PATH/
+}
+
+cd $DEST_PATH/
+svn st >/tmp/svn.st.log
+
+for ADD_FILE in `cat /tmp/svn.st.log | grep '^?' | awk -F'^?' {'print $2'}`
+do
+	svn add -q $ADD_FILE
+done
+
+for DEL_FILE in `cat /tmp/svn.st.log | grep '^\!' | awk -F'^!' {'print $2'}`
+do
+	svn rm -q $DEL_FILE
+done
+
+svn st
+
+echo "svn ci"
 

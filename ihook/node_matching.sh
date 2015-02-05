@@ -88,6 +88,7 @@ for ITASK_REV in `ls $QUEUE_SPACE`
 do
 	[[ -f /tmp/EXIT ]] && EXIT
 	echo $ITASK_REV >$TASK_SPACE/queue.lock
+	chmod 777 $TASK_SPACE/queue.lock
 
 	export ITASK_PATH=`ls -d $TASK_SPACE/itask-* | tail -n1`
 	export ITASK_REV_MD5=`echo $ITASK_REV | md5sum | awk -F' ' {'print $1'}`
