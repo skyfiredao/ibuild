@@ -34,10 +34,6 @@ fi
 export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
 export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
 
-export WATCH_SPACE=$TASK_SPACE/watch
-mkdir -p $WATCH_SPACE >/dev/null 2>&1
-chmod 777 -R $WATCH_SPACE
-
 export ICHANGE_REV=$1
 export WATCH_TMP=tmp.ichange.$ICHANGE_REV
 mkdir -p $TASK_SPACE/$WATCH_TMP

@@ -33,7 +33,7 @@ touch $TASK_SPACE/itask.lock
 EXPORT_IBUILD_CONF
 EXPORT_IBUILD_SPEC $ITASK_REV
 
-rm -f $LOG_PATH/* >/dev/null 2>&1 &
+rm -f $LOG_PATH/* >/dev/null 2>&1
 
 hostname
 echo $IP
@@ -46,7 +46,6 @@ SETUP_BUILD_REPO
 [[ ! -z $GERRIT_CHANGE_NUMBER ]] && REPO_DOWNLOAD
 
 $IBUILD_ROOT/imake/$IBUILD_MAKE_TOOL
-[[ -z $MAKE_STATUS ]] && LOG_STATUS 1 build /tmp/build-$ITASK_REV.log
  
 SETUP_BUILD_OUT
 SPLIT_LINE DONE

@@ -143,7 +143,6 @@ EXPORT_IBUILD_SPEC()
  export AUTOUT_NAME=`echo $SPEC_NAME | awk -F'spec.build.' {'print $2'}`
  export LOG_PATH=$AUTOUT_PATH/log
 	mkdir -p $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_UPLOAD_PATH $LOG_PATH >/dev/null 2>&1
-	rm -f $LOG_PATH/* >/dev/null 2>&1
 	echo '#'$SPEC_NAME >$LOG_PATH/build_info.txt
 	cat $TASK_SPACE/spec.build >>$LOG_PATH/build_info.txt
 }
@@ -192,7 +191,7 @@ REPO_INFO()
 {
  export IBUILD_GRTSRV_PORT=`echo $IBUILD_GRTSRV | awk -F':' {'print $2'}`
  export IBUILD_GRTSRV_NAME=`echo $IBUILD_GRTSRV | awk -F':' {'print $1'}`
- ssh -p $IBUILD_GRTSRV_PORT $IBUILD_GRTSRV_ID@$IBUILD_GRTSRV_NAME >$LOG_PATH/$IBUILD_GRTSRV_NAME.log 2>&1
+ ssh -p $IBUILD_GRTSRV_PORT $IBUILD_GRTSRV_ID@$IBUILD_GRTSRV_NAME | sed "s/$IBUILD_GRTSRV_ID/*/g" >$LOG_PATH/$IBUILD_GRTSRV_NAME.log 2>&1
 
  export REPO_INIT_CMD=''
  [[ ! -z $IBUILD_GRTSRV_REPO ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" --repo-url=ssh://$IBUILD_GRTSRV_ID_DEFAULT@$IBUILD_GRTSRV_REPO"
@@ -215,9 +214,9 @@ SETUP_REF_REPO()
 	mv /tmp/$USER.repo_init.tmp $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME.info
 	cd $LOC_WORKSPACE/ref_repo/
 	btrfs subvolume create $REPO_INIT_CMD_MD5_NAME >/dev/null 2>&1
-	chmod 755 $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
+	chmod 775 $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
 	cd $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
-	/bin/bash $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME.info >$LOG_PATH/init.log 2>&1
+	/bin/bash $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME.info | sed "s/$IBUILD_GRTSRV_ID/*/g" >$LOG_PATH/init.log 2>&1
 	REPO_SYNC $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
 	cp $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME.info $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME/ >/dev/null 2>&1
  fi
@@ -232,12 +231,6 @@ REPO_SYNC()
  time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
  LOG_STATUS $? repo_sync $LOG_PATH/$REPO_SYNC_LOG_NAME.log
  CCACHE_HOTFIX
-
- if [[ ! -z $IBUILD_ADD_STEP_1 ]] ; then
-	SPLIT_LINE "$IBUILD_ADD_STEP_1"
-	time $IBUILD_ADD_STEP_1 -j$JOBS >$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
-#	LOG_STATUS $? $IBUILD_ADD_STEP_1 $LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log
- fi
 
  rm -f out
  if [[ -d /local/out ]]; then
@@ -267,6 +260,13 @@ CCACHE_HOTFIX()
  if [[ -f prebuilts/misc/linux-x86/ccache/ccache ]] ; then
 	/bin/cp $IBUILD_ROOT/bin/ccache-LDFLAGS-3.2 prebuilts/misc/linux-x86/ccache/ccache >/dev/null 2>&1
  fi
+ svn cleanup ~/.m2 >$LOG_PATH/svn_up_m2.log 2>&1
+ svn st ~/.m2 >/tmp/svn.st.log
+ for CLEAN in `cat /tmp/svn.st.log | grep '^?' | awk -F'^?' {'print $2'}`
+ do
+	[[ -e $CLEAN ]] && rm -fr $CLEAN
+ done
+ svn up ~/.m2 >>$LOG_PATH/svn_up_m2.log 2>&1
 }
 
 SETUP_IVER()
@@ -453,7 +453,7 @@ LOG_STATUS()
 REPO_DOWNLOAD()
 {
  SPLIT_LINE "repo download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER"
- $REPO_CMD download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER >>$LOG_PATH/repo_download.log 2>&1
+ time $REPO_CMD download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER >>$LOG_PATH/repo_download.log 2>&1
  LOG_STATUS $? repo_download $LOG_PATH/repo_download.log
 }
 

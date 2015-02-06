@@ -38,6 +38,12 @@ if [[ -d $JDK_PATH ]] ; then
 	export JAVA_HOME=$JDK_PATH
 fi
 
+if [[ ! -z $IBUILD_ADD_STEP_1 ]] ; then
+	SPLIT_LINE "$IBUILD_ADD_STEP_1"
+	time $IBUILD_ADD_STEP_1 -j$JOBS >$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
+#	LOG_STATUS $? $IBUILD_ADD_STEP_1 $LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log
+fi
+
 cd $BUILD_PATH_TOP
 SPLIT_LINE envsetup
 time source build/envsetup.sh >$LOG_PATH/envsetup.log 2>&1
@@ -57,8 +63,7 @@ rm -fr out/* >/dev/null 2>&1
 
 SPLIT_LINE "make -j$JOBS"
 time make -j$JOBS >$LOG_PATH/full_build.log 2>&1
-export MAKE_STATUS=$?
-LOG_STATUS $MAKE_STATUS make_j$JOBS $LOG_PATH/full_build.log
+LOG_STATUS $? make_j$JOBS $LOG_PATH/full_build.log
 
 SPLIT_LINE make_release
 time make -j$JOBS release >$LOG_PATH/release.log 2>&1
