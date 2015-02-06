@@ -52,7 +52,7 @@ export NETCAT=`which nc`
 	[[ -z $NETCAT ]] && export NETCAT="$IBUILD_ROOT/bin/netcat.openbsd-u14.04"
 
 $NETCAT 127.0.0.1 1234
-pkill -9 nc >/dev/null 2>&1
+# pkill -9 nc >/dev/null 2>&1
 
 # sudo rm -f /root/ibuild >/dev/null 2>&1
 # sudo ln -sf $HOME/ibuild /root/ibuild >/dev/null 2>&1
@@ -187,12 +187,20 @@ BTRFS_CLEANUP()
  fi
 }
 
+MASK_LOG()
+{
+ export MASK_LOG_SRC=$1
+ cat $MASK_LOG_SRC | sed "s/$IBUILD_GRTSRV_ID/*/g" >/tmp/tmp.log.$SEED
+ mv /tmp/tmp.log.$SEED $MASK_LOG_SRC
+}
+
 REPO_INFO()
 {
  export IBUILD_GRTSRV_PORT=`echo $IBUILD_GRTSRV | awk -F':' {'print $2'}`
  export IBUILD_GRTSRV_NAME=`echo $IBUILD_GRTSRV | awk -F':' {'print $1'}`
- ssh -p $IBUILD_GRTSRV_PORT $IBUILD_GRTSRV_ID@$IBUILD_GRTSRV_NAME | sed "s/$IBUILD_GRTSRV_ID/*/g" >$LOG_PATH/$IBUILD_GRTSRV_NAME.log 2>&1
-
+ ssh -p $IBUILD_GRTSRV_PORT $IBUILD_GRTSRV_ID@$IBUILD_GRTSRV_NAME >$LOG_PATH/$IBUILD_GRTSRV_NAME.log 2>&1
+ MASK_LOG $LOG_PATH/$IBUILD_GRTSRV_NAME.log
+ 
  export REPO_INIT_CMD=''
  [[ ! -z $IBUILD_GRTSRV_REPO ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" --repo-url=ssh://$IBUILD_GRTSRV_ID_DEFAULT@$IBUILD_GRTSRV_REPO"
  [[ ! -z $IBUILD_GRTSRV_INIT_OPTION ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" $IBUILD_GRTSRV_INIT_OPTION"
@@ -216,7 +224,8 @@ SETUP_REF_REPO()
 	btrfs subvolume create $REPO_INIT_CMD_MD5_NAME >/dev/null 2>&1
 	chmod 775 $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
 	cd $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
-	/bin/bash $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME.info | sed "s/$IBUILD_GRTSRV_ID/*/g" >$LOG_PATH/init.log 2>&1
+	/bin/bash $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME.info >$LOG_PATH/init.log 2>&1
+	MASK_LOG $LOG_PATH/init.log
 	REPO_SYNC $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
 	cp $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME.info $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME/ >/dev/null 2>&1
  fi
@@ -226,11 +235,18 @@ REPO_SYNC()
 {
  cd $1
  export REPO_SYNC_LOG_NAME=sync-`basename $1`
+ export END_CHECK=$2
 
  SPLIT_LINE repo_sync
  time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
  LOG_STATUS $? repo_sync $LOG_PATH/$REPO_SYNC_LOG_NAME.log
  CCACHE_HOTFIX
+
+ if [[ ! -z $ENC_CHECK && ! -z $IBUILD_ADD_STEP_1 ]] ; then
+	SPLIT_LINE "$IBUILD_ADD_STEP_1"
+	TIMEOUT_KILL 300 git &
+	time $IBUILD_ADD_STEP_1 -j$JOBS >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
+ fi
 
  rm -f out
  if [[ -d /local/out ]]; then
@@ -382,7 +398,7 @@ SETUP_BUILD_OUT()
  mv $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME
 
  if [[ ! -f $AUTOUT_UPLOAD_PATH/README ]] ; then
-	sshfs $IBUILD_ROBOT@$IBUILD_UPLOAD_URL $AUTOUT_UPLOAD_PATH >$LOG_PATH/sshfs.log 2>&1
+	sshfs -o nonempty $IBUILD_ROBOT@$IBUILD_UPLOAD_URL $AUTOUT_UPLOAD_PATH >$LOG_PATH/sshfs.log 2>&1
 	LOG_STATUS $? sshfs_$AUTOUT_UPLOAD_PATH $LOG_PATH/sshfs.log 
  fi
 
@@ -457,4 +473,11 @@ REPO_DOWNLOAD()
  LOG_STATUS $? repo_download $LOG_PATH/repo_download.log
 }
 
+TIMEOUT_KILL()
+{
+ export TIMEOUT_KILL_SLEEP=$1
+ export TIMEOUT_KILL_TARGET=$2
+ sleep $TIMEOUT_KILL_SLEEP
+ pkill -9 $TIMEOUT_KILL_TARGET
+}
 
