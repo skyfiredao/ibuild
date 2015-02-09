@@ -126,5 +126,5 @@ do
 done
 
 rm -f $WATCHDOG_PATH/tmp
-rm -fr $TASK_SPACE/$WATCH_TMP
-
+[[ -z $DEBUG ]] && rm -fr $TASK_SPACE/$WATCH_TMP
+[[ -z $DEBUG ]] && rm -fr $TASK_SPACE/$ISPEC_TMP

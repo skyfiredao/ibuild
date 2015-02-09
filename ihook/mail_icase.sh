@@ -76,9 +76,16 @@ export GERRIT_PATCHSET_REVISION=`grep '^GERRIT_PATCHSET_REVISION=' $BUILD_INFO |
 export GERRIT_PROJECT=`grep '^GERRIT_PROJECT=' $BUILD_INFO | awk -F'GERRIT_PROJECT=' {'print $2'}`
 
 export MAIL_LIST=$IBUILD_FOUNDER_EMAIL
-# [[ ! -z $EMAIL_PM ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_PM"
-# [[ ! -z $EMAIL_REL ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_REL"
-# [[ ! -z $GERRIT_CHANGE_OWNER_EMAIL ]] && export MAIL_LIST="$MAIL_LIST,$GERRIT_CHANGE_OWNER_EMAIL"
+if [[ ! -z $EMAIL_TMP && ! `echo $EMAIL_TMP | egrep 'root|ubuntu'` ]] ; then
+	export MAIL_LIST="$MAIL_LIST,$EMAIL_TMP"
+fi
+
+if [[ ! -z $GERRIT_CHANGE_OWNER_EMAIL ]] ; then
+echo	export MAIL_LIST="$MAIL_LIST,$GERRIT_CHANGE_OWNER_EMAIL"
+else
+	[[ ! -z $EMAIL_PM ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_PM"
+	[[ ! -z $EMAIL_REL ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_REL"
+fi
 
 echo -e "Hi, $GERRIT_CHANGE_OWNER_NAME
 

@@ -103,6 +103,7 @@ EXPORT_IBUILD_SPEC()
 
  export EMAIL_PM=`grep '^EMAIL_PM=' $IBUILD_SPEC | awk -F'EMAIL_PM=' {'print $2'}`
  export EMAIL_REL=`grep '^EMAIL_REL=' $IBUILD_SPEC | awk -F'EMAIL_REL=' {'print $2'}`
+ export EMAIL_TMP=`grep '^EMAIL_TMP=' $IBUILD_SPEC | awk -F'EMAIL_TMP=' {'print $2'}`
  export IBUILD_AUTOUT_FILES=`grep '^IBUILD_AUTOUT_FILES=' $IBUILD_SPEC | awk -F'IBUILD_AUTOUT_FILES=' {'print $2'}`
  export IBUILD_GRTSRV_ID=`grep '^IBUILD_GRTSRV_ID=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_ID=' {'print $2'}`
 	[[ -z $IBUILD_GRTSRV_ID ]] && export export IBUILD_GRTSRV_ID=$IBUILD_GRTSRV_ID_DEFAULT
@@ -412,6 +413,7 @@ SETUP_BUILD_OUT()
  SETUP_ICASE $TODAY/$IVER.$SHORT_AUTOUT_NAME
  if [[ $STATUS_CP = 0 ]] ; then
 	rm -fr $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME &
+	rm -fr $BUILD_PATH_TOP/out/* >/dev/null 2>&1
  fi
 }
 
