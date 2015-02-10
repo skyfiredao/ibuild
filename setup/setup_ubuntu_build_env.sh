@@ -62,8 +62,8 @@ rm jdk1.6.0_45.bz2 bin.tar.bz2
 export REPO=`which repo`
 
 sudo mkdir -p /local/{ccache,out}
-sudo mkdir -p /local/workspace/{ref_repo,build,autout}
-sudo mkdir -p /local/workspace/autout/{log,upload}
+sudo mkdir -p /local/workspace/{ref_repo,build,autout,upload}
+sudo mkdir -p /local/workspace/autout/log
 sudo chmod 775 /local /local/{ccache,workspace,out}
 sudo chown $USER -R /local
 # chmod +s /sbin/btrfs*

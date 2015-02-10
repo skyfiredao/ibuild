@@ -50,4 +50,5 @@ rm -f $IBUILD_ROOT/bin/repo
 time rsync -av /mnt/tmp/workspace/. /local/workspace/ >>/tmp/sync.log
 
 sudo umount /mnt/tmp
+sudo reboot
 

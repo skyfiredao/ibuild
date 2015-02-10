@@ -140,7 +140,7 @@ EXPORT_IBUILD_SPEC()
 
  export SPEC_NAME=`basename $IBUILD_SPEC`
  export AUTOUT_PATH=$LOC_WORKSPACE/autout
- export AUTOUT_UPLOAD_PATH=$AUTOUT_PATH/upload
+ export AUTOUT_UPLOAD_PATH=$LOC_WORKSPACE/upload
  export AUTOUT_NAME=`echo $SPEC_NAME | awk -F'spec.build.' {'print $2'}`
  export LOG_PATH=$AUTOUT_PATH/log
 	mkdir -p $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_UPLOAD_PATH $LOG_PATH >/dev/null 2>&1
@@ -331,6 +331,7 @@ SLAVE_IP=$IP
 START_TIME=$BUILD_TIME
 END_TIME=$END_TIME
 IVER=$IVER
+ITASK_REV=$ITASK_REV
 BUILD_TIME=`echo $END_SEC_TIME - $BUILD_SEC_TIME | bc`
 REL_PATH=$TODAY/$AUTOUT_NAME
 GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
@@ -473,6 +474,20 @@ REPO_DOWNLOAD()
  SPLIT_LINE "repo download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER"
  time $REPO_CMD download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER >>$LOG_PATH/repo_download.log 2>&1
  LOG_STATUS $? repo_download $LOG_PATH/repo_download.log
+}
+
+GET_ICHANGE_STRING()
+{
+ export ICHANGE_STRING=$1
+ export STRING_GERRIT_revision=`echo $ICHANGE_STRING | awk -F'|' {'print $1'}`
+ export STRING_GERRIT_id=`echo $ICHANGE_STRING | awk -F'|' {'print $2'}`
+ export STRING_GERRIT_email=`echo $ICHANGE_STRING | awk -F'|' {'print $3'}`
+        [[ -z $STRING_GERRIT_email ]] && export STRING_GERRIT_email=no_mail
+ export STRING_GERRIT_PATH=`echo $ICHANGE_STRING | awk -F'|' {'print $4'}`
+ export STRING_GERRIT_PROJECT=`echo $ICHANGE_STRING | awk -F'|' {'print $5'}`
+ export STRING_GERRIT_change_number=`echo $ICHANGE_STRING | awk -F'|' {'print $6'}`
+ export STRING_GERRIT_patchSet_number=`echo $ICHANGE_STRING | awk -F'|' {'print $7'}`
+ export STRING_GERRIT_value=`echo $ICHANGE_STRING | awk -F'|' {'print $8'}`
 }
 
 TIMEOUT_KILL()
