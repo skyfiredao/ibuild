@@ -48,6 +48,7 @@ export BUILD_INFO_NAME=`basename $ICASE_URL | head -n1`
 export BUILD_INFO=$TASK_SPACE/icase.lock/$BUILD_INFO_NAME
 
 export RESULT=`grep '^RESULT=' $BUILD_INFO | awk -F'RESULT=' {'print $2'} | head -n1`
+export MAKE_STATUS=`grep '^MAKE_STATUS=' $BUILD_INFO | awk -F'MAKE_STATUS=' {'print $2'} | head -n1`
 export BUILD_SPEC=`grep spec.build $BUILD_INFO | awk -F'#' {'print $2'} | head -n1`
 export EMAIL_PM=`grep '^EMAIL_PM=' $BUILD_INFO | awk -F'EMAIL_PM=' {'print $2'}`
 export EMAIL_REL=`grep '^EMAIL_REL=' $BUILD_INFO | awk -F'EMAIL_REL=' {'print $2'}`
@@ -61,6 +62,7 @@ export IBUILD_GRTSRV_URL=`grep '^IBUILD_GRTSRV_URL=' $BUILD_INFO | awk -F'IBUILD
 export IBUILD_TARGET_BUILD_VARIANT=`grep '^IBUILD_TARGET_BUILD_VARIANT=' $BUILD_INFO | awk -F'IBUILD_TARGET_BUILD_VARIANT=' {'print $2'}`
 export IBUILD_TARGET_PRODUCT=`grep '^IBUILD_TARGET_PRODUCT=' $BUILD_INFO | awk -F'IBUILD_TARGET_PRODUCT=' {'print $2'}`
 export IVER=`grep '^IVER=' $BUILD_INFO | awk -F'IVER=' {'print $2'}`
+export ITASK_REV=`grep '^ITASK_REV=' $BUILD_INFO | awk -F'ITASK_REV=' {'print $2'} | tail -n1`
 export SLAVE_HOST=`grep '^SLAVE_HOST=' $BUILD_INFO | awk -F'SLAVE_HOST=' {'print $2'}`
 export SLAVE_IP=`grep '^SLAVE_IP=' $BUILD_INFO | awk -F'SLAVE_IP=' {'print $2'}`
 export DOWNLOAD_URL=`grep '^DOWNLOAD_URL=' $BUILD_INFO | awk -F'DOWNLOAD_URL=' {'print $2'} | head -n1`
@@ -80,9 +82,9 @@ if [[ ! -z $EMAIL_TMP && ! `echo $EMAIL_TMP | egrep 'root|ubuntu'` ]] ; then
 	export MAIL_LIST="$MAIL_LIST,$EMAIL_TMP"
 fi
 
-if [[ ! -z $GERRIT_CHANGE_OWNER_EMAIL ]] ; then
-echo	export MAIL_LIST="$MAIL_LIST,$GERRIT_CHANGE_OWNER_EMAIL"
-else
+if [[ ! -z $GERRIT_CHANGE_OWNER_EMAIL && ! -z $MAKE_STATUS ]] ; then
+	export MAIL_LIST="$MAIL_LIST,$GERRIT_CHANGE_OWNER_EMAIL"
+elif [[ ! -z $MAKE_STATUS ]] ; then
 	[[ ! -z $EMAIL_PM ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_PM"
 	[[ ! -z $EMAIL_REL ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_REL"
 fi
@@ -116,7 +118,8 @@ from ibuild system
 [Daedalus]
 " >>/tmp/$ICASE_REV.mail
 
-cat /tmp/$ICASE_REV.mail | mail -s "[ibuild][$RESULT] $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT in $SLAVE_HOST" $MAIL_LIST
+[[ ! -z $ITASK_REV ]] && export SUB_ITASK_REV="[$ITASK_REV]"
+cat /tmp/$ICASE_REV.mail | mail -s "[ibuild][$RESULT]$SUB_ITASK_REV $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT in $SLAVE_HOST" $MAIL_LIST
 
 rm -f /tmp/$ICASE_REV.mail
 

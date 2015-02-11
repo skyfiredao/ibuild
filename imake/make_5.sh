@@ -38,23 +38,19 @@ if [[ -d $JDK_PATH ]] ; then
 	export JAVA_HOME=$JDK_PATH
 fi
 
-if [[ ! -z $IBUILD_ADD_STEP_1 ]] ; then
-	SPLIT_LINE "$IBUILD_ADD_STEP_1"
-	TIMEOUT_KILL 300 git &
-	time $IBUILD_ADD_STEP_1 -j$JOBS >$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
-#	LOG_STATUS $? $IBUILD_ADD_STEP_1 $LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log
-fi
+REPO_INFO
+SETUP_BUILD_REPO
+
+[[ ! -z $GERRIT_CHANGE_NUMBER ]] && REPO_DOWNLOAD
+
+[[ ! -z $IBUILD_ADD_STEP_1 ]] && IBUILD_ADD_STEP_1
 
 cd $BUILD_PATH_TOP
 SPLIT_LINE envsetup
 time source build/envsetup.sh >$LOG_PATH/envsetup.log 2>&1
 LOG_STATUS $? envsetup.sh $LOG_PATH/envsetup.log
 
-if [[ ! -z $IBUILD_ADD_STEP_2 ]] ; then
-	SPLIT_LINE "$IBUILD_ADD_STEP_2"
-	time $IBUILD_ADD_STEP_2 >$LOG_PATH/$IBUILD_ADD_STEP_2_LOG_NAME.log 2>&1
-	LOG_STATUS $? $IBUILD_ADD_STEP_2 $LOG_PATH/$IBUILD_ADD_STEP_2_LOG_NAME.log
-fi
+[[ ! -z $IBUILD_ADD_STEP_2 ]] && IBUILD_ADD_STEP_2
 
 SPLIT_LINE lunch
 time lunch $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT >$LOG_PATH/lunch.log 2>&1
@@ -64,10 +60,12 @@ rm -fr out/* >/dev/null 2>&1
 
 SPLIT_LINE "make -j$JOBS"
 time make -j$JOBS >$LOG_PATH/full_build.log 2>&1
-LOG_STATUS $? make_j$JOBS $LOG_PATH/full_build.log
+export MAKE_STATUS=$?
+LOG_STATUS $MAKE_STATUS make_j$JOBS $LOG_PATH/full_build.log
 
 SPLIT_LINE make_release
 time make -j$JOBS release >$LOG_PATH/release.log 2>&1
-LOG_STATUS $? make_release $LOG_PATH/release.log
+export MAKE_STATUS=$?
+LOG_STATUS $MAKE_STATUS make_release $LOG_PATH/release.log
 
 

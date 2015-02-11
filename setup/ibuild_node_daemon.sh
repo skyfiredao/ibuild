@@ -38,6 +38,10 @@ date
 
 CHK_ITASK_LOCK()
 {
+ if [[ -f $TASK_SPACE/spec.build ]] ; then
+	echo "$TASK_SPACE/spec.build locked"
+	exit 0
+ fi
  if [[ -f $TASK_SPACE/itask.lock ]] ; then
 	echo -e "$TASK_SPACE/itask.lock"
 	exit 0
@@ -50,6 +54,7 @@ NODE_STANDBY()
 	[[ -z $NETCAT ]] && export NETCAT="$IBUILD_ROOT/bin/netcat.openbsd-u14.04"
  export HOST_MD5=`echo $HOSTNAME | md5sum | awk -F' ' {'print $1'}`
 
+ CHK_ITASK_LOCK
  $NETCAT -l 1234 >$TASK_SPACE/itask.jobs
  export JOBS_REV=`cat $TASK_SPACE/itask.jobs`
  CHK_ITASK_LOCK
@@ -81,6 +86,7 @@ CHK_ITASK_LOCK
 
 while [ ! -f $TASK_SPACE/itask.lock ] ; 
 do
+	CHK_ITASK_LOCK
 	if [[ -f $TASK_SPACE/exit.lock ]] ; then
 		$NETCAT 127.0.0.1 1234
 		pkill -9 nc

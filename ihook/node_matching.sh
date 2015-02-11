@@ -19,6 +19,7 @@
 source /etc/bash.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
+export TASK_SPACE=/dev/shm
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
@@ -83,6 +84,7 @@ ASSIGN_JOB()
 }
 
 export QUEUE_SPACE=$1
+export TOWEEK=`date +%yw%V`
 
 for ITASK_REV in `ls $QUEUE_SPACE`
 do
@@ -90,7 +92,10 @@ do
 	echo $ITASK_REV >$TASK_SPACE/queue.lock
 	chmod 777 $TASK_SPACE/queue.lock
 
-	export ITASK_PATH=`ls -d $TASK_SPACE/itask-* | tail -n1`
+	[[ -f $TASK_SPACE/itask.lock ]] && export ITASK_PATH=`cat $TASK_SPACE/itask.lock`
+	[[ -z $ITASK_PATH ]] && export ITASK_PATH=`ls -d $TASK_SPACE/itask-* | tail -n1`
+	[[ -z $ITASK_PATH ]] && export ITASK_PATH=$TASK_SPACE/itask-$TOWEEK
+
 	export ITASK_REV_MD5=`echo $ITASK_REV | md5sum | awk -F' ' {'print $1'}`
 	export ITASK_SPEC_URL=`svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1`
 	export ITASK_SPEC_NAME=`basename $ITASK_SPEC_URL`

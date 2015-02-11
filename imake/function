@@ -21,11 +21,6 @@ export LC_CTYPE=C
 export LC_ALL=C
 export USER=`whoami`
 export TASK_SPACE=/run/shm
-if [[ -f $TASK_SPACE/itask.lock ]] ; then
-	export ITASK_PATH=`cat $TASK_SPACE/itask.lock` 
-else
-	export ITASK_PATH=`ls -d $TASK_SPACE/itask-* | tail -n1`
-fi
 export IP=`/sbin/ifconfig | grep 'inet addr:' | grep -v 127.0.0.1 | awk -F':' {'print $2'} | awk -F' ' {'print $1'} | head -n1`
 export MAC=`/sbin/ifconfig | grep HWaddr | awk -F'HWaddr ' {'print $2'} | head -n1`
 export HOSTNAME=`hostname`
@@ -33,7 +28,9 @@ export DOMAIN_NAME=`cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'}`
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
 export TODAY=`date +%y%m%d`
 export TOWEEK=`date +%yw%V`
-	[[ -z $ITASK_PATH ]] && export ITASK_PATH=$TASK_SPACE/itask-$TOWEEK
+[[ -f $TASK_SPACE/itask.lock ]] && export ITASK_PATH=`cat $TASK_SPACE/itask.lock`
+[[ -z $ITASK_PATH ]] && export ITASK_PATH=`ls -d $TASK_SPACE/itask-* | tail -n1`
+[[ -z $ITASK_PATH ]] && export ITASK_PATH=$TASK_SPACE/itask-$TOWEEK
 export TOYEAR=`date +%Y`
 export SEED=$RANDOM
 export BUILD_TIME=`date +%y%m%d%H%M%S`
@@ -82,11 +79,11 @@ EXPORT_IBUILD_SPEC()
  if [[ ! -z $ITASK_REV ]] ; then
 	svn up -q $IBUILD_SVN_OPTION $ITASK_PATH
 	export IBUILD_SPEC_NAME=`svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | head -n1 | awk -F'tasks/' {'print $2'} | awk -F' ' {'print $1'}`
-	if [[ -f $ITASK_PATH/tasks/$IBUILD_SPEC_NAME ]] ; then
+	if [[ -f $ITASK_PATH/tasks/$IBUILD_SPEC_NAME && ! -f $TASK_SPACE/spec.build ]] ; then
 		cp $ITASK_PATH/tasks/$IBUILD_SPEC_NAME $TASK_SPACE/
 		ln -sf $TASK_SPACE/$IBUILD_SPEC_NAME $TASK_SPACE/spec.build
 	else
-		SPLIT_LINE "$ITASK_PATH/tasks/$IBUILD_SPEC_NAME is not a spec.build"
+		SPLIT_LINE "$ITASK_PATH/tasks/$IBUILD_SPEC_NAME is not a spec.build or $TASK_SPACE/spec.build locked"
 		exit 1
 	fi
  fi
@@ -232,22 +229,37 @@ SETUP_REF_REPO()
  fi
 }
 
+IBUILD_ADD_STEP_1()
+{
+ svn cleanup ~/.m2 >$LOG_PATH/svn_up_m2.log 2>&1
+ svn st ~/.m2 >/tmp/svn.st.log
+ for CLEAN in `cat /tmp/svn.st.log | grep '^?' | awk -F'^?' {'print $2'}`
+ do
+	[[ -e $CLEAN ]] && rm -fr $CLEAN
+ done
+ svn up ~/.m2 >>$LOG_PATH/svn_up_m2.log 2>&1
+
+ SPLIT_LINE "$IBUILD_ADD_STEP_1"
+ TIMEOUT_KILL 300 git &
+ time $IBUILD_ADD_STEP_1 -j$JOBS >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
+}
+
+IBUILD_ADD_STEP_2()
+{
+ SPLIT_LINE "$IBUILD_ADD_STEP_2"
+ time $IBUILD_ADD_STEP_2 >$LOG_PATH/$IBUILD_ADD_STEP_2_LOG_NAME.log 2>&1
+ LOG_STATUS $? $IBUILD_ADD_STEP_2 $LOG_PATH/$IBUILD_ADD_STEP_2_LOG_NAME.log
+}
+
 REPO_SYNC()
 {
  cd $1
  export REPO_SYNC_LOG_NAME=sync-`basename $1`
- export END_CHECK=$2
 
  SPLIT_LINE repo_sync
  time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
  LOG_STATUS $? repo_sync $LOG_PATH/$REPO_SYNC_LOG_NAME.log
  CCACHE_HOTFIX
-
- if [[ ! -z $ENC_CHECK && ! -z $IBUILD_ADD_STEP_1 ]] ; then
-	SPLIT_LINE "$IBUILD_ADD_STEP_1"
-	TIMEOUT_KILL 300 git &
-	time $IBUILD_ADD_STEP_1 -j$JOBS >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
- fi
 
  rm -f out
  if [[ -d /local/out ]]; then
@@ -277,13 +289,6 @@ CCACHE_HOTFIX()
  if [[ -f prebuilts/misc/linux-x86/ccache/ccache ]] ; then
 	/bin/cp $IBUILD_ROOT/bin/ccache-LDFLAGS-3.2 prebuilts/misc/linux-x86/ccache/ccache >/dev/null 2>&1
  fi
- svn cleanup ~/.m2 >$LOG_PATH/svn_up_m2.log 2>&1
- svn st ~/.m2 >/tmp/svn.st.log
- for CLEAN in `cat /tmp/svn.st.log | grep '^?' | awk -F'^?' {'print $2'}`
- do
-	[[ -e $CLEAN ]] && rm -fr $CLEAN
- done
- svn up ~/.m2 >>$LOG_PATH/svn_up_m2.log 2>&1
 }
 
 SETUP_IVER()
@@ -326,6 +331,7 @@ SETUP_ICASE()
  [[ -z $RESULT ]] && export RESULT=ISSUE
 
  echo "RESULT=$RESULT
+MAKE_STATUS=$MAKE_STATUS
 SLAVE_HOST=`hostname`
 SLAVE_IP=$IP
 START_TIME=$BUILD_TIME
@@ -406,8 +412,10 @@ SETUP_BUILD_OUT()
 
  mkdir -p $AUTOUT_UPLOAD_PATH/$TODAY
  SPLIT_LINE "upload $TODAY $IVER.$SHORT_AUTOUT_NAME"
+ [[ -z $ITASK_REV ]] && export ITASK_REV=`ls /tmp/*.log | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1`
  cp /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME/log/
  cp /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME/
+ [[ -f $LOG_PATH/BUILD_ERROR ]] && cp $LOG_PATH/BUILD_ERROR $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME/
  time cp -R $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME $AUTOUT_UPLOAD_PATH/$TODAY/
  export STATUS_CP=$?
 
@@ -473,7 +481,8 @@ REPO_DOWNLOAD()
 {
  SPLIT_LINE "repo download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER"
  time $REPO_CMD download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER >>$LOG_PATH/repo_download.log 2>&1
- LOG_STATUS $? repo_download $LOG_PATH/repo_download.log
+ export MAKE_STATUS=$?
+ LOG_STATUS $MAKE_STATUS repo_download $LOG_PATH/repo_download.log
 }
 
 GET_ICHANGE_STRING()

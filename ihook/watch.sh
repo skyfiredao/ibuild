@@ -92,7 +92,7 @@ ITASK_SUBMIT()
  do
 	SPEC_EXT $ISPEC_PATH/spec/$SPEC_NAME
 	$DEBUG $ISPEC_PATH/itask $TASK_SPACE/$ISPEC_TMP/$SPEC_NAME
-	$DEBUG rm -fr $TASK_SPACE/$ISPEC_TMP
+	$DEBUG rm -fr $TASK_SPACE/tmp.ispec.$ICHANGE_REV
  done
  echo $SPEC_NAME $ICHANGE_ENTRY >>/tmp/ITASK_SUBMIT.log
 }
@@ -126,5 +126,5 @@ do
 done
 
 rm -f $WATCHDOG_PATH/tmp
-[[ -z $DEBUG ]] && rm -fr $TASK_SPACE/$WATCH_TMP
-[[ -z $DEBUG ]] && rm -fr $TASK_SPACE/$ISPEC_TMP
+[[ -z $DEBUG ]] && rm -fr $TASK_SPACE/tmp.ichange.$ICHANGE_REV
+[[ -z $DEBUG ]] && rm -fr $TASK_SPACE/tmp.ispec.$ICHANGE_REV

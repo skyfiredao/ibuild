@@ -73,12 +73,12 @@ if [[ ! -z $EMAIL_TMP && ! `echo $EMAIL_TMP | egrep 'root|ubuntu'` ]] ; then
 	export MAIL_LIST="$MAIL_LIST,$EMAIL_TMP"
 fi
 
-if [[ ! -z $GERRIT_CHANGE_OWNER_EMAIL ]] ; then
-echo	export MAIL_LIST="$MAIL_LIST,$GERRIT_CHANGE_OWNER_EMAIL"
-else
-	[[ ! -z $EMAIL_PM ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_PM"
-	[[ ! -z $EMAIL_REL ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_REL"
-fi
+#if [[ ! -z $GERRIT_CHANGE_OWNER_EMAIL ]] ; then
+#	export MAIL_LIST="$MAIL_LIST,$GERRIT_CHANGE_OWNER_EMAIL"
+#else
+#	[[ ! -z $EMAIL_PM ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_PM"
+#	[[ ! -z $EMAIL_REL ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_REL"
+#fi
 
 echo -e "
 Hi, $GERRIT_CHANGE_OWNER_NAME
@@ -104,7 +104,7 @@ from ibuild system
 [Daedalus]
 " >>/tmp/$ITASK_REV.mail
 
-cat /tmp/$ITASK_REV.mail | mail -s "[ibuild][assign] $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT in $SLAVE_HOST" $MAIL_LIST
+cat /tmp/$ITASK_REV.mail | mail -s "[ibuild][assign][$ITASK_REV] $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT in $SLAVE_HOST" $MAIL_LIST
 
 rm -f /tmp/$ITASK_REV.mail
 rm -f $TASK_SPACE/jobs.txt-$ITASK_JOBS_REV

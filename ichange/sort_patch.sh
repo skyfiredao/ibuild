@@ -45,15 +45,19 @@ EXPORT_IBUILD_CONF
 
 mkdir -p $TASK_SPACE/tmp.isort.$SEED
 touch $TASK_SPACE/tmp.isort.$SEED/tmp.change-abandoned
+touch $TASK_SPACE/tmp.isort.$SEED/tmp.change-merged
 touch $TASK_SPACE/tmp.isort.$SEED/ichange.log
 touch $TASK_SPACE/tmp.isort.$SEED/svn.blame.log
 touch $TASK_SPACE/tmp.isort.$SEED/repo_download.txt
 
 svn log $IBUILD_SVN_OPTION -v -r {$SORT_ONE_DAY_AGO}:{$SORT_DATE} svn://$IBUILD_SVN_SRV/ichange/ichange >$TASK_SPACE/tmp.isort.$SEED/svn.log
 
+svn export -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/conf $TASK_SPACE/tmp.isort.$SEED/ispec.conf
 cat $TASK_SPACE/tmp.isort.$SEED/svn.log | grep $IBUILD_ROBOT | grep ^r | awk -F'|' {'print $1'} | awk -F'r' {'print $2'} >$TASK_SPACE/tmp.isort.$SEED/rev.log
 
 cat $TASK_SPACE/tmp.isort.$SEED/svn.log | grep change-abandoned | awk -F' ' {'print $2'} | sort -u | grep $SORT_GERRIT_SRV | grep $SORT_GERRIT_BRANCH | awk -F'/ichange/' {'print $2'} >$TASK_SPACE/tmp.isort.$SEED/change-abandoned.log
+
+cat $TASK_SPACE/tmp.isort.$SEED/svn.log | grep change-merged | awk -F' ' {'print $2'} | sort -u | grep $SORT_GERRIT_SRV | grep $SORT_GERRIT_BRANCH | awk -F'/ichange/' {'print $2'} >$TASK_SPACE/tmp.isort.$SEED/change-merged.log
 
 cat $TASK_SPACE/tmp.isort.$SEED/svn.log | grep patchset-created | awk -F' ' {'print $2'} | sort -u | grep $SORT_GERRIT_SRV | grep $SORT_GERRIT_BRANCH | awk -F'/ichange/' {'print $2'} >$TASK_SPACE/tmp.isort.$SEED/patchset-created.log
 
@@ -70,6 +74,11 @@ do
 	svn export -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ichange/ichange/$ABANDONED_FILE $TASK_SPACE/tmp.isort.$SEED/
 done
 
+for MERGED_FILE in `cat $TASK_SPACE/tmp.isort.$SEED/change-merged.log`
+do
+	svn export -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ichange/ichange/$MERGED_FILE $TASK_SPACE/tmp.isort.$SEED/
+done
+
 for ICHANGE_ENTRY in `cat $TASK_SPACE/tmp.isort.$SEED/svn.blame.log | awk -F'irobot' {'print $2'}`
 do
 	export ICHANGE_ENTRY_REV=`cat $TASK_SPACE/tmp.isort.$SEED/svn.blame.log | grep $ICHANGE_ENTRY | awk -F' ' {'print $1'}`
@@ -84,9 +93,19 @@ do
 	export LAST_STRING_GERRIT_change_number=`grep $STRING_GERRIT_id $TASK_SPACE/tmp.isort.$SEED/ichange.log | tail -n1 | awk -F'|' {'print $6'}`
 	export LAST_STRING_GERRIT_patchSet_number=`grep $STRING_GERRIT_id $TASK_SPACE/tmp.isort.$SEED/ichange.log | tail -n1 | awk -F'|' {'print $7'}`
 
-	if [[ $LAST_STRING_GERRIT_patchSet_number = $STRING_GERRIT_patchSet_number && ! `grep $STRING_GERRIT_revision $TASK_SPACE/tmp.isort.$SEED/*change-abandoned` ]] ; then
-		echo "$STRING_GERRIT_email|$STRING_GERRIT_PROJECT $STRING_GERRIT_change_number/$STRING_GERRIT_patchSet_number" >>$TASK_SPACE/tmp.isort.$SEED/repo_download.txt
+	if [[ $LAST_STRING_GERRIT_patchSet_number = $STRING_GERRIT_patchSet_number && ! `grep $STRING_GERRIT_revision $TASK_SPACE/tmp.isort.$SEED/*{change-abandoned,change-merged}` ]] ; then
+		echo "$STRING_GERRIT_email|$STRING_GERRIT_PROJECT $STRING_GERRIT_change_number/$STRING_GERRIT_patchSet_number" >>$TASK_SPACE/tmp.isort.$SEED/all_repo_download.txt
 	fi
+done
+
+cat $TASK_SPACE/tmp.isort.$SEED/all_repo_download.txt | while read REPO_DOWNLOAD_ENTRY
+do
+	export REPO_DOWNLOAD_ENTRY_EMAIL=`echo $REPO_DOWNLOAD_ENTRY | awk -F'|' {'print $1'}`
+	if [[ `grep $REPO_DOWNLOAD_ENTRY_EMAIL $TASK_SPACE/tmp.isort.$SEED/ispec.conf/mail.conf` ]] ; then
+		echo $REPO_DOWNLOAD_ENTRY >>$TASK_SPACE/tmp.isort.$SEED/repo_download.txt
+	else [[ `grep $STRING_GERRIT_PROJECT $TASK_SPACE/tmp.isort.$SEED/ispec.conf/project.conf` ]] ; then
+		echo $REPO_DOWNLOAD_ENTRY >>$TASK_SPACE/tmp.isort.$SEED/repo_download.txt
+	fi 
 done
 
 cat $TASK_SPACE/tmp.isort.$SEED/repo_download.txt
