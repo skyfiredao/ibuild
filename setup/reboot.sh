@@ -38,7 +38,6 @@ fi
 
 if [[ -f $TASK_SPACE/reboot && ! -f $TASK_SPACE/spec.build ]] ; then
 	nc 127.0.0.1 1234
-	sudo pkill -9 nc
 	sync
 	sync
 	sudo reboot

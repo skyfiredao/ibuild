@@ -84,7 +84,7 @@ fi
 
 if [[ ! -z $GERRIT_CHANGE_OWNER_EMAIL && ! -z $MAKE_STATUS ]] ; then
 	export MAIL_LIST="$MAIL_LIST,$GERRIT_CHANGE_OWNER_EMAIL"
-elif [[ ! -z $MAKE_STATUS ]] ; then
+elif [[ ! -z $MAKE_STATUS || ! -z $DOWNLOAD_PKG_NAME ]] ; then
 	[[ ! -z $EMAIL_PM ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_PM"
 	[[ ! -z $EMAIL_REL ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_REL"
 fi

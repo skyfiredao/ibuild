@@ -56,9 +56,10 @@ export WATCH_GERRIT_change_number=`echo $ICHANGE_ENTRY | awk -F'|' {'print $6'}`
 export WATCH_GERRIT_patchSet_number=`echo $ICHANGE_ENTRY | awk -F'|' {'print $7'}`
 export WATCH_GERRIT_value=`echo $ICHANGE_ENTRY | awk -F'|' {'print $8'}`
 
-if [[ -d $TASK_SPACE/ispec.lock ]] ; then
+if [[ -d $TASK_SPACE/ispec.lock/spec ]] ; then
 	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/ispec.lock
 else
+	rm -fr $TASK_SPACE/ispec.lock
 	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec $TASK_SPACE/ispec.lock
 fi
 

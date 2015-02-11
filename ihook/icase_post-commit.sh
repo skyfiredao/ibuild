@@ -27,7 +27,7 @@ export IBUILD_ROOT=$HOME/ibuild
 source /etc/bash.bashrc
 
 echo --------------------------------------- >>/tmp/ihook-icase.log
-echo $IHOOK_REPOS $IHOOK_REV $IHOOK_TXN_NAME >>/tmp/ihook-icase.log
+echo $IHOOK_REPOS $IHOOK_REV `date` >>/tmp/ihook-icase.log
 echo --------------------------------------- >>/tmp/ihook-icase.log
 
 $IBUILD_ROOT/ihook/mail_icase.sh $IHOOK_REV >>/tmp/ihook-icase.log 2>&1 &
