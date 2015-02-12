@@ -32,13 +32,12 @@ if [[ `date +%u` = 1 && ! -f $TASK_SPACE/update-$TOWEEK ]] ; then
 	echo "full-upgrade: "`date` >>$TASK_SPACE/count
 fi
 
-if [[ `cat $TASK_SPACE/count | wc -l` = 30 ]] ; then
+if [[ `cat $TASK_SPACE/count | wc -l` = 10 ]] ; then
 	touch $TASK_SPACE/reboot
 fi
 
 if [[ -f $TASK_SPACE/reboot && ! -f $TASK_SPACE/spec.build ]] ; then
 	nc 127.0.0.1 1234
-	sync
 	sync
 	sudo reboot
 fi

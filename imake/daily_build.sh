@@ -22,6 +22,9 @@ export LC_ALL=C
 export USER=`whoami`
 export TASK_SPACE=/dev/shm
 export TOHOUR=`date +%H`
+export SEED=$RANDOM
+export TOYMD=`date +%Y%m%d`
+export BEFORE_TOYMD=`date +%Y%m%d --date="$TOYMD 1 days ago"`
 
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
@@ -38,21 +41,45 @@ else
 	exit
 fi
 
-if [[ -d $TASK_SPACE/ispec.lock ]] ; then
-	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/ispec.lock
-else
-	rm -f $TASK_SPACE/ispec.lock
-	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec $TASK_SPACE/ispec.lock
+svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec $TASK_SPACE/tmp.ispec.$SEED
+
+if [[ -f $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec ]] ; then
+  for SPEC_FILTER in `cat $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec | sort -u`
+  do
+    for SPEC_NAME in `ls $TASK_SPACE/tmp.ispec.$SEED/spec | grep $SPEC_FILTER`
+    do
+	cp $TASK_SPACE/tmp.ispec.$SEED/spec/$SPEC_NAME $TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME
+
+	echo "IBUILD_MODE=normal" >>$TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME
+
+	$IBUILD_ROOT/imake/add_task.sh $TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME
+    done
+  done
 fi
 
-if [[ -f $TASK_SPACE/ispec.lock/timer/$TOHOUR.spec ]] ; then
-	for SPEC_FILTER in `cat $TASK_SPACE/ispec.lock/timer/$TOHOUR.spec | sort -u`
+if [[ -f $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec.bundle ]] ; then
+  for SPEC_FILTER in `cat $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec.bundle | sort -u`
+  do
+      for SPEC_NAME in `ls $TASK_SPACE/tmp.ispec.$SEED/spec | grep $SPEC_FILTER`
+      do
+	export IBUILD_GRTSRV=`grep '^IBUILD_GRTSRV=' $TASK_SPACE/tmp.ispec.$SEED/spec/$SPEC_NAME | awk -F'IBUILD_GRTSRV=' {'print $2'} | awk -F':' {'print $1'}`
+	export IBUILD_GRTSRV_BRANCH=`grep '^IBUILD_GRTSRV_BRANCH=' $TASK_SPACE/tmp.ispec.$SEED/spec/$SPEC_NAME | awk -F'IBUILD_GRTSRV_BRANCH=' {'print $2'}`
+
+	cp $TASK_SPACE/tmp.ispec.$SEED/spec/$SPEC_NAME $TASK_SPACE/tmp.ispec.$SEED/bundle.$SPEC_NAME
+	echo "IBUILD_MODE=bundle" >>$TASK_SPACE/tmp.ispec.$SEED/bundle.$SPEC_NAME
+
+	for PATCH in `$IBUILD_ROOT/ichange/sort_patch.sh $BEFORE_TOYMD $IBUILD_GRTSRV $IBUILD_GRTSRV_BRANCH`
 	do
-		for SPEC_NAME in `ls $TASK_SPACE/ispec.lock/spec | grep $SPEC_FILTER`
-		do
-			$IBUILD_ROOT/imake/add_task.sh $TASK_SPACE/ispec.lock/spec/$SPEC_NAME
-		done
+		echo BUNDLE_PATCH=$PATCH >>$TASK_SPACE/tmp.ispec.$SEED/bundle.$SPEC_NAME
 	done
+
+	if [[ `grep '^BUNDLE_PATCH=' $TASK_SPACE/tmp.ispec.$SEED/bundle.$SPEC_NAME` ]] ; then
+		$IBUILD_ROOT/imake/add_task.sh $TASK_SPACE/tmp.ispec.$SEED/bundle.$SPEC_NAME
+	fi
+      done
+  done
 fi
+
+rm -fr $TASK_SPACE/tmp.ispec.$SEED
 
 

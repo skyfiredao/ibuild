@@ -20,6 +20,7 @@ source /etc/bash.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
 export TASK_SPACE=/dev/shm
+export SEED=$RANDOM
 export TOYEAR=`date +%Y`
 export TOWEEK=`date +%yw%V`
 [[ `echo $* | grep debug` ]] && export DEBUG=echo || export DEBUG=''
@@ -36,7 +37,12 @@ export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.co
 
 export ICHANGE_REV=$1
 export WATCH_TMP=tmp.ichange.$ICHANGE_REV
+export ISPEC_PATH=$TASK_SPACE/$WATCH_TMP/ispec
+export WATCHDOG_PATH=$TASK_SPACE/$WATCH_TMP/ispec/watchdog
+
 mkdir -p $TASK_SPACE/$WATCH_TMP
+
+svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec $TASK_SPACE/$WATCH_TMP/ispec
 
 svn log -v -r $ICHANGE_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ichange >$TASK_SPACE/$WATCH_TMP/svn.log
 export WATCH_GERRIT_SERVER=`cat $TASK_SPACE/$WATCH_TMP/svn.log | grep ichange | awk -F"$TOYEAR" {'print $2'} | awk -F'/' {'print $2'} | sort -u | head -n1`
@@ -56,21 +62,12 @@ export WATCH_GERRIT_change_number=`echo $ICHANGE_ENTRY | awk -F'|' {'print $6'}`
 export WATCH_GERRIT_patchSet_number=`echo $ICHANGE_ENTRY | awk -F'|' {'print $7'}`
 export WATCH_GERRIT_value=`echo $ICHANGE_ENTRY | awk -F'|' {'print $8'}`
 
-if [[ -d $TASK_SPACE/ispec.lock/spec ]] ; then
-	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/ispec.lock
-else
-	rm -fr $TASK_SPACE/ispec.lock
-	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec $TASK_SPACE/ispec.lock
-fi
-
 SPEC_EXT()
 {
- export ISPEC_TMP=tmp.ispec.$ICHANGE_REV
- mkdir -p $TASK_SPACE/$ISPEC_TMP >/dev/null 2>&1
  export SPEC_EXT_URL=$1
  export SPEC_EXT_NAME=`basename $SPEC_EXT_URL`
- cp $SPEC_EXT_URL $TASK_SPACE/$ISPEC_TMP/$SPEC_EXT_NAME
- cat << _EOF_ >>$TASK_SPACE/$ISPEC_TMP/$SPEC_EXT_NAME
+ cp $SPEC_EXT_URL $TASK_SPACE/$WATCH_TMP/$SPEC_EXT_NAME
+ cat << _EOF_ >>$TASK_SPACE/$WATCH_TMP/$SPEC_EXT_NAME
 GERRIT_CHANGE_NUMBER=$WATCH_GERRIT_change_number
 GERRIT_CHANGE_ID=$WATCH_GERRIT_id
 GERRIT_CHANGE_URL=$GERRIT_CHANGE_URL
@@ -80,7 +77,7 @@ GERRIT_PATCHSET_NUMBER=$WATCH_GERRIT_patchSet_number
 GERRIT_PATCHSET_REVISION=$WATCH_GERRIT_revision
 GERRIT_PROJECT=$WATCH_GERRIT_PROJECT
 _EOF_
- echo $TASK_SPACE/$ISPEC_TMP/$SPEC_EXT_NAME
+ echo $TASK_SPACE/$WATCH_TMP/$SPEC_EXT_NAME
 }
 
 ITASK_SUBMIT()
@@ -92,10 +89,44 @@ ITASK_SUBMIT()
  for SPEC_NAME in `ls $ISPEC_PATH/spec | grep $WATCHDOG_SPEC`
  do
 	SPEC_EXT $ISPEC_PATH/spec/$SPEC_NAME
-	$DEBUG $ISPEC_PATH/itask $TASK_SPACE/$ISPEC_TMP/$SPEC_NAME
-	$DEBUG rm -fr $TASK_SPACE/tmp.ispec.$ICHANGE_REV
+	$DEBUG $ISPEC_PATH/itask $TASK_SPACE/$WATCH_TMP/$SPEC_NAME
+	$DEBUG mv $TASK_SPACE/$WATCH_TMP/$SPEC_NAME $TASK_SPACE/$WATCH_TMP/$SPEC_NAME.$RANDOM
  done
- echo $SPEC_NAME $ICHANGE_ENTRY >>/tmp/ITASK_SUBMIT.log
+ echo -------------------------- >>/tmp/ITASK_SUBMIT.log
+ date >>/tmp/ITASK_SUBMIT.log
+ echo $TASK_SPACE/$WATCH_TMP/$SPEC_NAME >>/tmp/ITASK_SUBMIT.log
+ echo $ICHANGE_ENTRY >>/tmp/ITASK_SUBMIT.log
+}
+
+
+MAIL_MATCHING()
+{
+ if [[ `grep $WATCH_GERRIT_email $ISPEC_PATH/conf/mail.conf` ]] ; then
+	ITASK_SUBMIT
+ fi
+}
+
+PROJECT_MATCHING()
+{
+ if [[ `grep $$WATCH_GERRIT_PROJECT $ISPEC_PATH/conf/project.conf` ]] ; then
+	ITASK_SUBMIT
+ fi
+}
+
+VALUE_MATCHING()
+{
+ export VALUE_MATCHING_CHK=''
+ for VALUE in `echo $WATCH_GERRIT_value | sed 's/,/ /g'`
+ do
+	if [[ ! `grep "^deny:$VALUE" $ISPEC_PATH/conf/value.conf` ]] ; then
+		export VALUE_MATCHING_CHK=yes
+	elif [[ `grep "^allow:$VALUE" $ISPEC_PATH/conf/value.conf` ]] ; then
+		export VALUE_MATCHING_CHK=yes
+	else
+		export VALUE_MATCHING_CHK=
+	fi
+ done
+ [[ ! -z $VALUE_MATCHING_CHK ]] && ITASK_SUBMIT
 }
 
 ITASK_MATCHING()
@@ -103,18 +134,16 @@ ITASK_MATCHING()
  export WATCHDOG_GERRIT_PROJECT=`grep 'IF_GERRIT_PROJECT=' $WATCHDOG_CONF | awk -F'IF_GERRIT_PROJECT=' {'print $2'}`
  export WATCHDOG_GERRIT_email=`grep 'IF_email=' $WATCHDOG_CONF | awk -F'IF_email=' {'print $2'}`
  export WATCHDOG_GERRIT_value=`grep 'IF_value=' $WATCHDOG_CONF | awk -F'IF_value=' {'print $2'}`
+ export WATCHDOG_GERRIT_CodeReview=`grep 'IF_CodeReview=' $WATCHDOG_CONF | awk -F'IF_CodeReview=' {'print $2'}`
 
- if [[ -z $WATCHDOG_GERRIT_PROJECT || $WATCHDOG_GERRIT_PROJECT = $WATCH_GERRIT_PROJECT ]] ; then
-	ITASK_SUBMIT
- elif [[ -z $WATCHDOG_GERRIT_email || `grep $WATCH_GERRIT_email $WATCHDOG_CONF` ]] ; then
-	ITASK_SUBMIT
- elif [[ -z $WATCHDOG_GERRIT_value || `echo $WATCHDOG_GERRIT_value | grep $WATCH_GERRIT_value` ]] ; then
-	ITASK_SUBMIT
+ if [[ ! -z $WATCHDOG_GERRIT_PROJECT ]] ; then
+	PROJECT_MATCHING
+ elif [[ ! -z $WATCHDOG_GERRIT_email ]] ; then
+	EMAIL_MATCHING
+ elif [[ ! -z $WATCHDOG_GERRIT_CodeReview && ! -z $WATCHDOG_GERRIT_value ]] ; then
+	VALUE_MATCHING
  fi
 }
-
-export ISPEC_PATH=$TASK_SPACE/ispec.lock
-export WATCHDOG_PATH=$TASK_SPACE/ispec.lock/watchdog
 
 cd $WATCHDOG_PATH
 touch tmp
@@ -128,4 +157,5 @@ done
 
 rm -f $WATCHDOG_PATH/tmp
 [[ -z $DEBUG ]] && rm -fr $TASK_SPACE/tmp.ichange.$ICHANGE_REV
-[[ -z $DEBUG ]] && rm -fr $TASK_SPACE/tmp.ispec.$ICHANGE_REV
+
+

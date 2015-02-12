@@ -119,6 +119,7 @@ EXPORT_IBUILD_SPEC()
  export IBUILD_REL_REV=`grep '^IBUILD_REL_REV=' $IBUILD_SPEC | awk -F'IBUILD_REL_REV=' {'print $2'}`
  export IBUILD_AOSP_JDK=`grep '^IBUILD_AOSP_JDK=' $IBUILD_SPEC | awk -F'IBUILD_AOSP_JDK=' {'print $2'}`
  export JDK_PATH=`ls -d $JDK6_PATH $JDK7_PATH | grep $IBUILD_AOSP_JDK`
+ export IBUILD_PRIORITY=`grep '^IBUILD_PRIORITY=' $IBUILD_SPEC | awk -F'IBUILD_PRIORITY=' {'print $2'}`
  export IBUILD_ADD_STEP_1=`grep '^IBUILD_ADD_STEP_1=' $IBUILD_SPEC | awk -F'IBUILD_ADD_STEP_1=' {'print $2'}`
  [[ ! -z $IBUILD_ADD_STEP_1 ]] && export IBUILD_ADD_STEP_1_LOG_NAME=`basename $IBUILD_ADD_STEP_1`
  export IBUILD_ADD_STEP_2=`grep '^IBUILD_ADD_STEP_2=' $IBUILD_SPEC | awk -F'IBUILD_ADD_STEP_2=' {'print $2'}`
@@ -132,7 +133,6 @@ EXPORT_IBUILD_SPEC()
  export GERRIT_PATCHSET_NUMBER=`grep '^GERRIT_PATCHSET_NUMBER=' $IBUILD_SPEC | awk -F'GERRIT_PATCHSET_NUMBER=' {'print $2'}`
  export GERRIT_PATCHSET_REVISION=`grep '^GERRIT_PATCHSET_REVISION=' $IBUILD_SPEC | awk -F'GERRIT_PATCHSET_REVISION=' {'print $2'}`
  export GERRIT_PROJECT=`grep '^GERRIT_PROJECT=' $IBUILD_SPEC | awk -F'GERRIT_PROJECT=' {'print $2'}`
-
 # export =`grep '^=' $IBUILD_SPEC | awk -F'=' {'print $2'}`
 
  export SPEC_NAME=`basename $IBUILD_SPEC`
@@ -144,7 +144,21 @@ EXPORT_IBUILD_SPEC()
 	echo '#'$SPEC_NAME >$LOG_PATH/build_info.txt
 	cat $TASK_SPACE/spec.build >>$LOG_PATH/build_info.txt
 }
- 
+
+BUNDLE_BUILD()
+{
+ grep '^BUNDLE_PATCH=' $IBUILD_SPEC | awk -F'BUNDLE_PATCH=' {'print $2'} | while read BUNDLE_PATCH_ENTRY
+ do
+	export EMAIL_PATCH_OWNER=`echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $1'}`
+	export BUNDLE_PATCH=`echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $2'}`
+
+	SPLIT_LINE "bundle: repo download $BUNDLE_PATCH"
+	time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
+	export MAKE_STATUS=$?
+	LOG_STATUS $MAKE_STATUS bundle $LOG_PATH/bundle.log
+ done
+}
+
 SPLIT_LINE()
 {
  export SPLIT_WORD=''
@@ -170,13 +184,20 @@ BTRFS_CLEANUP()
 	fi
  done
 
+ rm -f $LOC_WORKSPACE/build/*.info >/dev/null 2>&1
+
+ for BTRFS_SUBVOL in `ls $LOC_WORKSPACE/build/`
+ do
+	mv $LOC_WORKSPACE/build/$BTRFS_SUBVOL $LOC_WORKSPACE/build/bad.$SEED.$RANDOM >/dev/null 2>&1
+ done
+
  for BTRFS_SUBVOL in `sudo btrfs subvolume list $LOC_WORKSPACE | egrep -v 'ref_repo' | awk -F'path ' {'print $2'} | grep $BTRFS_TOP | awk -F'build/' {'print $2'}`
  do
 	sleep 3
 	SPLIT_LINE clean_$LOC_WORKSPACE/$BTRFS_SUBVOL
 	rm -f $LOC_WORKSPACE/$BTRFS_SUBVOL.info
 	time sudo btrfs subvolume delete $LOC_WORKSPACE/build/$BTRFS_SUBVOL >>$LOG_PATH/fs_issue.log 2>&1
-	LOG_STATUS $? clean_$LOC_WORKSPACE/$BTRFS_SUBVOL $LOG_PATH/fs_issue.log
+	[[ $? != 0 ]] && echo "fs: "`date` >>$TASK_SPACE/count
  done
 
  if [[ `sudo btrfs subvolume list $LOC_WORKSPACE | grep $BTRFS_TOP` ]] ; then
@@ -240,8 +261,8 @@ IBUILD_ADD_STEP_1()
  svn up ~/.m2 >>$LOG_PATH/svn_up_m2.log 2>&1
 
  SPLIT_LINE "$IBUILD_ADD_STEP_1"
- TIMEOUT_KILL 300 git &
- time $IBUILD_ADD_STEP_1 -j$JOBS >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
+ TIMEOUT_KILL 200 git &
+ time $IBUILD_ADD_STEP_1 -j30 >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
 }
 
 IBUILD_ADD_STEP_2()
@@ -256,6 +277,7 @@ REPO_SYNC()
  cd $1
  export REPO_SYNC_LOG_NAME=sync-`basename $1`
 
+ $IBUILD_ROOT/hotfix/clean_dirty.sh
  SPLIT_LINE repo_sync
  time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
  LOG_STATUS $? repo_sync $LOG_PATH/$REPO_SYNC_LOG_NAME.log
@@ -332,6 +354,7 @@ SETUP_ICASE()
 
  echo "RESULT=$RESULT
 MAKE_STATUS=$MAKE_STATUS
+EMAIL_PATCH_OWNER=$EMAIL_PATCH_OWNER
 SLAVE_HOST=`hostname`
 SLAVE_IP=$IP
 START_TIME=$BUILD_TIME
@@ -415,7 +438,13 @@ SETUP_BUILD_OUT()
  [[ -z $ITASK_REV ]] && export ITASK_REV=`ls /tmp/*.log | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1`
  cp /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME/log/
  cp /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME/
- [[ -f $LOG_PATH/BUILD_ERROR ]] && cp $LOG_PATH/BUILD_ERROR $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME/
+
+ if [[ -f $LOG_PATH/BUILD_ERROR ]] ; then
+	cp $LOG_PATH/BUILD_ERROR $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME/
+ else
+	export RESULT=PASSED
+ fi
+
  time cp -R $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME $AUTOUT_UPLOAD_PATH/$TODAY/
  export STATUS_CP=$?
 
