@@ -48,6 +48,13 @@ if [[ ! -f $SPEC_URL ]] ; then
 fi
 
 svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/tasks $TASK_SPACE/$USER.tasks.lock.$SEED
+while [ `ls $TASK_SPACE/$USER.tasks.lock.$SEED | grep spec.build | wc -l` -ge 500 ] ;
+do
+	export OLD_TASK_SPEC=`ls $TASK_SPACE/$USER.tasks.lock.$SEED | grep spec.build | head -n1`
+	svn rm -q $TASK_SPACE/$USER.tasks.lock.$SEED/$OLD_TASK_SPEC
+done
+svn ci $IBUILD_SVN_OPTION -m "auto: clean more than 500" $TASK_SPACE/$USER.tasks.lock.$SEED/ >/tmp/clean_task.log 2>&1
+
 cp $SPEC_URL $TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME
 svn add $TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME >/dev/null 2>&1
 svn ci $IBUILD_SVN_OPTION -m "auto: submit $SPEC_NAME" $TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME >/tmp/add_task.log 2>&1
