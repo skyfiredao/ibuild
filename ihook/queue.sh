@@ -51,7 +51,7 @@ fi
 
 while [[ `ls $QUEUE_SPACE` || -f /tmp/EXIT ]] ;
 do
-	bash -x $IBUILD_ROOT/ihook/node_matching.sh $QUEUE_SPACE
+	bash -x $IBUILD_ROOT/ihook/node_matching.sh $QUEUE_SPACE >/tmp/node_matching.log 2>&1
 	sleep `expr $RANDOM % 7 + 3`
 done
 

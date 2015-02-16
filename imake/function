@@ -261,8 +261,12 @@ IBUILD_ADD_STEP_1()
  svn up ~/.m2 >>$LOG_PATH/svn_up_m2.log 2>&1
 
  SPLIT_LINE "$IBUILD_ADD_STEP_1"
- TIMEOUT_KILL 200 git &
- time $IBUILD_ADD_STEP_1 -j30 >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
+ if [[ `echo $IBUILD_ADD_STEP_1 | egrep 'svn.sh'` ]] ; then
+	time $IBUILD_ROOT/$IBUILD_ADD_STEP_1 >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
+ else
+	TIMEOUT_KILL 200 git &
+	time $IBUILD_ADD_STEP_1 -j30 >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
+ fi
 }
 
 IBUILD_ADD_STEP_2()

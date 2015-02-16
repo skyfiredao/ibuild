@@ -100,7 +100,9 @@ done
 cat $TASK_SPACE/tmp.isort.$SEED/all_repo_download.txt | while read REPO_DOWNLOAD_ENTRY
 do
 	export REPO_DOWNLOAD_ENTRY_EMAIL=`echo $REPO_DOWNLOAD_ENTRY | awk -F'|' {'print $1'}`
-	if [[ `grep $REPO_DOWNLOAD_ENTRY_EMAIL $TASK_SPACE/tmp.isort.$SEED/ispec.conf/mail.conf` ]] ; then
+	if [[ `cat ignore.conf | egrep "$REPO_DOWNLOAD_ENTRY_EMAIL|$STRING_GERRIT_PROJECT"` ]] ; then
+		cat ignore.conf | egrep "$REPO_DOWNLOAD_ENTRY_EMAIL|$STRING_GERRIT_PROJECT" >>$TASK_SPACE/tmp.isort.$SEED/ignore.txt
+	elif [[ `grep $REPO_DOWNLOAD_ENTRY_EMAIL $TASK_SPACE/tmp.isort.$SEED/ispec.conf/mail.conf` ]] ; then
 		echo $REPO_DOWNLOAD_ENTRY >>$TASK_SPACE/tmp.isort.$SEED/repo_download.txt
 	elif [[ `grep $STRING_GERRIT_PROJECT $TASK_SPACE/tmp.isort.$SEED/ispec.conf/project.conf` ]] ; then
 		echo $REPO_DOWNLOAD_ENTRY >>$TASK_SPACE/tmp.isort.$SEED/repo_download.txt
@@ -108,7 +110,6 @@ do
 done
 
 cat $TASK_SPACE/tmp.isort.$SEED/repo_download.txt
-cp $TASK_SPACE/tmp.isort.$SEED/repo_download.txt /tmp/repo_download.$NOW
 rm -fr $TASK_SPACE/tmp.isort.$SEED
 
 

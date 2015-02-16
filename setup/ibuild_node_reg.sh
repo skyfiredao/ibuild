@@ -118,7 +118,7 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
 
 	$IBUILD_ROOT/imake/daily_build.sh >>/tmp/daily_build.log 2>&1 &
 else
-	$IBUILD_ROOT/setup/ibuild_node_daemon.sh $TASK_SPACE/itask-$TOWEEK >/tmp/ibuild_node_daemon.log 2>&1 &
+	bash -x $IBUILD_ROOT/setup/ibuild_node_daemon.sh $TASK_SPACE/itask-$TOWEEK >/tmp/ibuild_node_daemon.log 2>&1 &
 fi
 
 $IBUILD_ROOT/setup/sync_repo_local_mirror.sh >/tmp/sync_repo_local_mirror.log 2>&1 &
