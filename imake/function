@@ -477,6 +477,7 @@ BUILD_ERROR()
  else
 	echo "$CHECK_LOG does not exist" >>$LOG_PATH/error.log
  fi
+ cat $LOG_PATH/error.log
 }
 
 CLEAN_EXIT()
