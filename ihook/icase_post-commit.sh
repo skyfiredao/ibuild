@@ -30,5 +30,5 @@ echo --------------------------------------- >>/tmp/ihook-icase.log
 echo $IHOOK_REPOS $IHOOK_REV `date` >>/tmp/ihook-icase.log
 echo --------------------------------------- >>/tmp/ihook-icase.log
 
-$IBUILD_ROOT/ihook/mail_icase.sh $IHOOK_REV >>/tmp/ihook-icase.log 2>&1 &
+$IBUILD_ROOT/ihook/mail_icase.sh $IHOOK_REV >>/tmp/mail_icase.log 2>&1 &
 

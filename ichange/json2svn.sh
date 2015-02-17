@@ -28,6 +28,7 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 	exit 0
 fi        
 
+echo --------------------------
 export ITRACK_PATH=$IBUILD_ROOT/ichange
 
 export TASK_SPACE=/run/shm
@@ -122,7 +123,7 @@ do
         export g_refName=`cat $ORDER.json | egrep '"refName":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1`
         export g_username=`cat $ORDER.json | egrep '"username":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1`
         export g_url=`cat $ORDER.json | egrep '"url":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1`
-        export g_change_number=`basename $g_url`
+        [[ ! -z $g_url ]] && export g_change_number=`basename $g_url`
         export g_patchSet_number=`cat $ORDER.json | egrep '"number":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | grep -v $g_change_number`
         export g_value=''
         for value in `cat $ORDER.json | egrep '"value":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'}`
@@ -155,7 +156,7 @@ rm -f $TASK_SPACE/itrack/json2svn.lock
 cd $TASK_SPACE/itrack/$GERRIT_SRV.tmp
 echo "Clean same file"
 cd $JSON_PATH
-md5sum *.json >/tmp/CLEAN_DUP.tmp
+[[ `ls $TASK_SPACE/itrack/$GERRIT_SRV.tmp | grep json` ]] && md5sum $TASK_SPACE/itrack/$GERRIT_SRV.tmp/*.json >/tmp/CLEAN_DUP.tmp
 
 for MD5SUM_FILE in `cat /tmp/CLEAN_DUP.tmp | awk -F' ' {'print $2'}`
 do

@@ -48,19 +48,21 @@ export IBUILD_SVN_SRV_HOSTNAME=`echo $IBUILD_SVN_SRV | awk -F'.' {'print $1'}`
 
 $IBUILD_ROOT/setup/reboot.sh >/tmp/reboot.log 2>&1
 
-if [[ -d $TASK_SPACE/itask-$TOWEEK ]] ; then
-	export SVN_REV_LOC=`svn info $TASK_SPACE/itask-$TOWEEK | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+if [[ -f $TASK_SPACE/itask/svn.$TOWEEK.lock && -d $TASK_SPACE/itask/svn/.svn ]] ; then
+	export SVN_REV_LOC=`svn info $TASK_SPACE/itask/svn | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
 	if [[ $IBUILD_SVN_REV_SRV != $SVN_REV_LOC ]] ; then
-		svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask-$TOWEEK
+		svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn
 	fi
 else
-	rm -fr $TASK_SPACE/itask-*
-	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask-$TOWEEK
+	mkdir -p $TASK_SPACE/itask >/dev/null 2>&1
+	rm -fr $TASK_SPACE/itask/svn* >/dev/null 2>&1
+	touch $TASK_SPACE/itask/svn.$TOWEEK.lock
+	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
 fi
 
-if [[ ! -d $TASK_SPACE/itask-$TOWEEK/inode ]] ; then
-	svn mkdir $TASK_SPACE/itask-$TOWEEK/inode
-	svn ci $IBUILD_SVN_OPTION -m "auto: add inode in $IP" $TASK_SPACE/itask-$TOWEEK/inode
+if [[ ! -d $TASK_SPACE/itask/svn/inode ]] ; then
+	svn mkdir $TASK_SPACE/itask/svn/inode
+	svn ci $IBUILD_SVN_OPTION -m "auto: add inode in $IP" $TASK_SPACE/itask/svn/inode
 fi
 
 echo "# build node info
@@ -72,13 +74,13 @@ BTRFS_PATH=$BTRFS_PATH
 MEMORY=$MEMORY
 CPU=$CPU
 JOBS=$JOBS
-USER=$USER" | sort -u > $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME
+USER=$USER" | sort -u > $TASK_SPACE/itask/svn/inode/$HOSTNAME
 
-if [[ `svn st $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME | grep $HOSTNAME` ]] ; then
-	svn add $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME >/dev/null 2>&1
-	svn ci $IBUILD_SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask-$TOWEEK/inode/$HOSTNAME
+if [[ `svn st $TASK_SPACE/itask/svn/inode/$HOSTNAME | grep $HOSTNAME` ]] ; then
+	svn add $TASK_SPACE/itask/svn/inode/$HOSTNAME >/dev/null 2>&1
+	svn ci $IBUILD_SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask/svn/inode/$HOSTNAME
 	if [[ $? != 0 ]] ; then
-		rm -fr $TASK_SPACE/itask*
+		rm -fr $TASK_SPACE/itask/svn
 		echo -e "Waiting for next cycle because conflict"
 		exit 1
 	fi
@@ -95,18 +97,18 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 fi
 
 if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
-	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask-$TOWEEK/inode
-	for CHK_HOST in `ls $TASK_SPACE/itask-$TOWEEK/inode`
+	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn/inode
+	for CHK_HOST in `ls $TASK_SPACE/itask/svn/inode`
 	do
-		export CHK_HOST_IP=`grep '^IP=' $TASK_SPACE/itask-$TOWEEK/inode/$CHK_HOST | awk -F'IP=' {'print $2'}`
+		export CHK_HOST_IP=`grep '^IP=' $TASK_SPACE/itask/svn/inode/$CHK_HOST | awk -F'IP=' {'print $2'}`
 		/bin/ping -c 3 -W 1 $CHK_HOST_IP >/dev/null 2>&1
 		if [[ $? = 1 ]] ; then
-			svn rm $TASK_SPACE/itask-$TOWEEK/inode/$CHK_HOST
+			svn rm $TASK_SPACE/itask/svn/inode/$CHK_HOST
 		fi
 	done
 
-	if [[ `svn st $TASK_SPACE/itask-$TOWEEK/inode | grep ^D` ]] ; then
-		svn ci $IBUILD_SVN_OPTION -m "auto: clean" $TASK_SPACE/itask-$TOWEEK/inode/
+	if [[ `svn st $TASK_SPACE/itask/svn/inode | grep ^D` ]] ; then
+		svn ci $IBUILD_SVN_OPTION -m "auto: clean" $TASK_SPACE/itask/svn/inode/
 	fi
 
 	if [[ ! -f $TASK_SPACE/ganglia-$TODAY ]] ; then
@@ -116,9 +118,15 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
 		sudo /etc/init.d/ganglia-monitor restart
 	fi
 
+	if [[ ! -f $TASK_SPACE/clean_task_spec-$TOWEEK ]] ; then
+		rm -f $TASK_SPACE/clean_task_spec-*
+		touch $TASK_SPACE/clean_task_spec-$TOWEEK
+		$IBUILD_ROOT/misc/clean_task_spec.sh >/tmp/clean_task_spec.log
+	fi
+
 	$IBUILD_ROOT/imake/daily_build.sh >>/tmp/daily_build.log 2>&1 &
 else
-	bash -x $IBUILD_ROOT/setup/ibuild_node_daemon.sh $TASK_SPACE/itask-$TOWEEK >/tmp/ibuild_node_daemon.log 2>&1 &
+	bash -x $IBUILD_ROOT/setup/ibuild_node_daemon.sh $TASK_SPACE/itask/svn >/tmp/ibuild_node_daemon.log 2>&1 &
 fi
 
 $IBUILD_ROOT/setup/sync_repo_local_mirror.sh >/tmp/sync_repo_local_mirror.log 2>&1 &

@@ -20,12 +20,10 @@ source /etc/bash.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
 export USER=`whoami`
-export SEED=$RANDOM
-export BUILD_TIME=`date +%y%m%d%H%M%S`
 export BUILD_SEC_TIME=`date +%s`
+export SEED=$BUILD_SEC_TIME.$RANDOM
+export BUILD_TIME=`date +%y%m%d%H%M%S`
 export TASK_SPACE=/dev/shm
-export SPEC_URL=$1
-export SPEC_NAME=`basename $SPEC_URL`
 
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
@@ -42,17 +40,14 @@ fi
 export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
 export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
 
-if [[ ! -f $SPEC_URL ]] ; then
-	echo -e "cat not find $SPEC_URL"
-	exit
-fi
-
 svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/tasks $TASK_SPACE/$USER.tasks.lock.$SEED
+while [ `ls $TASK_SPACE/$USER.tasks.lock.$SEED | grep spec.build | wc -l` -ge 500 ] ;
+do
+	export OLD_TASK_SPEC=`ls $TASK_SPACE/$USER.tasks.lock.$SEED | grep spec.build | head -n1`
+	svn rm -q $TASK_SPACE/$USER.tasks.lock.$SEED/$OLD_TASK_SPEC
+done
+svn ci $IBUILD_SVN_OPTION -m "auto: clean more than 500" $TASK_SPACE/$USER.tasks.lock.$SEED/ >/tmp/clean_task.log 2>&1
 
-cp $SPEC_URL $TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME
-svn add $TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME >/dev/null 2>&1
-svn ci $IBUILD_SVN_OPTION -m "auto: submit $SPEC_NAME" $TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME >/tmp/add_task.log 2>&1
-[[ $? = 0 ]] && rm -fr $TASK_SPACE/$USER.tasks.lock.$SEED
-grep 'Committed revision' /tmp/add_task.log
-sleep 1
+rm -fr $TASK_SPACE/$USER.tasks.lock.$SEED
+
 

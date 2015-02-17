@@ -24,6 +24,7 @@ export SEED=$RANDOM
 export TODAY=`date +%y%m%d`
 export TOWEEK=`date +%yw%V`
 export TOYEAR=`date +%Y`
+[[ `echo $* | grep debug` ]] && export DEBUG=echo
 export HOME=/root
 
 export IBUILD_ROOT=$HOME/ibuild
@@ -108,26 +109,26 @@ After ${BUILD_TIME_MIN}min, node $SLAVE_HOST ($SLAVE_IP) build $IBUILD_TARGET_PR
 
 All of log and packages download URL:
 $DOWNLOAD_URL
-" >/tmp/$ICASE_REV.mail
+" >$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
 
-[[ ! -z $DOWNLOAD_PKG_NAME ]] && echo -e "wget $DOWNLOAD_URL/$DOWNLOAD_PKG_NAME" >>/tmp/$ICASE_REV.mail
-[[ $RESULT != PASSED ]] && echo -e "Error Log:\n$DOWNLOAD_URL/log/error.log" >>/tmp/$ICASE_REV.mail
+[[ ! -z $DOWNLOAD_PKG_NAME ]] && echo -e "wget $DOWNLOAD_URL/$DOWNLOAD_PKG_NAME" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
+[[ $RESULT != PASSED ]] && echo -e "Error Log:\n$DOWNLOAD_URL/log/error.log" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
 
 echo -e "
 It based on $IBUILD_GRTSRV/$IBUILD_GRTSRV_URL -b $IBUILD_GRTSRV_BRANCH
 
 Other info:
-$BUILD_SPEC" >>/tmp/$ICASE_REV.mail
+$BUILD_SPEC" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
 
 if [[ ! -z $GERRIT_PATCHSET_REVISION ]] ; then
-	echo "GERRIT_CHANGE_ID: $GERRIT_CHANGE_ID" >>/tmp/$ICASE_REV.mail
-	echo "repo download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER" >>/tmp/$ICASE_REV.mail
+	echo "GERRIT_CHANGE_ID: $GERRIT_CHANGE_ID" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
+	echo "repo download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
 fi
 
 if [[ $IBUILD_MODE = bundle ]] ; then
 	grep '^BUNDLE_PATCH=' $BUILD_INFO | awk -F'BUNDLE_PATCH=' {'print $2'} | while read BUNDLE_PATCH_ENTRY
 	do
-		echo "$BUNDLE_PATCH_ENTRY" >>/tmp/$ICASE_REV.mail
+		echo "$BUNDLE_PATCH_ENTRY" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
 	done
 	export SUB_IBUILD_MODE="[$IBUILD_MODE]"
 fi
@@ -137,11 +138,10 @@ echo -e "
 -dw
 from ibuild system
 [Daedalus]
-" >>/tmp/$ICASE_REV.mail
+" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
 
 [[ ! -z $ITASK_REV ]] && export SUB_ITASK_REV="[$ITASK_REV]"
-cat /tmp/$ICASE_REV.mail | mail -s "[ibuild][$RESULT]$SUB_ITASK_REV$SUB_IBUILD_MODE $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT in $SLAVE_HOST" $MAIL_LIST
+cat $TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail | mail -s "[ibuild][$RESULT]$SUB_ITASK_REV$SUB_IBUILD_MODE $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT in $SLAVE_HOST" $MAIL_LIST
 
-rm -f /tmp/$ICASE_REV.mail
-rm -fr $TASK_SPACE/tmp.icase.$SEED
+$DEBUG rm -fr $TASK_SPACE/tmp.icase.$SEED
 

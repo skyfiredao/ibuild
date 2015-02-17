@@ -19,6 +19,7 @@
 source /etc/bash.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
+export SEED=$RANDOM
 export TASK_SPACE=/dev/shm
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
@@ -92,9 +93,15 @@ do
 	echo $ITASK_REV >$TASK_SPACE/queue.lock
 	chmod 777 $TASK_SPACE/queue.lock
 
-	[[ -f $TASK_SPACE/itask.lock ]] && export ITASK_PATH=`cat $TASK_SPACE/itask.lock`
-	[[ -z $ITASK_PATH ]] && export ITASK_PATH=`ls -d $TASK_SPACE/itask-* | tail -n1`
-	[[ -z $ITASK_PATH ]] && export ITASK_PATH=$TASK_SPACE/itask-$TOWEEK
+	if [[ -f $TASK_SPACE/itask/svn.$TOWEEK.lock && -d $TASK_SPACE/itask/svn/.svn ]] ; then
+		svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn
+	else
+		mkdir -p $TASK_SPACE/itask 
+		rm -fr $TASK_SPACE/itask/svn*
+		touch $TASK_SPACE/itask/svn.$TOWEEK.lock
+		svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
+	fi
+	export ITASK_PATH=$TASK_SPACE/itask/svn
 
 	export ITASK_REV_MD5=`echo $ITASK_REV | md5sum | awk -F' ' {'print $1'}`
 	export ITASK_SPEC_URL=`svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1`
