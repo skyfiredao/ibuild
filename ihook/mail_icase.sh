@@ -112,7 +112,10 @@ $DOWNLOAD_URL
 " >$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
 
 [[ ! -z $DOWNLOAD_PKG_NAME ]] && echo -e "wget $DOWNLOAD_URL/$DOWNLOAD_PKG_NAME" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
-[[ $RESULT != PASSED ]] && echo -e "Error Log:\n$DOWNLOAD_URL/log/error.log" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
+if [[ $RESULT != PASSED ]] ; then
+	echo -e "Error Log:\n$DOWNLOAD_URL/log/error.log" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
+	wget $DOWNLOAD_URL/log/error.log -O $TASK_SPACE/tmp.icase.$SEED/error.log
+fi
 
 echo -e "
 It based on $IBUILD_GRTSRV/$IBUILD_GRTSRV_URL -b $IBUILD_GRTSRV_BRANCH
@@ -131,6 +134,12 @@ if [[ $IBUILD_MODE = bundle ]] ; then
 		echo "$BUNDLE_PATCH_ENTRY" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
 	done
 	export SUB_IBUILD_MODE="[$IBUILD_MODE]"
+fi
+
+if [[ -f $TASK_SPACE/tmp.icase.$SEED/error.log ]] ; then
+	echo ------------------------- Error log
+	cat $TASK_SPACE/tmp.icase.$SEED/error.log >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
+	echo ------------------------- End
 fi
 
 echo -e "
