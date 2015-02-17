@@ -101,6 +101,7 @@ do
 		touch $TASK_SPACE/itask/svn.$TOWEEK.lock
 		svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
 	fi
+	chmod 777 -R $TASK_SPACE/itask
 	export ITASK_PATH=$TASK_SPACE/itask/svn
 
 	export ITASK_REV_MD5=`echo $ITASK_REV | md5sum | awk -F' ' {'print $1'}`

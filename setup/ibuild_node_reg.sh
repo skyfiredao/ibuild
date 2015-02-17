@@ -51,6 +51,8 @@ $IBUILD_ROOT/setup/reboot.sh >/tmp/reboot.log 2>&1
 if [[ -f $TASK_SPACE/itask/svn.$TOWEEK.lock && -d $TASK_SPACE/itask/svn/.svn ]] ; then
 	export SVN_REV_LOC=`svn info $TASK_SPACE/itask/svn | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
 	if [[ $IBUILD_SVN_REV_SRV != $SVN_REV_LOC ]] ; then
+		sudo chmod 777 -R $TASK_SPACE/itask
+		svn cleanup $TASK_SPACE/itask/svn
 		svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn
 	fi
 else

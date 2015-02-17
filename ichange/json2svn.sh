@@ -28,7 +28,6 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 	exit 0
 fi        
 
-echo --------------------------
 export ITRACK_PATH=$IBUILD_ROOT/ichange
 
 export TASK_SPACE=/run/shm
@@ -67,15 +66,16 @@ if [[ ! -f $TASK_SPACE/itrack/svn.$TODAY.lock ]] ; then
 fi
 
 if [[ -d $TASK_SPACE/itrack/svn ]] ; then
-        export SVN_REPO_LOCAL=`svn info $TASK_SPACE/itrack/svn | grep ^URL | awk -F': ' {'print $2'}`
-        if [[ `echo $ICHANGE_SVN_SRV/$TOYEAR | grep $SVN_REPO_LOCAL` ]] ; then
-                svn up $ICHANGE_SVN_OPTION -q $TASK_SPACE/itrack/svn
-        else
-                rm -fr $TASK_SPACE/itrack/svn
-                svn co $ICHANGE_SVN_OPTION -q $ICHANGE_SVN_SRV/$TOYEAR $TASK_SPACE/itrack/svn
-        fi
+	export SVN_REPO_LOCAL=`svn info $TASK_SPACE/itrack/svn | grep ^URL | awk -F': ' {'print $2'}`
+	if [[ `echo $ICHANGE_SVN_SRV/$TOYEAR | grep $SVN_REPO_LOCAL` ]] ; then
+		svn cleanup $TASK_SPACE/itrack/svn
+		svn up $ICHANGE_SVN_OPTION -q $TASK_SPACE/itrack/svn
+	else
+		rm -fr $TASK_SPACE/itrack/svn
+		svn co $ICHANGE_SVN_OPTION -q $ICHANGE_SVN_SRV/$TOYEAR $TASK_SPACE/itrack/svn
+	fi
 else
-        svn co $ICHANGE_SVN_OPTION -q $ICHANGE_SVN_SRV/$TOYEAR $TASK_SPACE/itrack/svn
+	svn co $ICHANGE_SVN_OPTION -q $ICHANGE_SVN_SRV/$TOYEAR $TASK_SPACE/itrack/svn
 fi
 rm -f $TASK_SPACE/itrack/svn.*.lock
 touch $TASK_SPACE/itrack/svn.$TODAY.lock
@@ -93,7 +93,7 @@ UPDATE_XML()
  svn ci $ICHANGE_SVN_OPTION -q -m 'auto update manifest' $TASK_SPACE/itrack/svn/manifest
 }
 
-echo "format json and log"
+echo ------------------------- Format json and log
 for JSON_FILE in `ls $JSON_PATH`
 do
         export ORDER=`date +%y%m%d%H%M%S`.$RANDOM
@@ -109,7 +109,7 @@ do
         fi
 done
 
-echo "input json to svn"
+echo ------------------------- Input json to svn
 cd $TASK_SPACE/itrack/$GERRIT_SRV.tmp
 for ORDER in `ls | grep json | sed 's/.json//g'`
 do
@@ -154,9 +154,10 @@ done
 rm -f $TASK_SPACE/itrack/json2svn.lock
 
 cd $TASK_SPACE/itrack/$GERRIT_SRV.tmp
-echo "Clean same file"
+echo ------------------------- Clean same file
 cd $JSON_PATH
 [[ `ls $TASK_SPACE/itrack/$GERRIT_SRV.tmp | grep json` ]] && md5sum $TASK_SPACE/itrack/$GERRIT_SRV.tmp/*.json >/tmp/CLEAN_DUP.tmp
+touch /tmp/CLEAN_DUP.tmp
 
 for MD5SUM_FILE in `cat /tmp/CLEAN_DUP.tmp | awk -F' ' {'print $2'}`
 do
