@@ -151,7 +151,7 @@ BUNDLE_BUILD()
 	export BUNDLE_PATCH=`echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $2'}`
 
 	SPLIT_LINE "bundle: repo download $BUNDLE_PATCH"
-	echo "------------------------- $BUNDLE_PATCH" >>$LOG_PATH/bundle.log 2>&1
+	echo "------------------------- $EMAIL_PATCH_OWNER|$BUNDLE_PATCH" >>$LOG_PATH/bundle.log 2>&1
 	time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
 	export MAKE_STATUS=$?
 	LOG_STATUS $MAKE_STATUS bundle $LOG_PATH/bundle.log

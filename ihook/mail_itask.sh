@@ -55,6 +55,7 @@ export SLAVE_IP=`cat $TASK_SPACE/tmp.itask.$SEED/jobs.txt-$ITASK_JOBS_REV | grep
 export BUILD_SPEC="$TASK_SPACE/tmp.itask.$SEED/svn/tasks/$BUILD_SPEC_NAME"
 export EMAIL_PM=`grep '^EMAIL_PM=' $BUILD_SPEC | awk -F'EMAIL_PM=' {'print $2'}`
 export EMAIL_REL=`grep '^EMAIL_REL=' $BUILD_SPEC | awk -F'EMAIL_REL=' {'print $2'}`
+export IBUILD_MODE=`grep '^IBUILD_MODE=' $BUILD_SPEC | awk -F'IBUILD_MODE=' {'print $2'}`
 export IBUILD_GRTSRV=`grep '^IBUILD_GRTSRV=' $BUILD_SPEC | awk -F'IBUILD_GRTSRV=' {'print $2'}`
 export IBUILD_GRTSRV_BRANCH=`grep '^IBUILD_GRTSRV_BRANCH=' $BUILD_SPEC | awk -F'IBUILD_GRTSRV_BRANCH=' {'print $2'}`
 export IBUILD_GRTSRV_URL=`grep '^IBUILD_GRTSRV_URL=' $BUILD_SPEC | awk -F'IBUILD_GRTSRV_URL=' {'print $2'}`
@@ -107,7 +108,10 @@ from ibuild system
 [Daedalus]
 " >>$TASK_SPACE/tmp.itask.$SEED/$ITASK_REV.mail
 
-cat $TASK_SPACE/tmp.itask.$SEED/$ITASK_REV.mail | mail -s "[ibuild][assign][$ITASK_REV] $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT in $SLAVE_HOST" $MAIL_LIST
+[[ $IBUILD_MODE = bundle ]] && export SUB_IBUILD_MODE="[$IBUILD_MODE]"
+[[ ! -z $GERRIT_PATCHSET_REVISION ]] && export SUB_IBUILD_MODE="[patch]"
+
+cat $TASK_SPACE/tmp.itask.$SEED/$ITASK_REV.mail | mail -s "[ibuild][assign][$ITASK_REV]$SUB_IBUILD_MODE $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT in $SLAVE_HOST" $MAIL_LIST
 
 $DEBUG rm -fr $TASK_SPACE/tmp.itask.$SEED
 
