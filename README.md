@@ -21,6 +21,9 @@ So, I will open source it.
 ### Data Flow Bus high level design image
 ![Data Flow Bus high level design image](https://github.com/daviding924/ibuild/blob/master/doc/data_flow_bus.gif)
 
+### Inside ibuild design image
+![Inside ibuild design image](https://github.com/daviding924/ibuild/blob/master/doc/inside_ibuild.gif)
+
 ### Inside ibuild node design image
 ![Inside ibuild node design image](https://github.com/daviding924/ibuild/blob/master/doc/inside_ibuild_node.gif)
 
