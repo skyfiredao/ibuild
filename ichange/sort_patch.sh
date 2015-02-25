@@ -79,7 +79,7 @@ do
 	svn export -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ichange/ichange/$MERGED_FILE $TASK_SPACE/tmp.isort.$SEED/
 done
 
-cat $TASK_SPACE/tmp.isort.$SEED/svn.blame.log | awk -F'irobot' {'print $1'} | while read ICHANGE_ENTRY_REV
+cat $TASK_SPACE/tmp.isort.$SEED/svn.blame.log | grep irobot | awk -F'irobot' {'print $1'} | while read ICHANGE_ENTRY_REV
 do
 	if [[ $ICHANGE_ENTRY_REV -ge $SORT_REV_MIN && $ICHANGE_ENTRY_REV -le $SORT_REV_MAX ]] ; then
 		grep " $ICHANGE_ENTRY_REV " $TASK_SPACE/tmp.isort.$SEED/svn.blame.log | awk -F'irobot' {'print $2'} >>$TASK_SPACE/tmp.isort.$SEED/ichange.log
@@ -97,6 +97,8 @@ do
 	fi
 done
 
+touch $TASK_SPACE/tmp.isort.$SEED/all_repo_download.txt
+
 cat $TASK_SPACE/tmp.isort.$SEED/all_repo_download.txt | while read REPO_DOWNLOAD_ENTRY
 do
 	export REPO_DOWNLOAD_ENTRY_EMAIL=`echo $REPO_DOWNLOAD_ENTRY | awk -F'|' {'print $1'}`
@@ -104,7 +106,7 @@ do
 		cat $TASK_SPACE/tmp.isort.$SEED/ispec.conf/ignore.conf | egrep "$REPO_DOWNLOAD_ENTRY_EMAIL|$STRING_GERRIT_PROJECT" >>$TASK_SPACE/tmp.isort.$SEED/ignore.txt
 	elif [[ `grep $REPO_DOWNLOAD_ENTRY_EMAIL $TASK_SPACE/tmp.isort.$SEED/ispec.conf/mail.conf` ]] ; then
 		echo $REPO_DOWNLOAD_ENTRY >>$TASK_SPACE/tmp.isort.$SEED/repo_download.txt
-	elif [[ `grep $STRING_GERRIT_PROJECT $TASK_SPACE/tmp.isort.$SEED/ispec.conf/project.conf` ]] ; then
+	elif [[ `grep $STRING_GERRIT_PROJECT$ $TASK_SPACE/tmp.isort.$SEED/ispec.conf/project.conf` ]] ; then
 		echo $REPO_DOWNLOAD_ENTRY >>$TASK_SPACE/tmp.isort.$SEED/repo_download.txt
 	fi 
 done

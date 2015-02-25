@@ -138,9 +138,9 @@ if [[ $IBUILD_MODE = bundle ]] ; then
 fi
 
 if [[ -f $TASK_SPACE/tmp.icase.$SEED/error.log ]] ; then
-	echo ------------------------- Error log
-	cat $TASK_SPACE/tmp.icase.$SEED/error.log >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
-	echo ------------------------- End
+	echo -e "\n------------------------- Error log" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
+	cat $TASK_SPACE/tmp.icase.$SEED/error.log | tail -n50 >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
+	echo -e "------------------------- End" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
 fi
 
 echo -e "

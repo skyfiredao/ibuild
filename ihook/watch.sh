@@ -45,8 +45,8 @@ mkdir -p $TASK_SPACE/$WATCH_TMP
 svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec $TASK_SPACE/$WATCH_TMP/ispec
 
 svn log -v -r $ICHANGE_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ichange >$TASK_SPACE/$WATCH_TMP/svn.log
-export WATCH_GERRIT_SERVER=`cat $TASK_SPACE/$WATCH_TMP/svn.log | grep ichange | awk -F"$TOYEAR" {'print $2'} | awk -F'/' {'print $2'} | sort -u | head -n1`
-export WATCH_GERRIT_BRANCH=`cat $TASK_SPACE/$WATCH_TMP/svn.log | grep ichange | grep $TOWEEK | awk -F"$WATCH_GERRIT_SERVER/" {'print $2'} | awk -F"/$TOWEEK.all-change" {'print $1'} | sort -u | head -n1`
+export WATCH_GERRIT_SERVER=`cat $TASK_SPACE/$WATCH_TMP/svn.log | grep ichange | egrep -v 'manifest' | awk -F"$TOYEAR" {'print $2'} | awk -F'/' {'print $2'} | sort -u | head -n1`
+export WATCH_GERRIT_BRANCH=`cat $TASK_SPACE/$WATCH_TMP/svn.log | grep ichange | egrep -v 'manifest' | grep $TOWEEK | awk -F"$WATCH_GERRIT_SERVER/" {'print $2'} | awk -F"/$TOWEEK.all-change" {'print $1'} | sort -u | head -n1`
 	[[ `echo $WATCH_GERRIT_BRANCH | grep all-change` ]] && export WATCH_GERRIT_BRANCH=''
 export WATCH_GERRIT_STAGE=`cat $TASK_SPACE/$WATCH_TMP/svn.log | egrep 'Code-Review|change-abandoned|change-merged|change-restored|comment-added|merge-failed|patchset-created|reviewer-added|ref-updated' | awk -F"$TOWEEK." {'print $2'}`
 
@@ -101,14 +101,14 @@ ITASK_SUBMIT()
 
 MAIL_MATCHING()
 {
- if [[ `grep $WATCH_GERRIT_email $ISPEC_PATH/conf/mail.conf` ]] ; then
+ if [[ `grep $WATCH_GERRIT_email $ISPEC_PATH/conf/mail.conf` ||  $WATCHDOG_GERRIT_email = debug ]] ; then
 	ITASK_SUBMIT
  fi
 }
 
 PROJECT_MATCHING()
 {
- if [[ `grep $$WATCH_GERRIT_PROJECT $ISPEC_PATH/conf/project.conf` ]] ; then
+ if [[ `grep $WATCH_GERRIT_PROJECT$ $ISPEC_PATH/conf/project.conf` || $WATCHDOG_GERRIT_PROJECT = debug ]] ; then
 	ITASK_SUBMIT
  fi
 }
@@ -126,7 +126,7 @@ VALUE_MATCHING()
 		export VALUE_MATCHING_CHK=
 	fi
  done
- [[ ! -z $VALUE_MATCHING_CHK ]] && ITASK_SUBMIT
+ [[ ! -z $VALUE_MATCHING_CHK || $WATCHDOG_GERRIT_CodeReview = debug ]] && ITASK_SUBMIT
 }
 
 ITASK_MATCHING()
