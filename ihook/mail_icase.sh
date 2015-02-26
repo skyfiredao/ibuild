@@ -125,6 +125,7 @@ Other info:
 $BUILD_SPEC" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
 
 if [[ ! -z $GERRIT_PATCHSET_REVISION ]] ; then
+	echo -e "------------------------- $GERRIT_CHANGE_OWNER_EMAIL" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
 	echo "GERRIT_CHANGE_ID: $GERRIT_CHANGE_ID" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
 	echo "repo download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
 	export SUB_IBUILD_MODE="[patch]"

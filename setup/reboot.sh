@@ -32,7 +32,7 @@ if [[ `date +%u` = 1 && ! -f $TASK_SPACE/update-$TOWEEK ]] ; then
 	echo "full-upgrade: "`date` >>$TASK_SPACE/count
 fi
 
-if [[ `cat $TASK_SPACE/count | wc -l` -ge 10 ]] ; then
+if [[ `cat $TASK_SPACE/count | wc -l` -ge 30 ]] ; then
 	touch $TASK_SPACE/reboot
 fi
 
