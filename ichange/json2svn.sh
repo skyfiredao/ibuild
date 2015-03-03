@@ -83,17 +83,23 @@ touch $TASK_SPACE/itrack/svn.$TODAY.lock
 UPDATE_XML()
 {
  rm -fr $TASK_SPACE/itrack/manifest
- git clone ssh://$GERRIT_SERVER:$GERRIT_SRV_PORT/$GERRIT_XML_URL $TASK_SPACE/itrack/manifest
+ git clone -b $GERRIT_BRANCH ssh://$GERRIT_SERVER:$GERRIT_SRV_PORT/$GERRIT_XML_URL $TASK_SPACE/itrack/manifest
  cd $TASK_SPACE/itrack/manifest
  git checkout $GERRIT_BRANCH
  mkdir -p $TASK_SPACE/itrack/svn/manifest >/dev/null
  cp $TASK_SPACE/itrack/manifest/*.xml $TASK_SPACE/itrack/svn/manifest/
+ svn cleanup $TASK_SPACE/itrack/svn
  svn -q add $TASK_SPACE/itrack/svn/manifest
  svn -q add $TASK_SPACE/itrack/svn/manifest/*
  svn ci $ICHANGE_SVN_OPTION -q -m 'auto update manifest' $TASK_SPACE/itrack/svn/manifest
 }
 
-echo ------------------------- Format json and log
+SPLIT_LINE()
+{
+  [[ ! -z $DEBUG ]] && echo -e "------------------------- $1"
+}
+
+SPLIT_LINE 'Format json and log'
 for JSON_FILE in `ls $JSON_PATH`
 do
         export ORDER=`date +%y%m%d%H%M%S`.$RANDOM
@@ -109,7 +115,7 @@ do
         fi
 done
 
-echo ------------------------- Input json to svn
+SPLIT_LINE 'Input json to svn'
 cd $TASK_SPACE/itrack/$GERRIT_SRV.tmp
 for ORDER in `ls | grep json | sed 's/.json//g'`
 do
@@ -154,7 +160,7 @@ done
 rm -f $TASK_SPACE/itrack/json2svn.lock
 
 cd $TASK_SPACE/itrack/$GERRIT_SRV.tmp
-echo ------------------------- Clean same file
+SPLIT_LINE 'Clean same file'
 cd $JSON_PATH
 [[ `ls $TASK_SPACE/itrack/$GERRIT_SRV.tmp | grep json` ]] && md5sum $TASK_SPACE/itrack/$GERRIT_SRV.tmp/*.json >/tmp/CLEAN_DUP.tmp
 touch /tmp/CLEAN_DUP.tmp

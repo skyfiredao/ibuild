@@ -17,6 +17,8 @@
 # Change log
 # 140317: Ding Wei created it NCIC
 # 141217: Ding Wei change for pek12
+[[ `echo $* | grep debug` ]] && export DEBUG=echo
+
 export IBUILD_ROOT=$HOME/ibuild
 	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
