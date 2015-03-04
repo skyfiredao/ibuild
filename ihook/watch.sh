@@ -96,16 +96,14 @@ ITASK_SUBMIT()
  export WATCHDOG_SPEC=`echo $WATCHDOG_CONF | awk -F"$WATCHDOG_NUM_CONF" {'print $2'}`
  
  sleep `expr $RANDOM % 7 + 1`
+ date
  for SPEC_NAME in `ls $ISPEC_PATH/spec | grep $WATCHDOG_SPEC$`
  do
 	SPEC_EXT $ISPEC_PATH/spec/$SPEC_NAME
 	$DEBUG $ISPEC_PATH/itask $TASK_SPACE/$WATCH_TMP/patch.$SPEC_NAME
 	$DEBUG mv $TASK_SPACE/$WATCH_TMP/patch.$SPEC_NAME $TASK_SPACE/$WATCH_TMP/patch.$SPEC_NAME.$RANDOM
  done
- echo -------------------------- >>/tmp/ITASK_SUBMIT.log
- date >>/tmp/ITASK_SUBMIT.log
- echo $TASK_SPACE/$WATCH_TMP/patch.$SPEC_NAME >>/tmp/ITASK_SUBMIT.log
- echo $ICHANGE_ENTRY >>/tmp/ITASK_SUBMIT.log
+ echo $ICHANGE_ENTRY 
 }
 
 MAIL_MATCHING()

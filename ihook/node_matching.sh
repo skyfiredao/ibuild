@@ -47,6 +47,8 @@ MATCHING()
 	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/inode $TASK_SPACE/inode.lock
  fi
 
+ export FREE_NODE=''
+
  for NODE in `cat $IBUILD_ROOT/conf/priority/[$LEVEL_NUMBER]-floor.conf`
  do
 	if [[ -f $TASK_SPACE/inode.lock/$NODE ]] ; then
@@ -78,7 +80,7 @@ ASSIGN_JOB()
  if [[ `cat $TASK_SPACE/itask-r$ITASK_REV.jobs | grep $ITASK_REV_MD5 | grep $NODE_MD5` ]] ; then
 	echo "$ITASK_REV|$NODE|$NODE_IP|$ITASK_SPEC_NAME" >>$ITASK_PATH/jobs.txt
 	svn ci -q $IBUILD_SVN_OPTION -m "auto: assign itask-r$ITASK_REV to $NODE" $ITASK_PATH/jobs.txt
-	rm -f $QUEUE_SPACE/$ITASK_REV
+	rm -f $QUEUE_SPACE/$PRIORITY_ITASK_REV
  fi
  rm -f $TASK_SPACE/inode.lock/$NODE
  EXIT
@@ -87,8 +89,11 @@ ASSIGN_JOB()
 export QUEUE_SPACE=$1
 export TOWEEK=`date +%yw%V`
 
-for ITASK_REV in `ls $QUEUE_SPACE`
+for PRIORITY_ITASK_REV in `ls $QUEUE_SPACE`
 do
+	export IBUILD_PRIORITY=$(echo $PRIORITY_ITASK_REV | awk -F'.' {'print $1'})
+	[[ $IBUILD_PRIORITY = x ]] && export IBUILD_PRIORITY=''
+	export ITASK_REV=$(echo $PRIORITY_ITASK_REV | awk -F'.' {'print $2'})
 	[[ -f /tmp/EXIT ]] && EXIT
 	echo $ITASK_REV >$TASK_SPACE/queue.lock
 	chmod 777 $TASK_SPACE/queue.lock

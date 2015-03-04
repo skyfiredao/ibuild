@@ -37,9 +37,12 @@ chmod 777 -R $QUEUE_SPACE
 
 export ITASK_REV=$1
 export ITASK_SPEC_URL=`svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1`
+export ITASK_SPEC_NAME=$(basename $ITASK_SPEC_URL)
+export IBUILD_PRIORITY=$(svn cat -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/tasks/$ITASK_SPEC_NAME | grep '^IBUILD_PRIORITY=' | awk -F'IBUILD_PRIORITY=' {'print $2'})
+[[ -z $IBUILD_PRIORITY ]] && export IBUILD_PRIORITY=x
 
 if [[ `echo $ITASK_SPEC_URL | grep '^/itask/tasks'` ]] ; then
-	touch $QUEUE_SPACE/$ITASK_REV
+	touch $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
 	chmod 777 -R $QUEUE_SPACE
 elif [[ `echo $ITASK_SPEC_URL | grep 'jobs.txt$'` ]] ; then
 	$IBUILD_ROOT/ihook/mail_itask.sh $ITASK_REV
@@ -51,7 +54,7 @@ fi
 
 while [[ `ls $QUEUE_SPACE` || -f /tmp/EXIT ]] ;
 do
-	bash -x $IBUILD_ROOT/ihook/node_matching.sh $QUEUE_SPACE >/tmp/node_matching.log 2>&1
+	$IBUILD_ROOT/ihook/node_matching.sh $QUEUE_SPACE >/tmp/node_matching.log 2>&1
 	sleep `expr $RANDOM % 7 + 3`
 done
 

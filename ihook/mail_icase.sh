@@ -57,6 +57,7 @@ export BUILD_SPEC=`grep spec.build $BUILD_INFO | awk -F'#' {'print $2'} | head -
 export EMAIL_PM=`grep '^EMAIL_PM=' $BUILD_INFO | awk -F'EMAIL_PM=' {'print $2'}`
 export EMAIL_REL=`grep '^EMAIL_REL=' $BUILD_INFO | awk -F'EMAIL_REL=' {'print $2'}`
 export EMAIL_PATCH_OWNER=`grep '^EMAIL_PATCH_OWNER=' $BUILD_INFO | awk -F'EMAIL_PATCH_OWNER=' {'print $2'}`
+export EMAIL_TMP=`grep '^EMAIL_TMP=' $BUILD_INFO | awk -F'EMAIL_TMP=' {'print $2'}`
 export BUILD_TIME=`grep '^BUILD_TIME=' $BUILD_INFO | awk -F'BUILD_TIME=' {'print $2'} | head -n1`
 export BUILD_TIME_MIN=`echo $BUILD_TIME / 60 | bc`
 export START_TIME=`grep '^START_TIME=' $BUILD_INFO | awk -F'START_TIME=' {'print $2'}`
@@ -135,6 +136,10 @@ if [[ $IBUILD_MODE = bundle ]] ; then
 	grep '^BUNDLE_PATCH=' $BUILD_INFO | awk -F'BUNDLE_PATCH=' {'print $2'} | while read BUNDLE_PATCH_ENTRY
 	do
 		echo "$BUNDLE_PATCH_ENTRY" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
+	done
+	grep '^repo download' $BUILD_INFO | awk -F'download' {'print $2'} | while read BUNDLE_PATCH_ENTRY
+	do
+		echo "$EMAIL_TMP|$BUNDLE_PATCH_ENTRY" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
 	done
 	export SUB_IBUILD_MODE="[$IBUILD_MODE]"
 fi

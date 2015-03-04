@@ -26,6 +26,7 @@ export MAC=`/sbin/ifconfig | grep HWaddr | awk -F'HWaddr ' {'print $2'} | head -
 export HOSTNAME=`hostname`
 export DOMAIN_NAME=`cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'}`
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
+[[ $JOBS = 12 ]] && export JOBS=14
 export TODAY=`date +%y%m%d`
 export TOWEEK=`date +%yw%V`
 export ITASK_PATH=$TASK_SPACE/itask/svn
@@ -156,6 +157,17 @@ BUNDLE_BUILD()
 	export MAKE_STATUS=$?
 	LOG_STATUS $MAKE_STATUS bundle $LOG_PATH/bundle.log
  done
+ grep '^repo download' $IBUILD_SPEC | while read BUNDLE_PATCH_ENTRY
+ do
+	[[ ! -z $EMAIL_TMP ]] && export EMAIL_PATCH_OWNER=$EMAIL_TMP
+	export BUNDLE_PATCH=`echo $BUNDLE_PATCH_ENTRY | awk -F'download' {'print $2'}`
+
+	SPLIT_LINE "bundle: repo download $BUNDLE_PATCH"
+	echo "------------------------- $EMAIL_PATCH_OWNER|$BUNDLE_PATCH" >>$LOG_PATH/bundle.log 2>&1
+	time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
+	export MAKE_STATUS=$?
+	LOG_STATUS $MAKE_STATUS bundle $LOG_PATH/bundle.log
+ done
 }
 
 SPLIT_LINE()
@@ -260,12 +272,14 @@ IBUILD_ADD_STEP_1()
  svn up ~/.m2 >>$LOG_PATH/svn_up_m2.log 2>&1
 
  SPLIT_LINE "$IBUILD_ADD_STEP_1"
+ echo ---------- `date` >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
  if [[ `echo $IBUILD_ADD_STEP_1 | egrep 'svn.sh'` ]] ; then
 	time $IBUILD_ROOT/$IBUILD_ADD_STEP_1 >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
  else
 	TIMEOUT_KILL 200 git &
 	time $IBUILD_ADD_STEP_1 -j30 >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
  fi
+ echo ---------- `date` >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
 }
 
 IBUILD_ADD_STEP_2()
@@ -311,8 +325,13 @@ SETUP_BUILD_REPO()
 
 CCACHE_HOTFIX()
 {
- if [[ -f prebuilts/misc/linux-x86/ccache/ccache ]] ; then
-	/bin/cp $IBUILD_ROOT/bin/ccache-LDFLAGS-3.2 prebuilts/misc/linux-x86/ccache/ccache >/dev/null 2>&1
+ export NEW_CCACHE_URL=$IBUILD_ROOT/bin/ccache-LDFLAGS-3.2
+ export ORIG_CCACHE_URL=prebuilts/misc/linux-x86/ccache/ccache
+ export NEW_MD5=`md5sum $NEW_CCACHE_URL | awk -F' ' {'print $1'}`
+ export ORIG_MD5=`md5sum $ORIG_CCACHE_URL | awk -F' ' {'print $1'}`
+
+ if [[ -f $ORIG_CCACHE_URL && $NEW_MD5 != $ORIG_MD5 ]] ; then
+	/bin/cp $NEW_CCACHE_URL $ORIG_CCACHE_URL >/dev/null 2>&1
  fi
 }
 
