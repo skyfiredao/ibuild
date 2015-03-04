@@ -49,6 +49,11 @@ MATCHING()
 
  export FREE_NODE=''
 
+ for NODE in `cat $IBUILD_ROOT/conf/priority/1-floor.conf`
+ do
+	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.lock/$NODE
+ done
+
  for NODE in `cat $IBUILD_ROOT/conf/priority/[$LEVEL_NUMBER]-floor.conf`
  do
 	if [[ -f $TASK_SPACE/inode.lock/$NODE ]] ; then
