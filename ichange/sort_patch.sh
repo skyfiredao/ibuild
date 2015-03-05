@@ -102,16 +102,17 @@ touch $TASK_SPACE/tmp.isort.$SEED/all_repo_download.txt
 cat $TASK_SPACE/tmp.isort.$SEED/all_repo_download.txt | while read REPO_DOWNLOAD_ENTRY
 do
 	export REPO_DOWNLOAD_ENTRY_EMAIL=`echo $REPO_DOWNLOAD_ENTRY | awk -F'|' {'print $1'}`
-	if [[ `cat $TASK_SPACE/tmp.isort.$SEED/ispec.conf/ignore.conf | egrep "$REPO_DOWNLOAD_ENTRY_EMAIL|$STRING_GERRIT_PROJECT"` ]] ; then
-		cat $TASK_SPACE/tmp.isort.$SEED/ispec.conf/ignore.conf | egrep "$REPO_DOWNLOAD_ENTRY_EMAIL|$STRING_GERRIT_PROJECT" >>$TASK_SPACE/tmp.isort.$SEED/ignore.txt
+	export REPO_DOWNLOAD_ENTRY_PROJECT=`echo $REPO_DOWNLOAD_ENTRY | awk -F'|' {'print $2'} | awk -F' ' {'print $1'}`
+	if [[ `cat $TASK_SPACE/tmp.isort.$SEED/ispec.conf/ignore.conf | egrep "$REPO_DOWNLOAD_ENTRY_EMAIL|$REPO_DOWNLOAD_ENTRY_PROJECT"` ]] ; then
+		cat $TASK_SPACE/tmp.isort.$SEED/ispec.conf/ignore.conf | egrep "$REPO_DOWNLOAD_ENTRY_EMAIL|$REPO_DOWNLOAD_ENTRY_PROJECT" >>$TASK_SPACE/tmp.isort.$SEED/ignore.txt
 	elif [[ `grep $REPO_DOWNLOAD_ENTRY_EMAIL $TASK_SPACE/tmp.isort.$SEED/ispec.conf/mail.conf` ]] ; then
 		echo $REPO_DOWNLOAD_ENTRY >>$TASK_SPACE/tmp.isort.$SEED/repo_download.txt
-	elif [[ `grep $STRING_GERRIT_PROJECT$ $TASK_SPACE/tmp.isort.$SEED/ispec.conf/project.conf` ]] ; then
+	elif [[ `grep $REPO_DOWNLOAD_ENTRY_PROJECT$ $TASK_SPACE/tmp.isort.$SEED/ispec.conf/project.conf` ]] ; then
 		echo $REPO_DOWNLOAD_ENTRY >>$TASK_SPACE/tmp.isort.$SEED/repo_download.txt
 	fi 
 done
 
 cat $TASK_SPACE/tmp.isort.$SEED/repo_download.txt
-rm -fr $TASK_SPACE/tmp.isort.$SEED
+#rm -fr $TASK_SPACE/tmp.isort.$SEED
 
 

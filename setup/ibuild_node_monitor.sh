@@ -22,7 +22,7 @@ echo --------------------------
 ccache -s | egrep -v 'files|unsupported|called|local'
 echo --------------------------
 sudo umount /run/user/112/gvfs >/dev/null 2>&1
-df | grep local
+df | egrep 'ccache|out'
 echo --------------------------
 sensors | grep ' C ' | egrep 'Physical|temp1'
 

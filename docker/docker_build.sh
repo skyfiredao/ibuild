@@ -27,7 +27,7 @@ export USER_GID=$(id -g $USER)
 export IMAGE_TAG=image/node
 export PATH_BUILD=.
 [[ -f $1 ]] && export Dockerfile=$1
-[[ -z $Dockerfile ]] && export Dockerfile=Dockerfile.node
+[[ -z $Dockerfile ]] && export Dockerfile=conf/build_node.Dockerfile
 
 cat $Dockerfile | sed "s/USER_UID/$USER_UID/g" | sed "s/USER_GID/$USER_GID/g" >$Dockerfile.$SEED
 

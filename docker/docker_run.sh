@@ -28,6 +28,7 @@ export NODE_USER=builder
 export DNS_SRV=$(grep ^nameserver /etc/resolv.conf | awk -F' ' {'print $2'} | head -n1)
 export VOLUME_local=/local:/local
 export VOLUME_localtime=/etc/localtime:/etc/localtime:ro
+export VOLUME_HOME_ssh=$HOME/.ssh:/home/builder/.ssh
 export IMAGE_TAG=image/node
 
 export CONTAINER_ID=$(docker run \
@@ -39,6 +40,7 @@ export CONTAINER_ID=$(docker run \
 -d \
 -v $VOLUME_localtime \
 -v $VOLUME_local \
+-v $VOLUME_HOME_ssh \
 --name=node-$TODAY.$SEED \
 -t $IMAGE_TAG)
 
