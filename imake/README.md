@@ -3,7 +3,7 @@ imake tools
 
 #### add_task.sh
 stand-alone tool, add ibuild task as a job in svn:itask
-Usage: add_task.sh <spec.build file>
+Usage: add_task.sh spec.build_file
 
 #### build.sh
 stand-alone tool, build from spec.build file which link in /dev/shm/spec.build or itask job revision
