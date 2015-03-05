@@ -36,12 +36,13 @@ mkdir -p $QUEUE_SPACE >/dev/null 2>&1
 chmod 777 -R $QUEUE_SPACE
 
 export ITASK_REV=$1
-export ITASK_SPEC_URL=`svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1`
-export ITASK_SPEC_NAME=$(basename $ITASK_SPEC_URL)
-export IBUILD_PRIORITY=$(svn cat -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/tasks/$ITASK_SPEC_NAME | grep '^IBUILD_PRIORITY=' | awk -F'IBUILD_PRIORITY=' {'print $2'})
-[[ -z $IBUILD_PRIORITY ]] && export IBUILD_PRIORITY=x
 
 if [[ `echo $ITASK_SPEC_URL | grep '^/itask/tasks'` ]] ; then
+	export ITASK_SPEC_URL=$(svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
+	export ITASK_SPEC_NAME=$(basename $ITASK_SPEC_URL)
+	export IBUILD_PRIORITY=$(svn cat -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/tasks/$ITASK_SPEC_NAME | grep '^IBUILD_PRIORITY=' | awk -F'IBUILD_PRIORITY=' {'print $2'})
+	[[ -z $IBUILD_PRIORITY ]] && export IBUILD_PRIORITY=x
+
 	touch $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
 	chmod 777 -R $QUEUE_SPACE
 elif [[ `echo $ITASK_SPEC_URL | grep 'jobs.txt$'` ]] ; then
@@ -59,3 +60,4 @@ do
 done
 
 rm -f $TASK_SPACE/queue.lock
+

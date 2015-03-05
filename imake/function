@@ -26,7 +26,6 @@ export MAC=`/sbin/ifconfig | grep HWaddr | awk -F'HWaddr ' {'print $2'} | head -
 export HOSTNAME=`hostname`
 export DOMAIN_NAME=`cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'}`
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
-[[ $JOBS = 12 ]] && export JOBS=14
 export TODAY=`date +%y%m%d`
 export TOWEEK=`date +%yw%V`
 export ITASK_PATH=$TASK_SPACE/itask/svn
@@ -81,6 +80,7 @@ EXPORT_IBUILD_SPEC()
 	if [[ -f $ITASK_PATH/tasks/$IBUILD_SPEC_NAME && ! -f $TASK_SPACE/spec.build ]] ; then
 		cp $ITASK_PATH/tasks/$IBUILD_SPEC_NAME $TASK_SPACE/
 		ln -sf $TASK_SPACE/$IBUILD_SPEC_NAME $TASK_SPACE/spec.build
+		echo -e "-------------------------\nStart build: $IBUILD_SPEC_NAME\n-------------------------" | wall
 	else
 		SPLIT_LINE "$ITASK_PATH/tasks/$IBUILD_SPEC_NAME is not a spec.build or $TASK_SPACE/spec.build locked"
 		exit 1
@@ -504,6 +504,7 @@ CLEAN_EXIT()
 {
  rm -fr $TASK_SPACE/*spec.build*
  rm -f $TASK_SPACE/itask.lock
+ mv /tmp/build-$ITASK_REV.log /tmp/old.build-$ITASK_REV.log
  exit $1
 }
 

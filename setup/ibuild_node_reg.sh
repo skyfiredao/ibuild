@@ -19,21 +19,21 @@
 source /etc/bash.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
-export USER=`whoami`
+export USER=$(whoami)
 export TASK_SPACE=/run/shm
-export IP=`/sbin/ifconfig | grep 'inet addr:' | egrep -v '127.0.0.1|:172.[0-9]' | awk -F':' {'print $2'} | awk -F' ' {'print $1'} | head -n1`
-export MAC=`/sbin/ifconfig | grep HWaddr | awk -F'HWaddr ' {'print $2'} | head -n1`
-export HOSTNAME=`hostname`
-export DOMAIN_NAME=`cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'}`
-export BTRFS_PATH=`mount | grep btrfs | awk -F' ' {'print $3'} | tail -n1`
-export MEMORY=`free -g | grep Mem | awk -F' ' {'print $2'}`
-	export MEMORY=`echo $MEMORY + 1 | bc`
-export CPU=`cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u`
-export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
-export TOWEEK=`date +%yw%V`
-export TODAY=`date +%y%m%d`
+export IP=$(/sbin/ifconfig | grep 'inet addr:' | egrep -v '127.0.0.1|:172.[0-9]' | awk -F':' {'print $2'} | awk -F' ' {'print $1'} | head -n1)
+export MAC=$(/sbin/ifconfig | grep HWaddr | awk -F'HWaddr ' {'print $2'} | head -n1)
+export HOSTNAME=$(hostname)
+export DOMAIN_NAME=$(cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'})
+export BTRFS_PATH=$(mount | grep btrfs | awk -F' ' {'print $3'} | tail -n1)
+export MEMORY=$(free -g | grep Mem | awk -F' ' {'print $2'})
+	export MEMORY=$(echo $MEMORY + 1 | bc)
+export CPU=$(cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u)
+export JOBS=$(cat /proc/cpuinfo | grep CPU | wc -l)
+export TOWEEK=$(date +%yw%V)
+export TODAY=$(date +%y%m%d)
 export IBUILD_ROOT=$HOME/ibuild
-	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
+	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 	echo -e "Please put ibuild in your $HOME"
 	exit 0
@@ -41,15 +41,15 @@ fi
 
 svn up -q $IBUILD_ROOT
 
-export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
-export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
-export IBUILD_SVN_REV_SRV=`svn info $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
-export IBUILD_SVN_SRV_HOSTNAME=`echo $IBUILD_SVN_SRV | awk -F'.' {'print $1'}`
+export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
+export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
+export IBUILD_SVN_REV_SRV=$(svn info $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
+export IBUILD_SVN_SRV_HOSTNAME=$(echo $IBUILD_SVN_SRV | awk -F'.' {'print $1'})
 
 $IBUILD_ROOT/setup/reboot.sh >/tmp/reboot.log 2>&1
 
 if [[ -f $TASK_SPACE/itask/svn.$TOWEEK.lock && -d $TASK_SPACE/itask/svn/.svn ]] ; then
-	export SVN_REV_LOC=`svn info $TASK_SPACE/itask/svn | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+	export SVN_REV_LOC=$(svn info $TASK_SPACE/itask/svn | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
 	if [[ $IBUILD_SVN_REV_SRV != $SVN_REV_LOC ]] ; then
 		sudo chmod 777 -R $TASK_SPACE/itask
 		svn cleanup $TASK_SPACE/itask/svn
@@ -98,11 +98,13 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 	crontab /tmp/$USER.crontab
 fi
 
+[[ `ps aux | grep -v grep | grep gvfsd` ]] && sudo /etc/init.d/lightdm stop
+
 if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
 	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn/inode
 	for CHK_HOST in `ls $TASK_SPACE/itask/svn/inode`
 	do
-		export CHK_HOST_IP=`grep '^IP=' $TASK_SPACE/itask/svn/inode/$CHK_HOST | awk -F'IP=' {'print $2'}`
+		export CHK_HOST_IP=$(grep '^IP=' $TASK_SPACE/itask/svn/inode/$CHK_HOST | awk -F'IP=' {'print $2'})
 		/bin/ping -c 3 -W 1 $CHK_HOST_IP >/dev/null 2>&1
 		if [[ $? = 1 ]] ; then
 			svn rm $TASK_SPACE/itask/svn/inode/$CHK_HOST
@@ -118,6 +120,13 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
 		touch $TASK_SPACE/ganglia-$TODAY
 		sudo /etc/init.d/gmetad restart
 		sudo /etc/init.d/ganglia-monitor restart
+	fi
+
+	export SHARE_POINT=$(df | grep local | grep share | awk -F' ' {'print $6'})
+	export SHARE_POINT_USAGE=$(df | grep local | grep share | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
+	export SHARE_POINT_OLD=$(ls $SHARE_POINT | grep [0-9] | cut -c1-4 | sort -u | head -n1)
+	if [[ $SHARE_POINT_USAGE -ge 90 ]] ; then
+		sudo rm -fr $SHARE_POINT/$SHARE_POINT_OLD*
 	fi
 
 	if [[ ! -f $TASK_SPACE/clean_task_spec-$TOWEEK ]] ; then
