@@ -113,6 +113,6 @@ do
 done
 
 cat $TASK_SPACE/tmp.isort.$SEED/repo_download.txt
-#rm -fr $TASK_SPACE/tmp.isort.$SEED
+rm -fr $TASK_SPACE/tmp.isort.$SEED
 
 
