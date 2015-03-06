@@ -73,7 +73,7 @@ export GERRIT_PROJECT=`grep '^GERRIT_PROJECT=' $BUILD_SPEC | awk -F'GERRIT_PROJE
 
 export MAIL_LIST=$IBUILD_FOUNDER_EMAIL
 
-if [[ ! -z $EMAIL_TMP && ! `echo $EMAIL_TMP | egrep 'root|ubuntu'` ]] ; then
+if [[ ! -z $EMAIL_TMP && ! `echo $EMAIL_TMP | egrep 'root|ubuntu|builder'` ]] ; then
 	export MAIL_LIST="$MAIL_LIST,$EMAIL_TMP"
 fi
 
