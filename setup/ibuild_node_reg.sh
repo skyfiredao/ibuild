@@ -46,7 +46,7 @@ export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.c
 export IBUILD_SVN_REV_SRV=$(svn info $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
 export IBUILD_SVN_SRV_HOSTNAME=$(echo $IBUILD_SVN_SRV | awk -F'.' {'print $1'})
 
-$IBUILD_ROOT/setup/reboot.sh >/tmp/reboot.log 2>&1
+$IBUILD_ROOT/setup/reboot.sh
 
 if [[ -f $TASK_SPACE/itask/svn.$TOWEEK.lock && -d $TASK_SPACE/itask/svn/.svn ]] ; then
 	export SVN_REV_LOC=$(svn info $TASK_SPACE/itask/svn | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
@@ -133,6 +133,8 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
 		rm -f $TASK_SPACE/clean_task_spec-*
 		touch $TASK_SPACE/clean_task_spec-$TOWEEK
 		$IBUILD_ROOT/misc/clean_task_spec.sh >/tmp/clean_task_spec.log
+	else
+		rm -f /tmp/clean_task_spec.log
 	fi
 
 	$IBUILD_ROOT/imake/daily_build.sh >>/tmp/daily_build.log 2>&1 &

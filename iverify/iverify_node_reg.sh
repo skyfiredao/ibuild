@@ -52,40 +52,56 @@ if [[ -d $TASK_SPACE/iverify/inode.svn/.svn ]] ; then
 		svn up -q $IVERIFY_SVN_OPTION $TASK_SPACE/iverify/inode.svn
 	fi
 else
+	rm -fr $TASK_SPACE/iverify >/dev/null 2>&1
 	mkdir -p $TASK_SPACE/iverify >/dev/null 2>&1
 	rm -fr $TASK_SPACE/iverify/inode.svn >/dev/null 2>&1
 	svn co -q $IVERIFY_SVN_OPTION svn://$IVERIFY_SVN_SRV/iverify/inode $TASK_SPACE/iverify/inode.svn
 fi
 
-echo "# build node info
+INODE_REG()
+{
+ export HOSTNAME=$1
+ export TARGET_PRODUCT=$2
+ export DEVICE_ID=$3
+ export DEVICE_STATUS=$4
+ echo "# verify node info
 IP=$IP
+TARGET_PRODUCT=$TARGET_PRODUCT
 HOSTNAME=$HOSTNAME
+DEVICE_ID=$DEVICE_ID
+DEVICE_STATUS=$DEVICE_STATUS
 MAC=$MAC
 CPU=$CPU
 JOBS=$JOBS
-USER=$USER" | sort -u >$TASK_SPACE/iverify/inode.svn/$HOSTNAME
+USER=$USER" | sort -u >$TASK_SPACE/iverify/inode.svn/$HOSTNAME.$TARGET_PRODUCT.$DEVICE_ID
 
-for DEVICE_ID in `$ADB devices | egrep -v 'daemon|attached|offline' | grep device$ | awk -F' ' {'print $1'}`
+ svn add $TASK_SPACE/iverify/inode.svn/$HOSTNAME.$TARGET_PRODUCT.$DEVICE_ID >/dev/null 2>&1
+}
+
+$ADB devices >$TASK_SPACE/iverify/adb_devices.log
+
+for DEVICE_ID in `cat $TASK_SPACE/iverify/adb_devices.log | egrep -v 'daemon|attached|offline' | grep device$ | awk -F' ' {'print $1'}`
 do
-	echo DEVICE_ID=$DEVICE_ID >>$TASK_SPACE/iverify/inode.svn/$HOSTNAME
+	$ADB -s $DEVICE_ID shell getprop >$TASK_SPACE/iverify/$DEVICE_ID
+	export TARGET_PRODUCT=$(grep ro.build $TASK_SPACE/iverify/$DEVICE_ID | grep fingerprint | awk -F'/' {'print $2'})
+	INODE_REG $HOSTNAME $TARGET_PRODUCT $DEVICE_ID online
 done
 
-for DEVICE in `$ADB devices | egrep -v 'daemon|attached' | grep offline$ | awk -F' ' {'print $1'}`
+for DEVICE_OFFLINE in `cat $TASK_SPACE/iverify/adb_devices.log | egrep -v 'daemon|attached' | grep offline$ | awk -F' ' {'print $1'}`
 do
-	echo DEVICE_OFFLINE=$DEVICE >>$TASK_SPACE/iverify/inode.svn/$HOSTNAME
-	rm -f $TASK_SPACE/iverify/lock.$DEVICE >/dev/null 2>&1
+	INODE_REG $HOSTNAME $TARGET_PRODUCT $DEVICE_ID offline
+	rm -f $TASK_SPACE/iverify/lock.$DEVICE_OFFLINE >/dev/null 2>&1
 done
 
 for DEVICE_LOST in `ls $TASK_SPACE/iverify | grep lock | awk -F'lock.' {'print $2'}`
 do
-	if [[ ! `grep $DEVICE_LOST $TASK_SPACE/iverify/inode.svn/$HOSTNAME` ]] ; then
+	if [[ ! `ls $TASK_SPACE/iverify/inode.svn | grep $HOSTNAME | grep $DEVICE_LOST` ]] ; then
 		rm -f $TASK_SPACE/iverify/lock.$DEVICE_LOST
 	fi
 done
 
-if [[ `svn st $TASK_SPACE/iverify/inode.svn/$HOSTNAME | grep $HOSTNAME` ]] ; then
-	svn add $TASK_SPACE/iverify/inode.svn/$HOSTNAME >/dev/null 2>&1
-	svn ci $IVERIFY_SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/iverify/inode.svn/$HOSTNAME
+if [[ `svn st $TASK_SPACE/iverify/inode.svn | grep $HOSTNAME` ]] ; then
+	svn ci $IVERIFY_SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/iverify/inode.svn
 	if [[ $? != 0 ]] ; then
 		rm -fr $TASK_SPACE/iverify/inode.svn
 		echo -e "Waiting for next cycle because conflict"
@@ -103,5 +119,5 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 	crontab /tmp/$USER.crontab
 fi
 
-$IVERIFY_ROOT/bin/iverify_node_daemon >/tmp/iverify_node_daemon.log 2>&1 &
+$IVERIFY_ROOT/bin/iverify_node_daemon $TASK_SPACE/iverify >/tmp/iverify_node_daemon.log 2>&1 &
 
