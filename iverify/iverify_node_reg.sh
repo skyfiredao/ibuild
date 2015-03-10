@@ -47,7 +47,6 @@ export IVERIFY_SVN_SRV_HOSTNAME=$(echo $IVERIFY_SVN_SRV | awk -F'.' {'print $1'}
 if [[ -d $TASK_SPACE/iverify/inode.svn/.svn ]] ; then
 	export SVN_REV_LOC=$(svn info $TASK_SPACE/iverify/inode.svn | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
 	if [[ $IVERIFY_SVN_REV_SRV != $SVN_REV_LOC ]] ; then
-		sudo chmod 777 -R $TASK_SPACE/iverify
 		svn cleanup $TASK_SPACE/iverify/inode.svn
 		svn up -q $IVERIFY_SVN_OPTION $TASK_SPACE/iverify/inode.svn
 	fi
@@ -55,7 +54,7 @@ else
 	rm -fr $TASK_SPACE/iverify >/dev/null 2>&1
 	mkdir -p $TASK_SPACE/iverify >/dev/null 2>&1
 	rm -fr $TASK_SPACE/iverify/inode.svn >/dev/null 2>&1
-	svn co -q $IVERIFY_SVN_OPTION svn://$IVERIFY_SVN_SRV/iverify/inode $TASK_SPACE/iverify/inode.svn
+	svn co -q $IVERIFY_SVN_OPTION svn://$IVERIFY_SVN_SRV/iverify/iverify/inode $TASK_SPACE/iverify/inode.svn
 fi
 
 INODE_REG()
@@ -93,10 +92,18 @@ do
 	rm -f $TASK_SPACE/iverify/lock.$DEVICE_OFFLINE >/dev/null 2>&1
 done
 
-for DEVICE_LOST in `ls $TASK_SPACE/iverify | grep lock | awk -F'lock.' {'print $2'}`
+for DEVICE_LOST in `ls $TASK_SPACE/iverify | grep lock | awk -F'^lock.' {'print $2'}`
 do
 	if [[ ! `ls $TASK_SPACE/iverify/inode.svn | grep $HOSTNAME | grep $DEVICE_LOST` ]] ; then
 		rm -f $TASK_SPACE/iverify/lock.$DEVICE_LOST
+	fi
+done
+
+for CHK_HOST_DEVICE in `ls $TASK_SPACE/iverify/inode.svn | grep $HOSTNAME`
+do
+	export CHK_DEVICE_ID=$(echo $CHK_HOST_DEVICE | awk -F'.' {'print $3'})
+	if [[ ! `grep $CHK_DEVICE_ID $TASK_SPACE/iverify/adb_devices.log` ]] ; then
+		svn rm $TASK_SPACE/iverify/inode.svn/$CHK_HOST_DEVICE
 	fi
 done
 
@@ -119,5 +126,5 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 	crontab /tmp/$USER.crontab
 fi
 
-$IVERIFY_ROOT/bin/iverify_node_daemon $TASK_SPACE/iverify >/tmp/iverify_node_daemon.log 2>&1 &
+$IVERIFY_ROOT/bin/iverify_node_daemon >/tmp/iverify_node_daemon.log 2>&1 &
 

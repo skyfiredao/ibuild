@@ -22,7 +22,7 @@ export LC_ALL=C
 export SEED=$RANDOM
 export TASK_SPACE=/dev/shm
 export IBUILD_ROOT=$HOME/ibuild
-        [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
+        [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 	echo -e "Please put ibuild in your $HOME"
 	exit 0
@@ -54,7 +54,7 @@ MATCHING()
 	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.lock/$NODE
  done
 
- for NODE in `cat $IBUILD_ROOT/conf/priority/[$LEVEL_NUMBER]-floor.conf`
+ for NODE in `cat $IBUILD_ROOT/conf/priority/${LEVEL_NUMBER}-floor.conf`
  do
 	if [[ -f $TASK_SPACE/inode.lock/$NODE ]] ; then
 		export FREE_NODE=true
@@ -65,11 +65,11 @@ MATCHING()
 	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.lock
  fi 
 
- for NODE in `cat $IBUILD_ROOT/conf/priority/[$LEVEL_NUMBER]-floor.conf`
+ for NODE in `cat $IBUILD_ROOT/conf/priority/${LEVEL_NUMBER}-floor.conf`
  do
 	if [[ -f $TASK_SPACE/inode.lock/$NODE ]] ; then
-		export NODE_IP=`grep '^IP=' $TASK_SPACE/inode.lock/$NODE | awk -F'IP=' {'print $2'}` 
-		export NODE_MD5=`echo $NODE | md5sum | awk -F' ' {'print $1'}`
+		export NODE_IP=$(grep '^IP=' $TASK_SPACE/inode.lock/$NODE | awk -F'IP=' {'print $2'}) 
+		export NODE_MD5=$(echo $NODE | md5sum | awk -F' ' {'print $1'})
 
 		echo $ITASK_REV | $NETCAT $NODE_IP 1234
 		sleep 1
@@ -92,12 +92,11 @@ ASSIGN_JOB()
 }
 
 export QUEUE_SPACE=$1
-export TOWEEK=`date +%yw%V`
+export TOWEEK=$(date +%yw%V)
 
 for PRIORITY_ITASK_REV in `ls $QUEUE_SPACE`
 do
 	export IBUILD_PRIORITY=$(echo $PRIORITY_ITASK_REV | awk -F'.' {'print $1'})
-	[[ $IBUILD_PRIORITY = x ]] && export IBUILD_PRIORITY=''
 	export ITASK_REV=$(echo $PRIORITY_ITASK_REV | awk -F'.' {'print $2'})
 	[[ -f /tmp/EXIT ]] && EXIT
 	echo $ITASK_REV >$TASK_SPACE/queue.lock
@@ -114,13 +113,13 @@ do
 	chmod 777 -R $TASK_SPACE/itask
 	export ITASK_PATH=$TASK_SPACE/itask/svn
 
-	export ITASK_REV_MD5=`echo $ITASK_REV | md5sum | awk -F' ' {'print $1'}`
-	export ITASK_SPEC_URL=`svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1`
-	export ITASK_SPEC_NAME=`basename $ITASK_SPEC_URL`
+	export ITASK_REV_MD5=$(echo $ITASK_REV | md5sum | awk -F' ' {'print $1'})
+	export ITASK_SPEC_URL=$(svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
+	export ITASK_SPEC_NAME=$(basename $ITASK_SPEC_URL)
 
 	svn export -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/$ITASK_SPEC_URL $TASK_SPACE/itask-r$ITASK_REV.lock
-	export IBUILD_PRIORITY=`grep '^IBUILD_PRIORITY=' $TASK_SPACE/itask-r$ITASK_REV.lock | awk -F'IBUILD_PRIORITY=' {'print $2'}`
-	if [[ -z $IBUILD_PRIORITY ]] ; then
+	[[ -z $IBUILD_PRIORITY ]] && export IBUILD_PRIORITY=$(grep '^IBUILD_PRIORITY=' $TASK_SPACE/itask-r$ITASK_REV.lock | awk -F'IBUILD_PRIORITY=' {'print $2'})
+	if [[ -z $IBUILD_PRIORITY || $IBUILD_PRIORITY = x ]] ; then
 		export LEVEL_NUMBER=1-9
 	else
 		export LEVEL_NUMBER=$IBUILD_PRIORITY

@@ -87,7 +87,7 @@ CHK_ITASK_LOCK
 while [ ! -f $TASK_SPACE/itask.lock ] ; 
 do
 	CHK_ITASK_LOCK
-	if [[ -f $TASK_SPACE/exit.lock ]] ; then
+	if [[ -f $TASK_SPACE/EXIT ]] ; then
 		$NETCAT 127.0.0.1 1234
 		pkill -9 nc
 		exit 0
