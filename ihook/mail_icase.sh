@@ -135,7 +135,7 @@ if [[ ! -z $GERRIT_PATCHSET_REVISION ]] ; then
 		export MAIL_REPO_CMD="repo download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER"
 	fi
 	echo "$MAIL_REPO_CMD" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
-	export SUB_IBUILD_MODE="[patch]"
+	export SUB_IBUILD_MODE="[$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER]"
 fi
 
 if [[ $IBUILD_MODE = bundle ]] ; then
@@ -152,7 +152,7 @@ fi
 
 if [[ -f $TASK_SPACE/tmp.icase.$SEED/error.log ]] ; then
 	echo -e "\n------------------------- Error log" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
-	cat $TASK_SPACE/tmp.icase.$SEED/error.log | tail -n50 >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
+	cat $TASK_SPACE/tmp.icase.$SEED/error.log | egrep -v '32m|0m' | tail -n50 >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
 	echo -e "------------------------- End" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
 fi
 

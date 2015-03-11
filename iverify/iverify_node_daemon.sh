@@ -122,7 +122,8 @@ RUN_hostrunner()
  export IVERIFY_hostrunner_device_config=$(grep '^IVERIFY_hostrunner_device_config=' $IVERIFY_CONF | awk -F'IVERIFY_hostrunner_device_config=' {'print $2'})
 
  cd $IVERIFY_hostrunner_PATH
- rm -fr $IVERIFY_hostrunner_PATH/workdir/$IVERIFY_hostrunner_serial-*
+ rm -fr $IVERIFY_hostrunner_PATH/workdir/$IVERIFY_hostrunner_serial-* >/dev/null 2>&1
+ rm -f $IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.sh >/dev/null 2>&1
  mkdir -p $IVERIFY_hostrunner_PATH/workdir >/dev/null 2>&1
  export hostrunner_SPACE=$IVERIFY_hostrunner_PATH/workdir
  export KBITS_HOST=$hostrunner_SPACE/$IVER.$DOWNLOAD_PKG_NAME
@@ -130,6 +131,10 @@ RUN_hostrunner()
 
  echo "#!/bin/bash
 # auto create script
+export PATH=/usr/lib/jvm/java-7-openjdk-amd64/bin:$PATH:
+export CLASSPATH=/usr/lib/jvm/java-7-openjdk-amd64/lib:.
+export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+
 cd $IVERIFY_hostrunner_PATH
 
 export KBITS_HOST=$hostrunner_SPACE/$IVER.$DOWNLOAD_PKG_NAME
@@ -153,7 +158,7 @@ rm -f $hostrunner_SPACE/$IVER.$DOWNLOAD_PKG_NAME
 
  chmod +x $IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.sh
  cat $IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.sh
- /bin/bash $IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.sh >>$IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.log 2>&1
+ source $IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.sh >>$IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.log 2>&1
 
  cd $hostrunner_SPACE
  find | egrep -v 'file.list$|.svn' >$IVER.file.list

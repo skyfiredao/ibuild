@@ -43,15 +43,13 @@ MATCHING()
  export LEVEL_NUMBER=$1
  export FREE_NODE=''
 
- [[ $LEVEL_NUMBER = x ]] && export LEVEL_NUMBER=1-9
- 
  if [[ ! -d $TASK_SPACE/inode.lock ]] ; then
 	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/inode $TASK_SPACE/inode.lock
  fi
 
  export FREE_NODE=''
 
- for NODE in `cat $IBUILD_ROOT/conf/priority/$IBUILD_PRIORITY-floor.conf`
+ for NODE in `cat $IBUILD_ROOT/conf/priority/[$IBUILD_PRIORITY]-floor.conf`
  do
 	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.lock/$NODE
  done
@@ -121,11 +119,12 @@ do
 
 	svn export -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/$ITASK_SPEC_URL $TASK_SPACE/itask-r$ITASK_REV.lock
 	[[ -z $IBUILD_PRIORITY ]] && export IBUILD_PRIORITY=$(grep '^IBUILD_PRIORITY=' $TASK_SPACE/itask-r$ITASK_REV.lock | awk -F'IBUILD_PRIORITY=' {'print $2'})
-	if [[ -z $IBUILD_PRIORITY || $IBUILD_PRIORITY = x ]] ; then
-		export LEVEL_NUMBER=1-9
-	else
-		export LEVEL_NUMBER=$IBUILD_PRIORITY
+	if [[ $IBUILD_PRIORITY = x ]] ; then
+		export IBUILD_PRIORITY=2-9
+	elif [[ -z $IBUILD_PRIORITY ]] ; then
+		export IBUILD_PRIORITY=1-9
 	fi
+	export LEVEL_NUMBER=$IBUILD_PRIORITY
 
 	MATCHING $LEVEL_NUMBER
 done

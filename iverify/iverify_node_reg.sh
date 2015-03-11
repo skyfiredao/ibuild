@@ -35,6 +35,14 @@ if [[ ! -f $HOME/iverify/conf/iverify.conf ]] ; then
 	exit 0
 fi
 
+if [[ -f /usr/lib/jvm/java-7-openjdk-amd64/bin/java ]] ; then
+	export PATH=/usr/lib/jvm/java-7-openjdk-amd64/bin:$PATH:
+	export CLASSPATH=/usr/lib/jvm/java-7-openjdk-amd64/lib:.
+	export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+else
+	echo -e "Please setup JDK in your PATH"
+	exit 0
+fi
 export ADB=$IVERIFY_ROOT/bin/adb
 
 svn up -q $IVERIFY_ROOT

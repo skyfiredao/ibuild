@@ -84,14 +84,16 @@ UPDATE_XML()
 {
  rm -fr $TASK_SPACE/itrack/manifest
  git clone -b $GERRIT_BRANCH ssh://$GERRIT_SERVER:$GERRIT_SRV_PORT/$GERRIT_XML_URL $TASK_SPACE/itrack/manifest
- cd $TASK_SPACE/itrack/manifest
- git checkout $GERRIT_BRANCH
- mkdir -p $TASK_SPACE/itrack/svn/manifest >/dev/null
- cp $TASK_SPACE/itrack/manifest/*.xml $TASK_SPACE/itrack/svn/manifest/
- svn cleanup $TASK_SPACE/itrack/svn
- svn -q add $TASK_SPACE/itrack/svn/manifest
- svn -q add $TASK_SPACE/itrack/svn/manifest/*
- svn ci $ICHANGE_SVN_OPTION -q -m 'auto update manifest' $TASK_SPACE/itrack/svn/manifest
+ if [[ -d $TASK_SPACE/itrack/svn/manifest ]] ; then
+	cd $TASK_SPACE/itrack/manifest
+	git checkout $GERRIT_BRANCH
+	mkdir -p $TASK_SPACE/itrack/svn/manifest >/dev/null
+	cp $TASK_SPACE/itrack/manifest/*.xml $TASK_SPACE/itrack/svn/manifest/
+	svn cleanup $TASK_SPACE/itrack/svn
+	svn -q add $TASK_SPACE/itrack/svn/manifest
+	svn -q add $TASK_SPACE/itrack/svn/manifest/*
+	svn ci $ICHANGE_SVN_OPTION -q -m 'auto update manifest' $TASK_SPACE/itrack/svn/manifest
+ fi
 }
 
 SPLIT_LINE()
@@ -130,6 +132,7 @@ do
         export g_username=`cat $ORDER.json | egrep '"username":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1`
         export g_url=`cat $ORDER.json | egrep '"url":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1`
         [[ ! -z $g_url ]] && export g_change_number=`basename $g_url`
+	[[ -z $g_change_number ]] && export g_change_number=unknow
         export g_patchSet_number=`cat $ORDER.json | egrep '"number":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | grep -v $g_change_number`
         export g_value=''
         for value in `cat $ORDER.json | egrep '"value":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'}`
