@@ -42,6 +42,8 @@ MATCHING()
 {
  export LEVEL_NUMBER=$1
  export FREE_NODE=''
+
+ [[ $LEVEL_NUMBER = x ]] && export LEVEL_NUMBER=1-9
  
  if [[ ! -d $TASK_SPACE/inode.lock ]] ; then
 	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/inode $TASK_SPACE/inode.lock
@@ -54,7 +56,7 @@ MATCHING()
 	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.lock/$NODE
  done
 
- for NODE in `cat $IBUILD_ROOT/conf/priority/${LEVEL_NUMBER}-floor.conf`
+ for NODE in `cat $IBUILD_ROOT/conf/priority/[$LEVEL_NUMBER]-floor.conf`
  do
 	if [[ -f $TASK_SPACE/inode.lock/$NODE ]] ; then
 		export FREE_NODE=true
@@ -65,7 +67,7 @@ MATCHING()
 	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.lock
  fi 
 
- for NODE in `cat $IBUILD_ROOT/conf/priority/${LEVEL_NUMBER}-floor.conf`
+ for NODE in `cat $IBUILD_ROOT/conf/priority/[$LEVEL_NUMBER]-floor.conf`
  do
 	if [[ -f $TASK_SPACE/inode.lock/$NODE ]] ; then
 		export NODE_IP=$(grep '^IP=' $TASK_SPACE/inode.lock/$NODE | awk -F'IP=' {'print $2'}) 

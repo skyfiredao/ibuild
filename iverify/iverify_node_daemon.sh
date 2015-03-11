@@ -128,7 +128,8 @@ RUN_hostrunner()
  export KBITS_HOST=$hostrunner_SPACE/$IVER.$DOWNLOAD_PKG_NAME
  export FASTBOOT_SERIAL=$IVERIFY_hostrunner_serial
 
- echo "
+ echo "#!/bin/bash
+# auto create script
 cd $IVERIFY_hostrunner_PATH
 
 export KBITS_HOST=$hostrunner_SPACE/$IVER.$DOWNLOAD_PKG_NAME
@@ -145,11 +146,12 @@ $IVERIFY_hostrunner_PATH/hostrunner \
 --testsuite $IVERIFY_hostrunner_testsuite \
 --url $IVERIFY_hostrunner_url \
 --serial $IVERIFY_hostrunner_serial \
---device-config $IVERIFY_hostrunner_device_config \
+--device-config $IVERIFY_hostrunner_device_config
 
 rm -f $hostrunner_SPACE/$IVER.$DOWNLOAD_PKG_NAME
 ">$IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.sh
 
+ chmod +x $IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.sh
  cat $IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.sh
  /bin/bash $IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.sh >>$IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.log 2>&1
 

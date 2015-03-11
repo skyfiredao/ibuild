@@ -116,7 +116,7 @@ $DOWNLOAD_URL
 if [[ $RESULT != PASSED ]] ; then
 	echo -e "Error Log:\n$DOWNLOAD_URL/log/error.log" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
 	rm -f $TASK_SPACE/tmp.icase.$SEED/error.log >/dev/null 2>&1
-	wget $DOWNLOAD_URL/log/error.log -O $TASK_SPACE/tmp.icase.$SEED/error.log
+	wget -q $DOWNLOAD_URL/log/error.log -O $TASK_SPACE/tmp.icase.$SEED/error.log
 fi
 
 echo -e "
