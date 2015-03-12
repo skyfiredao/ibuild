@@ -75,7 +75,7 @@ MATCHING()
 		sleep 1
 
 		$NETCAT $NODE_IP 4321 >$TASK_SPACE/itask-r$ITASK_REV.jobs
-		ASSIGN_JOB
+		[[ `grep $ITASK_REV_MD5 $TASK_SPACE/itask-r$ITASK_REV.jobs` ]] && ASSIGN_JOB
 	fi
  done
 }
