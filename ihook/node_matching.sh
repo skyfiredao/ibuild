@@ -99,8 +99,8 @@ do
 	export IBUILD_PRIORITY=$(echo $PRIORITY_ITASK_REV | awk -F'.' {'print $1'})
 	export ITASK_REV=$(echo $PRIORITY_ITASK_REV | awk -F'.' {'print $2'})
 	[[ -f /tmp/EXIT ]] && EXIT
-	echo $ITASK_REV >$TASK_SPACE/queue.lock
-	chmod 777 $TASK_SPACE/queue.lock
+	echo $ITASK_REV >$TASK_SPACE/queue_itask.lock
+	chmod 777 $TASK_SPACE/queue_itask.lock
 
 	if [[ -f $TASK_SPACE/itask/svn.$TOWEEK.lock && -d $TASK_SPACE/itask/svn/.svn ]] ; then
 		svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn

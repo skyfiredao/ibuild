@@ -31,3 +31,5 @@ source /etc/bash.bashrc
 
 $IBUILD_ROOT/ihook/mail_icase.sh $IHOOK_REV >>/tmp/mail_icase.log 2>&1 &
 
+$IBUILD_ROOT/ihook/queue_icase.sh $IHOOK_REV >>/tmp/queue_icase.log 2>&1 &
+

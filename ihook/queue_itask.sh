@@ -20,18 +20,19 @@ source /etc/bash.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
 export TASK_SPACE=/dev/shm
+export TODAY=$(date +%y%m%d)
 
 export IBUILD_ROOT=$HOME/ibuild
-        [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
+        [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 	echo -e "Please put ibuild in your $HOME"
 	exit 0
 fi
 
-export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
-export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
+export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
+export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
 
-export QUEUE_SPACE=$TASK_SPACE/queue.itask
+export QUEUE_SPACE=$TASK_SPACE/queue_itask
 mkdir -p $QUEUE_SPACE >/dev/null 2>&1
 chmod 777 -R $QUEUE_SPACE
 
@@ -44,6 +45,7 @@ if [[ `echo $ITASK_SPEC_URL | grep '^/itask/tasks'` ]] ; then
 	[[ -z $IBUILD_PRIORITY ]] && export IBUILD_PRIORITY=x
 
 	touch $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
+	echo $IBUILD_PRIORITY.$ITASK_REV >>$TASK_SPACE/itask-$TODAY.list
 	chmod 777 -R $QUEUE_SPACE
 elif [[ `echo $ITASK_SPEC_URL | grep 'jobs.txt$'` ]] ; then
 	$IBUILD_ROOT/ihook/mail_itask.sh $ITASK_REV
@@ -51,7 +53,7 @@ else
 	exit
 fi
 
-[[ -f $TASK_SPACE/queue.lock ]] && exit
+[[ -f $TASK_SPACE/queue_itask.lock ]] && exit
 
 while [[ `ls $QUEUE_SPACE` || -f /tmp/EXIT ]] ;
 do
@@ -59,5 +61,5 @@ do
 	sleep `expr $RANDOM % 7 + 3`
 done
 
-rm -f $TASK_SPACE/queue.lock
+rm -f $TASK_SPACE/queue_itask.lock
 

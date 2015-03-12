@@ -32,28 +32,35 @@ if [[ ! -f $HOME/iverify/conf/iverify.conf ]] ; then
 	exit 0
 fi
 
-date
+echo ------------------------- `date`
 
 EXIT()
 {
- rm -f $IVERIFY_SPACE/iverify.lock 
- rm -f $IVERIFY_SPACE/build_info.[1-9]*
+ for SVN_M_URL in `svn st ~/iverify | grep '^M ' | awk -F' ' {'print $2'}`
+ do
+	rm -f $SVN_M_URL
+ done
+ svn up -q ~/iverify
+ rm -f $IVERIFY_SPACE/build_info.[0-9]*
+ rm -f $IVERIFY_SPACE/[0-9]*.build_info
  exit
 }
 
 CHK_IVERIFY_LOCK()
 {
  export DEVICE_ID=$1
- export DEVICES_LOCK=$(ls $IVERIFY_SPACE | grep -v lock$ | grep ^lock | wc -l)
+ export DEVICES_LOCK=$(ls $IVERIFY_SPACE | grep ^lock | wc -l)
 
- if [[ $DEVICES_WC = $DEVICES_LOCK ]] ; then
+ if [[ $DEVICES_LOCK -ge $DEVICES_WC ]] ; then
 	touch $IVERIFY_SPACE/busy_node
  else
 	rm -f $IVERIFY_SPACE/busy_node
  fi
 
- if [[ -f $IVERIFY_SPACE/lock.$DEVICE_ID || -f $IVERIFY_SPACE/busy_node ]] ; then
-	echo "$IVERIFY_SPACE/lock.$DEVICE_ID locked"
+ if [[ -f $IVERIFY_SPACE/busy_node ]] ; then
+	echo "No free device"
+	$NETCAT 127.0.0.1 4444
+	$NETCAT 127.0.0.1 5555
 	EXIT
  fi
 }
@@ -70,25 +77,29 @@ NODE_STANDBY()
  export IVER=$(grep '^IVER=' $IVERIFY_SPACE/build_info.$SEED | awk -F'IVER=' {'print $2'})
  [[ -z $IVER ]] && export IVER=$SEED
 
- mv $IVERIFY_SPACE/build_info.$SEED $IVERIFY_SPACE/build_info.$IVER >/dev/null 2>&1 
- export IVERIFY=$(grep '^IVERIFY=' $IVERIFY_SPACE/build_info.$IVER | awk -F'IVERIFY=' {'print $2'})
- export RESULT=$(grep '^RESULT=' $IVERIFY_SPACE/build_info.$IVER | awk -F'RESULT=' {'print $2'})
- export MAKE_STATUS=$(grep '^MAKE_STATUS=' $IVERIFY_SPACE/build_info.$IVER | awk -F'MAKE_STATUS=' {'print $2'})
- export DOWNLOAD_PKG_NAME=$(grep '^DOWNLOAD_PKG_NAME=' $IVERIFY_SPACE/build_info.$IVER | awk -F'DOWNLOAD_PKG_NAME=' {'print $2'} | head -n1)
+ mv $IVERIFY_SPACE/build_info.$SEED $IVERIFY_SPACE/$IVER.build_info >/dev/null 2>&1 
+ export IVERIFY=$(grep '^IVERIFY=' $IVERIFY_SPACE/$IVER.build_info | awk -F'IVERIFY=' {'print $2'})
+ export RESULT=$(grep '^RESULT=' $IVERIFY_SPACE/$IVER.build_info | awk -F'RESULT=' {'print $2'})
+ export MAKE_STATUS=$(grep '^MAKE_STATUS=' $IVERIFY_SPACE/$IVER.build_info | awk -F'MAKE_STATUS=' {'print $2'})
+ export DOWNLOAD_PKG_NAME=$(grep '^DOWNLOAD_PKG_NAME=' $IVERIFY_SPACE/$IVER.build_info | awk -F'DOWNLOAD_PKG_NAME=' {'print $2'} | head -n1)
 
  if [[ $RESULT != PASSED || ! -z $MAKE_STATUS || -z $DOWNLOAD_PKG_NAME || -z $IVERIFY ]] ; then
-	egrep 'RESULT=|MAKE_STATUS=|IVERIFY=|DOWNLOAD_PKG_NAME=' $IVERIFY_SPACE/build_info.$IVER
+	egrep 'RESULT=|MAKE_STATUS=|IVERIFY=|DOWNLOAD_PKG_NAME=' $IVERIFY_SPACE/$IVER.build_info
 	EXIT
  fi
 
- export IBUILD_TARGET_PRODUCT=$(grep '^IBUILD_TARGET_PRODUCT=' $IVERIFY_SPACE/build_info.$IVER | awk -F'IBUILD_TARGET_PRODUCT=' {'print $2'})
+ export IBUILD_TARGET_PRODUCT=$(grep '^IBUILD_TARGET_PRODUCT=' $IVERIFY_SPACE/$IVER.build_info | awk -F'IBUILD_TARGET_PRODUCT=' {'print $2'})
  export IVERIFY_DEVICE_ID=''
+
+ $ADB devices >$TASK_SPACE/iverify/adb_devices.log
 
  for DEVICE_ONLINE in `cat $IVERIFY_SPACE/adb_devices.log | egrep -v 'daemon|attached|offline' | grep device$ | awk -F' ' {'print $1'}`
  do
 	if [[ -f $IVERIFY_SPACE/inode.svn/$HOSTNAME.$IBUILD_TARGET_PRODUCT.$DEVICE_ONLINE && ! -f $IVERIFY_SPACE/lock.$DEVICE_ONLINE ]] ; then
 		export IVERIFY_DEVICE_ID=$DEVICE_ONLINE
 		echo $HOSTNAME.$IBUILD_TARGET_PRODUCT.$DEVICE_ONLINE
+	else
+		echo "$IVERIFY_SPACE/lock.$DEVICE_ID locked"
 	fi
  done
 
@@ -96,9 +107,9 @@ NODE_STANDBY()
 #	$NETCAT 127.0.0.1 4444
 	$NETCAT 127.0.0.1 5555
 	echo "$NOW|$IVER|$HOSTNAME.$IBUILD_TARGET_PRODUCT.$IVERIFY_DEVICE_ID" | $NETCAT -l 5555
-	echo $IVERIFY_SPACE/build_info.$IVER $IVERIFY_DEVICE_ID
-	cat $IVERIFY_CONF >>$IVERIFY_SPACE/build_info.$IVER
-	RUN_hostrunner $IVERIFY_SPACE/build_info.$IVER $IVERIFY_DEVICE_ID
+	echo $IVERIFY_SPACE/$IVER.build_info $IVERIFY_DEVICE_ID
+	cat $IVERIFY_CONF >>$IVERIFY_SPACE/$IVER.build_info
+	RUN_hostrunner $IVERIFY_SPACE/$IVER.build_info $IVERIFY_DEVICE_ID
  fi
 }
 
@@ -114,8 +125,8 @@ RUN_hostrunner()
  export DOWNLOAD_URL=$(grep '^DOWNLOAD_URL=' $BUILD_INFO | awk -F'DOWNLOAD_URL=' {'print $2'} | head -n1)
  export DOWNLOAD_PKG_NAME=$(grep '^DOWNLOAD_PKG_NAME=' $BUILD_INFO | awk -F'DOWNLOAD_PKG_NAME=' {'print $2'} | head -n1)
  export IVERIFY_hostrunner_type=nightly
- export IVERIFY_hostrunner_variant=${IBUILD_TARGET_BUILD_VARIANT}_$(basename $IBUILD_GRTSRV_BRANCH)
- export IVERIFY_hostrunner_project=$IBUILD_TARGET_PRODUCT
+ export IVERIFY_hostrunner_variant=$IBUILD_TARGET_BUILD_VARIANT
+ export IVERIFY_hostrunner_project=${IBUILD_TARGET_PRODUCT}_$(basename $IBUILD_GRTSRV_BRANCH)
  export IVERIFY_hostrunner_build_number=$(grep '^IVERIFY_hostrunner_build_number=' $IVERIFY_CONF | awk -F'IVERIFY_hostrunner_build_number=' {'print $2'})
  export IVERIFY_hostrunner_testsuite=$(grep '^IVERIFY_hostrunner_testsuite=' $IVERIFY_CONF | awk -F'IVERIFY_hostrunner_testsuite=' {'print $2'})
  export IVERIFY_hostrunner_url=$(grep '^IVERIFY_hostrunner_url=' $IVERIFY_CONF | awk -F'IVERIFY_hostrunner_url=' {'print $2'})
@@ -129,19 +140,19 @@ RUN_hostrunner()
  export KBITS_HOST=$hostrunner_SPACE/$IVER.$DOWNLOAD_PKG_NAME
  export FASTBOOT_SERIAL=$IVERIFY_hostrunner_serial
 
- echo "#!/bin/bash
+ echo "#!/bin/bash -x
 # auto create script
-export PATH=/usr/lib/jvm/java-7-openjdk-amd64/bin:$PATH:
+export PATH=/usr/lib/jvm/java-7-openjdk-amd64/bin:~/iverify/bin:~/bin:$PATH:
 export CLASSPATH=/usr/lib/jvm/java-7-openjdk-amd64/lib:.
 export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 
 cd $IVERIFY_hostrunner_PATH
 
-export KBITS_HOST=$hostrunner_SPACE/$IVER.$DOWNLOAD_PKG_NAME
+export KBITS_HOST=/tmp/$IVER.$DOWNLOAD_PKG_NAME
 export FASTBOOT_SERIAL=$IVERIFY_hostrunner_serial
 
-rm -f $hostrunner_SPACE/$IVER.$DOWNLOAD_PKG_NAME
-wget -q $DOWNLOAD_URL/$DOWNLOAD_PKG_NAME -O $hostrunner_SPACE/$IVER.$DOWNLOAD_PKG_NAME
+rm -f /tmp/$IVER.$DOWNLOAD_PKG_NAME
+wget -q $DOWNLOAD_URL/$DOWNLOAD_PKG_NAME -O /tmp/$IVER.$DOWNLOAD_PKG_NAME
 
 $IVERIFY_hostrunner_PATH/hostrunner \
 --type $IVERIFY_hostrunner_type \
@@ -153,11 +164,13 @@ $IVERIFY_hostrunner_PATH/hostrunner \
 --serial $IVERIFY_hostrunner_serial \
 --device-config $IVERIFY_hostrunner_device_config
 
-rm -f $hostrunner_SPACE/$IVER.$DOWNLOAD_PKG_NAME
+rm -f /tmp/$IVER.$DOWNLOAD_PKG_NAME
 ">$IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.sh
 
  chmod +x $IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.sh
- cat $IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.sh
+ echo $IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.sh
+ cp $IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.sh /tmp/
+ rm -f $IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.log
  source $IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.sh >>$IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.log 2>&1
 
  cd $hostrunner_SPACE
@@ -174,9 +187,9 @@ rm -f $hostrunner_SPACE/$IVER.$DOWNLOAD_PKG_NAME
 }
 
 export IVERIFY_SPACE=$TASK_SPACE/iverify
-[[ -f $IVERIFY_SPACE/iverify.lock ]] && exit
+export ADB=$IVERIFY_ROOT/bin/adb
+[[ `ps aux | grep nc | grep 4444` ]] && exit
 
-touch $IVERIFY_SPACE/iverify.lock
 export DEVICES_WC=$(cat $IVERIFY_SPACE/adb_devices.log | egrep -v 'daemon|attached|offline' | grep device$ | awk -F' ' {'print $1'} | wc -l)
 
 for DEVICE_ID in `cat $IVERIFY_SPACE/adb_devices.log | egrep -v 'daemon|attached|offline' | grep device$ | awk -F' ' {'print $1'}`
@@ -194,5 +207,4 @@ do
 	NODE_STANDBY
 done
 
-rm -f $IVERIFY_SPACE/iverify.lock
 
