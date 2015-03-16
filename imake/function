@@ -80,7 +80,7 @@ EXPORT_IBUILD_SPEC()
 	if [[ -f $ITASK_PATH/tasks/$IBUILD_SPEC_NAME && ! -f $TASK_SPACE/spec.build ]] ; then
 		cp $ITASK_PATH/tasks/$IBUILD_SPEC_NAME $TASK_SPACE/
 		ln -sf $TASK_SPACE/$IBUILD_SPEC_NAME $TASK_SPACE/spec.build
-		echo -e "-------------------------\nStart build: $IBUILD_SPEC_NAME\n-------------------------" | wall
+		echo -e "-------------------------\nStart build: $IBUILD_SPEC_NAME\n-------------------------" | wall >/dev/null 2>&1 
 	else
 		SPLIT_LINE "$ITASK_PATH/tasks/$IBUILD_SPEC_NAME is not a spec.build or $TASK_SPACE/spec.build locked"
 		exit 1
@@ -293,11 +293,25 @@ REPO_SYNC()
 {
  cd $1
  export REPO_SYNC_LOG_NAME=sync-`basename $1`
+ export INDEX_LOCK=''
 
  $IBUILD_ROOT/hotfix/clean_dirty.sh
  SPLIT_LINE repo_sync
  time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
- LOG_STATUS $? repo_sync $LOG_PATH/$REPO_SYNC_LOG_NAME.log
+ export REPO_SYNC_STATUS=$?
+
+ for INDEX_LOCK_REPO in `grep index.lock $LOG_PATH/$REPO_SYNC_LOG_NAME.log | awk -F"'" {'print $2'} | awk -F'/.git' {'print $1'}`
+ do
+    rm -fr $INDEX_LOCK_REPO
+    export INDEX_LOCK=true
+ done
+
+ if [[ ! -z $INDEX_LOCK ]] ; then
+    time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+    export REPO_SYNC_STATUS=$?
+ fi
+
+ LOG_STATUS $REPO_SYNC_STATUS repo_sync $LOG_PATH/$REPO_SYNC_LOG_NAME.log
  CCACHE_HOTFIX
 
  rm -f out
