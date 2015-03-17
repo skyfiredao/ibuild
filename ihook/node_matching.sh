@@ -117,7 +117,7 @@ do
 	export ITASK_SPEC_URL=$(svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
 	export ITASK_SPEC_NAME=$(basename $ITASK_SPEC_URL)
 
-	svn export -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/$ITASK_SPEC_URL $TASK_SPACE/itask-r$ITASK_REV.lock
+	svn export -q -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/$ITASK_SPEC_URL $TASK_SPACE/itask-r$ITASK_REV.lock
 	[[ -z $IBUILD_PRIORITY ]] && export IBUILD_PRIORITY=$(grep '^IBUILD_PRIORITY=' $TASK_SPACE/itask-r$ITASK_REV.lock | awk -F'IBUILD_PRIORITY=' {'print $2'})
 	if [[ $IBUILD_PRIORITY = x ]] ; then
 		export IBUILD_PRIORITY=2-9

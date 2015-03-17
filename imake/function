@@ -119,6 +119,9 @@ EXPORT_IBUILD_SPEC()
  export IBUILD_AOSP_JDK=`grep '^IBUILD_AOSP_JDK=' $IBUILD_SPEC | awk -F'IBUILD_AOSP_JDK=' {'print $2'}`
  export JDK_PATH=`ls -d $JDK6_PATH $JDK7_PATH | grep $IBUILD_AOSP_JDK`
  export IBUILD_PRIORITY=`grep '^IBUILD_PRIORITY=' $IBUILD_SPEC | awk -F'IBUILD_PRIORITY=' {'print $2'}`
+ export IVERIFY=$(grep '^IVERIFY=' $IBUILD_SPEC | awk -F'IVERIFY=' {'print $2'})
+ export IVERIFY_PRIORITY=$(grep '^IVERIFY_PRIORITY=' $IBUILD_SPEC | awk -F'IVERIFY_PRIORITY=' {'print $2'})
+ export IBUILD_REF_REPO=$(grep '^IBUILD_REF_REPO=' $IBUILD_SPEC | awk -F'IBUILD_REF_REPO=' {'print $2'}) 
  export IBUILD_ADD_STEP_1=`grep '^IBUILD_ADD_STEP_1=' $IBUILD_SPEC | awk -F'IBUILD_ADD_STEP_1=' {'print $2'}`
  [[ ! -z $IBUILD_ADD_STEP_1 ]] && export IBUILD_ADD_STEP_1_LOG_NAME=`basename $IBUILD_ADD_STEP_1`
  export IBUILD_ADD_STEP_2=`grep '^IBUILD_ADD_STEP_2=' $IBUILD_SPEC | awk -F'IBUILD_ADD_STEP_2=' {'print $2'}`
@@ -242,8 +245,12 @@ REPO_INFO()
  export REPO_INIT_CMD_MD5_NAME=`cat /tmp/$USER.repo_init.tmp | md5sum | awk -F' ' {'print $1'}`
  export BTRFS_NAME=$REPO_INIT_CMD_MD5_NAME
  export BUILD_PATH_TOP=$LOC_WORKSPACE/build/$BTRFS_NAME
- export LOC_REF_REPO=$LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
-	[[ ! -d $LOC_REF_REPO ]] && SETUP_REF_REPO
+ if [[ ! -z $IBUILD_REF_REPO && -d $LOC_WORKSPACE/ref_repo/$IBUILD_REF_REPO ]] ; then
+    export LOC_REF_REPO=$LOC_WORKSPACE/ref_repo/$IBUILD_REF_REPO
+ else
+    export LOC_REF_REPO=$LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
+ fi
+    [[ ! -d $LOC_REF_REPO ]] && SETUP_REF_REPO
 }
 
 SETUP_REF_REPO()
@@ -296,6 +303,13 @@ REPO_SYNC()
  export INDEX_LOCK=''
 
  $IBUILD_ROOT/hotfix/clean_dirty.sh
+
+ if [[ $IBUILD_GRTSRV_MANIFEST != default.xml ]] ; then
+    SPLIT_LINE repo_init_$IBUILD_GRTSRV_MANIFEST
+    time $REPO_CMD init -u ssh://$IBUILD_GRTSRV_ID@$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD >>$LOG_PATH/init.log 2>&1
+    MASK_LOG $LOG_PATH/init.log
+ fi
+
  SPLIT_LINE repo_sync
  time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
  export REPO_SYNC_STATUS=$?
