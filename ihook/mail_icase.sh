@@ -28,10 +28,10 @@ export TOYEAR=$(date +%Y)
 export HOME=/root
 
 export IBUILD_ROOT=$HOME/ibuild
-        [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
+    [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
-	echo -e "Please put ibuild in your $HOME"
-	exit 0
+    echo -e "Please put ibuild in your $HOME"
+    exit 0
 fi
 
 export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
@@ -41,15 +41,15 @@ export IBUILD_FOUNDER_EMAIL=$(grep '^IBUILD_FOUNDER_EMAIL=' $IBUILD_ROOT/conf/ib
 export ICASE_REV=$1
 export ICASE_URL=$(svn log -v -r $ICASE_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
 if [[ ! `echo $ICASE_URL | grep '^/icase/'` ]] ; then
-	exit
+    exit
 fi
 
-mkdir -p $TASK_SPACE/tmp.icase.$SEED
-svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/tmp.icase.$SEED/icase
-svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec $TASK_SPACE/tmp.icase.$SEED/ispec
+mkdir -p $TASK_SPACE/tmp.icase.mail.$SEED
+svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/tmp.icase.mail.$SEED/icase
+svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec $TASK_SPACE/tmp.icase.mail.$SEED/ispec
 
 export BUILD_INFO_NAME=$(basename $ICASE_URL | head -n1)
-export BUILD_INFO=$TASK_SPACE/tmp.icase.$SEED/icase/$BUILD_INFO_NAME
+export BUILD_INFO=$TASK_SPACE/tmp.icase.mail.$SEED/icase/$BUILD_INFO_NAME
 
 export RESULT=$(grep '^RESULT=' $BUILD_INFO | awk -F'RESULT=' {'print $2'} | head -n1)
 export MAKE_STATUS=$(grep '^MAKE_STATUS=' $BUILD_INFO | awk -F'MAKE_STATUS=' {'print $2'} | head -n1)
@@ -63,6 +63,7 @@ export BUILD_TIME_MIN=$(echo $BUILD_TIME / 60 | bc)
 export START_TIME=$(grep '^START_TIME=' $BUILD_INFO | awk -F'START_TIME=' {'print $2'})
 export END_TIME=$(grep '^END_TIME=' $BUILD_INFO | awk -F'END_TIME=' {'print $2'})
 export IBUILD_GRTSRV=$(grep '^IBUILD_GRTSRV=' $BUILD_INFO | awk -F'IBUILD_GRTSRV=' {'print $2'})
+export IBUILD_GRTSRV_DOMAIN_NAME=$(echo $IBUILD_GRTSRV | awk -F':' {'print $1'})
 export IBUILD_GRTSRV_BRANCH=$(grep '^IBUILD_GRTSRV_BRANCH=' $BUILD_INFO | awk -F'IBUILD_GRTSRV_BRANCH=' {'print $2'})
 export IBUILD_GRTSRV_URL=$(grep '^IBUILD_GRTSRV_URL=' $BUILD_INFO | awk -F'IBUILD_GRTSRV_URL=' {'print $2'})
 export IBUILD_GRTSRV_MANIFEST=$(grep '^IBUILD_GRTSRV_MANIFEST=' $BUILD_INFO | awk -F'IBUILD_GRTSRV_MANIFEST=' {'print $2'})
@@ -79,8 +80,8 @@ export DOWNLOAD_PKG_NAME=$(grep '^DOWNLOAD_PKG_NAME=' $BUILD_INFO | awk -F'DOWNL
 export GERRIT_CHANGE_ID=$(grep '^GERRIT_CHANGE_ID=' $BUILD_INFO | awk -F'GERRIT_CHANGE_ID=' {'print $2'})
 export GERRIT_CHANGE_NUMBER=$(grep '^GERRIT_CHANGE_NUMBER=' $BUILD_INFO | awk -F'GERRIT_CHANGE_NUMBER=' {'print $2'})
 export GERRIT_CHANGE_OWNER_EMAIL=$(grep '^GERRIT_CHANGE_OWNER_EMAIL=' $BUILD_INFO | awk -F'GERRIT_CHANGE_OWNER_EMAIL=' {'print $2'})
-if [[ ! -z $GERRIT_CHANGE_OWNER_EMAIL && `grep $GERRIT_CHANGE_OWNER_EMAIL $TASK_SPACE/tmp.icase.$SEED/ispec/conf/mail.conf` ]] ; then
-	export OWNER_EMAIL=$GERRIT_CHANGE_OWNER_EMAIL
+if [[ ! -z $GERRIT_CHANGE_OWNER_EMAIL && `grep $GERRIT_CHANGE_OWNER_EMAIL $TASK_SPACE/tmp.icase.mail.$SEED/ispec/conf/mail.conf` ]] ; then
+    export OWNER_EMAIL=$GERRIT_CHANGE_OWNER_EMAIL
 fi
 
 export GERRIT_CHANGE_OWNER_NAME=$(grep '^GERRIT_CHANGE_OWNER_NAME=' $BUILD_INFO | awk -F'GERRIT_CHANGE_OWNER_NAME=' {'print $2'})
@@ -89,21 +90,21 @@ export GERRIT_PATCHSET_NUMBER=$(grep '^GERRIT_PATCHSET_NUMBER=' $BUILD_INFO | aw
 export GERRIT_CHANGE_STATUS=$(grep '^GERRIT_CHANGE_STATUS=' $BUILD_INFO | awk -F'GERRIT_CHANGE_STATUS=' {'print $2'})
 export GERRIT_PATCHSET_REVISION=$(grep '^GERRIT_PATCHSET_REVISION=' $BUILD_INFO | awk -F'GERRIT_PATCHSET_REVISION=' {'print $2'})
 export GERRIT_PROJECT=$(grep '^GERRIT_PROJECT=' $BUILD_INFO | awk -F'GERRIT_PROJECT=' {'print $2'})
-if [[ ! -z $GERRIT_PROJECT && `grep $GERRIT_PROJECT $TASK_SPACE/tmp.icase.$SEED/ispec/conf/project.conf` ]] ; then
-	export OWNER_EMAIL=$GERRIT_CHANGE_OWNER_EMAIL
+if [[ ! -z $GERRIT_PROJECT && `grep $GERRIT_PROJECT $TASK_SPACE/tmp.icase.mail.$SEED/ispec/conf/project.conf` ]] ; then
+    export OWNER_EMAIL=$GERRIT_CHANGE_OWNER_EMAIL
 fi
 
 export MAIL_LIST=$IBUILD_FOUNDER_EMAIL
 if [[ ! -z $EMAIL_TMP && ! `echo $EMAIL_TMP | egrep 'root|ubuntu'` ]] ; then
-	export MAIL_LIST="$MAIL_LIST,$EMAIL_TMP"
+    export MAIL_LIST="$MAIL_LIST,$EMAIL_TMP"
 fi
 
 if [[ ! -z $OWNER_EMAIL && ! -z $MAKE_STATUS ]] ; then
-	export MAIL_LIST="$MAIL_LIST,$OWNER_EMAIL"
+    export MAIL_LIST="$MAIL_LIST,$OWNER_EMAIL"
 elif [[ ! -z $MAKE_STATUS || ! -z $DOWNLOAD_PKG_NAME ]] ; then
-	[[ ! -z $EMAIL_PM ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_PM"
-	[[ ! -z $EMAIL_REL ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_REL"
-	[[ ! -z $EMAIL_PATCH_OWNER ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_PATCH_OWNER"
+    [[ ! -z $EMAIL_PM ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_PM"
+    [[ ! -z $EMAIL_REL ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_REL"
+    [[ ! -z $EMAIL_PATCH_OWNER ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_PATCH_OWNER"
 fi
 
 echo -e "Hi, $GERRIT_CHANGE_OWNER_NAME
@@ -112,49 +113,51 @@ After ${BUILD_TIME_MIN}min, node $SLAVE_HOST ($SLAVE_IP) build $IBUILD_TARGET_PR
 
 All of log and packages download URL:
 $DOWNLOAD_URL
-" >$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
+" >$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
 
-[[ ! -z $DOWNLOAD_PKG_NAME ]] && echo -e "wget $DOWNLOAD_URL/$DOWNLOAD_PKG_NAME" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
+[[ ! -z $DOWNLOAD_PKG_NAME ]] && echo -e "wget $DOWNLOAD_URL/$DOWNLOAD_PKG_NAME" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
 if [[ $RESULT != PASSED ]] ; then
-	echo -e "Error Log:\n$DOWNLOAD_URL/log/error.log" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
-	rm -f $TASK_SPACE/tmp.icase.$SEED/error.log >/dev/null 2>&1
-	wget -q $DOWNLOAD_URL/log/error.log -O $TASK_SPACE/tmp.icase.$SEED/error.log
+    echo -e "Error Log:\n$DOWNLOAD_URL/log/error.log" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
+    rm -f $TASK_SPACE/tmp.icase.mail.$SEED/error.log >/dev/null 2>&1
+    wget -q $DOWNLOAD_URL/log/error.log -O $TASK_SPACE/tmp.icase.mail.$SEED/error.log
 fi
 
 echo -e "
 It based on $IBUILD_GRTSRV/$IBUILD_GRTSRV_URL -b $IBUILD_GRTSRV_BRANCH -m $IBUILD_GRTSRV_MANIFEST
 
 Other info:
-$BUILD_SPEC" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
+$BUILD_SPEC" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
 
 if [[ ! -z $GERRIT_PATCHSET_REVISION ]] ; then
-	echo -e "------------------------- $GERRIT_CHANGE_OWNER_EMAIL" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
-	echo "GERRIT_CHANGE_ID: $GERRIT_CHANGE_ID" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
-	if [[ -z $GERRIT_CHANGE_NUMBER ]] ; then
-		export MAIL_REPO_CMD="$GERRIT_PROJECT $GERRIT_CHANGE_STATUS/$GERRIT_PATCHSET_NUMBER"
-	else
-		export MAIL_REPO_CMD="repo download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER"
-	fi
-	echo "$MAIL_REPO_CMD" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
-	export SUB_IBUILD_MODE="[$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER]"
+    echo -e "------------------------- $GERRIT_CHANGE_OWNER_EMAIL" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
+    echo "GERRIT_CHANGE_ID: $GERRIT_CHANGE_ID" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
+    if [[ -z $GERRIT_CHANGE_NUMBER ]] ; then
+        export MAIL_REPO_CMD="$GERRIT_PROJECT $GERRIT_CHANGE_STATUS/$GERRIT_PATCHSET_NUMBER"
+    else
+        export MAIL_REPO_CMD="repo download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER"
+    fi
+    echo "$MAIL_REPO_CMD" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
+    export SUB_IBUILD_MODE="[$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER]"
 fi
 
 if [[ $IBUILD_MODE = bundle ]] ; then
-	grep '^BUNDLE_PATCH=' $BUILD_INFO | awk -F'BUNDLE_PATCH=' {'print $2'} | while read BUNDLE_PATCH_ENTRY
-	do
-		echo "$BUNDLE_PATCH_ENTRY" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
-	done
-	grep '^repo download' $BUILD_INFO | awk -F'download' {'print $2'} | while read BUNDLE_PATCH_ENTRY
-	do
-		echo "$EMAIL_TMP|$BUNDLE_PATCH_ENTRY" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
-	done
-	export SUB_IBUILD_MODE="[$IBUILD_MODE]"
+    grep '^BUNDLE_PATCH=' $BUILD_INFO | awk -F'BUNDLE_PATCH=' {'print $2'} | while read BUNDLE_PATCH_ENTRY
+    do
+        echo "$BUNDLE_PATCH_ENTRY" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
+    done
+    grep '^repo download' $BUILD_INFO | awk -F'download' {'print $2'} | while read BUNDLE_PATCH_ENTRY
+    do
+        export BUNDLE_PATCH_ENTRY_NUMBER=$(echo $BUNDLE_PATCH_ENTRY | awk -F' ' {'print $2'} | awk -F'/' {'print $1'})
+        echo "https://$IBUILD_GRTSRV_DOMAIN_NAME/gerrit/$BUNDLE_PATCH_ENTRY_NUMBER" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
+        echo "$EMAIL_TMP|$BUNDLE_PATCH_ENTRY" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
+    done
+    export SUB_IBUILD_MODE="[$IBUILD_MODE]"
 fi
 
-if [[ -f $TASK_SPACE/tmp.icase.$SEED/error.log ]] ; then
-	echo -e "\n------------------------- Error log" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
-	cat $TASK_SPACE/tmp.icase.$SEED/error.log | egrep -v '32m|0m' | tail -n50 >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
-	echo -e "------------------------- End" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
+if [[ -f $TASK_SPACE/tmp.icase.mail.$SEED/error.log ]] ; then
+    echo -e "\n------------------------- Error log" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
+    cat $TASK_SPACE/tmp.icase.mail.$SEED/error.log | egrep -v '32m|0m' | tail -n50 >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
+    echo -e "------------------------- End" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
 fi
 
 echo -e "
@@ -162,10 +165,10 @@ echo -e "
 -dw
 from ibuild system
 [Daedalus]
-" >>$TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail
+" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
 
 [[ ! -z $ITASK_REV ]] && export SUB_ITASK_REV="[$ITASK_REV]"
-cat $TASK_SPACE/tmp.icase.$SEED/$ICASE_REV.mail | mail -s "[ibuild][$RESULT]$SUB_ITASK_REV$SUB_IBUILD_MODE $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT in $SLAVE_HOST" $MAIL_LIST
+cat $TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail | mail -s "[ibuild][$RESULT]$SUB_ITASK_REV$SUB_IBUILD_MODE $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT in $SLAVE_HOST" $MAIL_LIST
 
-$DEBUG rm -fr $TASK_SPACE/tmp.icase.$SEED
+$DEBUG rm -fr $TASK_SPACE/tmp.icase.mail.$SEED
 

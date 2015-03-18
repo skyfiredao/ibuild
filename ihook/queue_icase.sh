@@ -83,7 +83,7 @@ fi
 while [[ `ls $QUEUE_SPACE` || -f /tmp/EXIT ]] ;
 do
 	$DEBUG $IBUILD_ROOT/ihook/device_matching.sh $QUEUE_SPACE $TASK_SPACE/tmp.icase.$SEED $BUILD_INFO >/tmp/device_matching.log 2>&1
-	sleep `expr $RANDOM % 7 + 3`
+	sleep `expr $RANDOM % 7 + 10`
 done
 
 rm -f $TASK_SPACE/queue_icase.lock

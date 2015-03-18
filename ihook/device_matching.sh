@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 # Copyright (C) <2014,2015>  <Ding Wei>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -19,7 +19,6 @@
 source /etc/bash.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
-export SEED=$RANDOM
 export TASK_SPACE=/dev/shm
 [[ `echo $* | grep debug` ]] && export DEBUG=echo
 export HOME=/root
@@ -36,7 +35,6 @@ EXPORT_IBUILD_CONF
 
 EXIT()
 {
- rm -fr $IVERFY_SPACE
  rm -f $TASK_SPACE/queue_icase.lock
  exit
 }
@@ -88,5 +86,7 @@ do
 
 	MATCHING $PRIORITY_ICASE_REV
 done
+
+EXIT
 
 

@@ -439,9 +439,14 @@ else
 	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/icase-$TOWEEK
  fi
 
- cp $LOG_PATH/build_info.txt $TASK_SPACE/icase-$TOWEEK/$IVER.build_info.txt
- svn add $TASK_SPACE/icase-$TOWEEK/$IVER.build_info.txt >/dev/null 2>&1
- svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVER_MAINFEST_NAME" $TASK_SPACE/icase-$TOWEEK/$IVER.build_info.txt
+ if [[ ! -z $ITASK_REV ]] ; then
+    export IVEREV=$IVER.$ITASK_REV
+ else
+    export IVEREV=$IVER
+ fi
+ cp $LOG_PATH/build_info.txt $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt
+ svn add $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt >/dev/null 2>&1
+ svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVEREV.build_info.txt" $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt
  cp $LOG_PATH/build_info.txt $AUTOUT_UPLOAD_PATH/$ICASE_UPLOAD_URL/
 }
 
@@ -474,9 +479,15 @@ SETUP_BUILD_OUT()
  fi
 
  SETUP_IVER $LOG_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
+ if [[ ! -z $ITASK_REV ]] ; then
+    export IVEREV=$IVER.$ITASK_REV
+ else
+    export IVEREV=$IVER
+ fi
+
  cp -Ra $LOG_PATH $AUTOUT_PATH/$AUTOUT_NAME/
  export SHORT_AUTOUT_NAME=`echo $AUTOUT_NAME | sed 's/g6.default.//g'`
- mv $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME
+ mv $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME
 
  if [[ ! -f $AUTOUT_UPLOAD_PATH/README ]] ; then
 	sshfs -o nonempty $IBUILD_ROBOT@$IBUILD_UPLOAD_URL $AUTOUT_UPLOAD_PATH >$LOG_PATH/sshfs.log 2>&1
@@ -484,23 +495,23 @@ SETUP_BUILD_OUT()
  fi
 
  mkdir -p $AUTOUT_UPLOAD_PATH/$TODAY
- SPLIT_LINE "upload $TODAY $IVER.$SHORT_AUTOUT_NAME"
+ SPLIT_LINE "upload $TODAY $IVEREV.$SHORT_AUTOUT_NAME"
  [[ -z $ITASK_REV ]] && export ITASK_REV=`ls /tmp/*.log | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1`
- cp /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME/log/
- cp /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME/
+ cp /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/log/
+ cp /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/
 
  if [[ -f $LOG_PATH/BUILD_ERROR ]] ; then
-	cp $LOG_PATH/BUILD_ERROR $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME/
+	cp $LOG_PATH/BUILD_ERROR $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/
  else
 	export RESULT=PASSED
  fi
 
- time cp -R $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME $AUTOUT_UPLOAD_PATH/$TODAY/
+ time cp -R $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME $AUTOUT_UPLOAD_PATH/$TODAY/
  export STATUS_CP=$?
 
- SETUP_ICASE $TODAY/$IVER.$SHORT_AUTOUT_NAME
+ SETUP_ICASE $TODAY/$IVEREV.$SHORT_AUTOUT_NAME
  if [[ $STATUS_CP = 0 ]] ; then
-	rm -fr $AUTOUT_PATH/$IVER.$SHORT_AUTOUT_NAME &
+	rm -fr $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME &
 	rm -fr $BUILD_PATH_TOP/out/* >/dev/null 2>&1
  fi
 }
