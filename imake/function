@@ -75,16 +75,20 @@ EXPORT_IBUILD_SPEC()
 {
  export ITASK_REV=$1
  if [[ ! -z $ITASK_REV ]] ; then
-	svn up -q $IBUILD_SVN_OPTION $ITASK_PATH
-	export IBUILD_SPEC_NAME=`svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | head -n1 | awk -F'tasks/' {'print $2'} | awk -F' ' {'print $1'}`
-	if [[ -f $ITASK_PATH/tasks/$IBUILD_SPEC_NAME && ! -f $TASK_SPACE/spec.build ]] ; then
-		cp $ITASK_PATH/tasks/$IBUILD_SPEC_NAME $TASK_SPACE/
-		ln -sf $TASK_SPACE/$IBUILD_SPEC_NAME $TASK_SPACE/spec.build
-		echo -e "-------------------------\nStart build: $IBUILD_SPEC_NAME\n-------------------------" | wall >/dev/null 2>&1 
-	else
-		SPLIT_LINE "$ITASK_PATH/tasks/$IBUILD_SPEC_NAME is not a spec.build or $TASK_SPACE/spec.build locked"
-		exit 1
-	fi
+     svn up -q $IBUILD_SVN_OPTION $ITASK_PATH
+     export IBUILD_SPEC_NAME=`svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | head -n1 | awk -F'tasks/' {'print $2'} | awk -F' ' {'print $1'}`
+     if [[ ! `grep IBUILD_GRTSRV $ITASK_PATH/tasks/$IBUILD_SPEC_NAME` ]] ; then
+         SPLIT_LINE "$ITASK_PATH/tasks/$IBUILD_SPEC_NAME is not a spec.build"
+         exit 1
+     fi
+     if [[ -f $ITASK_PATH/tasks/$IBUILD_SPEC_NAME && ! -f $TASK_SPACE/spec.build ]] ; then
+         cp $ITASK_PATH/tasks/$IBUILD_SPEC_NAME $TASK_SPACE/
+         ln -sf $TASK_SPACE/$IBUILD_SPEC_NAME $TASK_SPACE/spec.build
+         echo -e "-------------------------\nStart build: $IBUILD_SPEC_NAME\n-------------------------" | wall >/dev/null 2>&1 
+     else
+         SPLIT_LINE "$ITASK_PATH/tasks/$IBUILD_SPEC_NAME is not a spec.build or $TASK_SPACE/spec.build locked"
+         exit 1
+     fi
  fi
 
  if [[ -L $TASK_SPACE/spec.build ]] ; then
@@ -178,7 +182,7 @@ BUNDLE_BUILD()
      echo "------------------------- $EMAIL_PATCH_OWNER|$BUNDLE_PATCH" >>$LOG_PATH/bundle.log 2>&1
      time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
      export MAKE_STATUS=$?
-     [[ $MAKE_STATUS != 0 ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
+     [[ $MAKE_STATUS != 0 ]] && [[ ! -z $BUNDLE_PATCH ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
      LOG_STATUS $MAKE_STATUS bundle $LOG_PATH/bundle.log
  done
 # repo download mode
@@ -191,16 +195,16 @@ BUNDLE_BUILD()
      echo "------------------------- $EMAIL_PATCH_OWNER|$BUNDLE_PATCH" >>$LOG_PATH/bundle.log 2>&1
      time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
      export MAKE_STATUS=$?
-     [[ $MAKE_STATUS != 0 ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
+     [[ $MAKE_STATUS != 0 ]] && [[ ! -z $BUNDLE_PATCH ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
      LOG_STATUS $MAKE_STATUS bundle $LOG_PATH/bundle.log
  done
 # git fetch mode
- grep '^IBUILD_FETCH_HEAD=' $IBUILD_SPEC | while read IBUILD_FETCH_HEAD_ENTRY
+ grep '^IBUILD_FETCH_HEAD=' $IBUILD_SPEC | awk -F'IBUILD_FETCH_HEAD=' {'print $2'} | while read IBUILD_FETCH_HEAD_ENTRY
  do
-    export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F'IBUILD_FETCH_HEAD_PATH=' {'print $1'})
-    export IBUILD_FETCH_HEAD_REFS=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F'IBUILD_FETCH_HEAD_PATH=' {'print $2'})
-    export IBUILD_FETCH_HEAD_PATH=$($REPO_CMD list | grep $IBUILD_FETCH_HEAD_PROJECT$ | awk -F':' {'print $1'})
-    [[ -z $IBUILD_FETCH_HEAD_PATH ]] && export IBUILD_FETCH_HEAD_PATH="NO_path_for__$IBUILD_FETCH_HEAD_PROJECT$"
+    export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F'|' {'print $1'})
+    export IBUILD_FETCH_HEAD_REFS=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F'|' {'print $2'})
+    export IBUILD_FETCH_HEAD_PATH=$($REPO_CMD list | grep $IBUILD_FETCH_HEAD_PROJECT$ | awk -F':' {'print $1'} | head -n1)
+    [[ -z $IBUILD_FETCH_HEAD_PATH ]] && export IBUILD_FETCH_HEAD_PATH="NO_path_for_$IBUILD_FETCH_HEAD_PROJECT"
     cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH >>$LOG_PATH/bundle.log 2>&1
     export MAKE_STATUS=$?
     SPLIT_LINE "bundle: git fetch $IBUILD_FETCH_HEAD_REFS in $IBUILD_FETCH_HEAD_PATH"
@@ -211,7 +215,7 @@ BUNDLE_BUILD()
         time git cherry-pick FETCH_HEAD >>$LOG_PATH/bundle.log 2>&1
         export MAKE_STATUS=$?
     else
-        FILTER_BAD_PATCH $IBUILD_FETCH_HEAD_REFS
+        [[ ! -z $IBUILD_FETCH_HEAD_REFS ]] && FILTER_BAD_PATCH $IBUILD_FETCH_HEAD_REFS
     fi
     LOG_STATUS $MAKE_STATUS bundle $LOG_PATH/bundle.log
  done
