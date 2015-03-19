@@ -147,30 +147,75 @@ EXPORT_IBUILD_SPEC()
 	cat $TASK_SPACE/spec.build >>$LOG_PATH/build_info.txt
 }
 
+FILTER_BAD_PATCH()
+{
+ export BAD_PATCH_FILTER=$1
+# export BAD_PATCH_PROJECT=$(grep error $LOG_PATH/bundle.log | egrep 'not found' | awk -F' ' {'print $3'})
+ export NEW_IBUILD_SPEC_NAME=spec.build.$(basename $IBUILD_SPEC | awk -F'spec.build.' {'print $2'})
+ export BAD_PATCH_ENTRY=$(grep $BAD_PATCH_FILTER $IBUILD_SPEC | head -n1)
+ cp $IBUILD_SPEC /tmp/$NEW_IBUILD_SPEC_NAME
+ egrep -v "$BAD_PATCH_ENTRY" /tmp/$NEW_IBUILD_SPEC_NAME >$TASK_SPACE/tmp.spec.$SEED
+ cp $TASK_SPACE/tmp.spec.$SEED /tmp/$NEW_IBUILD_SPEC_NAME
+
+ rm -f /tmp/itask $TASK_SPACE/tmp.spec.$SEED
+
+ svn export -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/itask /tmp
+ chmod +x /tmp/itask
+
+ SPLIT_LINE "add new task after remove $BAD_PATCH_ENTRY"
+ /tmp/itask /tmp/$NEW_IBUILD_SPEC_NAME 
+}
+
 BUNDLE_BUILD()
 {
+# BUNDLE_PATCH repo download mode
  grep '^BUNDLE_PATCH=' $IBUILD_SPEC | awk -F'BUNDLE_PATCH=' {'print $2'} | while read BUNDLE_PATCH_ENTRY
  do
-	export EMAIL_PATCH_OWNER=`echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $1'}`
-	export BUNDLE_PATCH=`echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $2'}`
+     export EMAIL_PATCH_OWNER=$(echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $1'})
+     export BUNDLE_PATCH=$(echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $2'})
 
-	SPLIT_LINE "bundle: repo download $BUNDLE_PATCH"
-	echo "------------------------- $EMAIL_PATCH_OWNER|$BUNDLE_PATCH" >>$LOG_PATH/bundle.log 2>&1
-	time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
-	export MAKE_STATUS=$?
-	LOG_STATUS $MAKE_STATUS bundle $LOG_PATH/bundle.log
+     SPLIT_LINE "bundle: repo download $BUNDLE_PATCH"
+     echo "------------------------- $EMAIL_PATCH_OWNER|$BUNDLE_PATCH" >>$LOG_PATH/bundle.log 2>&1
+     time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
+     export MAKE_STATUS=$?
+     [[ $MAKE_STATUS != 0 ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
+     LOG_STATUS $MAKE_STATUS bundle $LOG_PATH/bundle.log
  done
+# repo download mode
  grep '^repo download' $IBUILD_SPEC | while read BUNDLE_PATCH_ENTRY
  do
-	[[ ! -z $EMAIL_TMP ]] && export EMAIL_PATCH_OWNER=$EMAIL_TMP
-	export BUNDLE_PATCH=`echo $BUNDLE_PATCH_ENTRY | awk -F'download' {'print $2'}`
+     [[ ! -z $EMAIL_TMP ]] && export EMAIL_PATCH_OWNER=$EMAIL_TMP
+     export BUNDLE_PATCH=$(echo $BUNDLE_PATCH_ENTRY | awk -F'download' {'print $2'})
 
-	SPLIT_LINE "bundle: repo download $BUNDLE_PATCH"
-	echo "------------------------- $EMAIL_PATCH_OWNER|$BUNDLE_PATCH" >>$LOG_PATH/bundle.log 2>&1
-	time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
-	export MAKE_STATUS=$?
-	LOG_STATUS $MAKE_STATUS bundle $LOG_PATH/bundle.log
+     SPLIT_LINE "bundle: repo download $BUNDLE_PATCH"
+     echo "------------------------- $EMAIL_PATCH_OWNER|$BUNDLE_PATCH" >>$LOG_PATH/bundle.log 2>&1
+     time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
+     export MAKE_STATUS=$?
+     [[ $MAKE_STATUS != 0 ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
+     LOG_STATUS $MAKE_STATUS bundle $LOG_PATH/bundle.log
  done
+# git fetch mode
+ grep '^IBUILD_FETCH_HEAD=' $IBUILD_SPEC | while read IBUILD_FETCH_HEAD_ENTRY
+ do
+    export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F'IBUILD_FETCH_HEAD_PATH=' {'print $1'})
+    export IBUILD_FETCH_HEAD_REFS=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F'IBUILD_FETCH_HEAD_PATH=' {'print $2'})
+    export IBUILD_FETCH_HEAD_PATH=$($REPO_CMD list | grep $IBUILD_FETCH_HEAD_PROJECT$ | awk -F':' {'print $1'})
+    [[ -z $IBUILD_FETCH_HEAD_PATH ]] && export IBUILD_FETCH_HEAD_PATH="NO_path_for__$IBUILD_FETCH_HEAD_PROJECT$"
+    cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH >>$LOG_PATH/bundle.log 2>&1
+    export MAKE_STATUS=$?
+    SPLIT_LINE "bundle: git fetch $IBUILD_FETCH_HEAD_REFS in $IBUILD_FETCH_HEAD_PATH"
+    time git fetch ssh://$IBUILD_GRTSRV_ID@$IBUILD_GRTSRV/$IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS >>$LOG_PATH/bundle.log 2>&1
+    export MAKE_STATUS=$?
+    if [[ $MAKE_STATUS = 0 ]] ; then
+        SPLIT_LINE "bundle: git cherry-pick FETCH_HEAD"
+        time git cherry-pick FETCH_HEAD >>$LOG_PATH/bundle.log 2>&1
+        export MAKE_STATUS=$?
+    else
+        FILTER_BAD_PATCH $IBUILD_FETCH_HEAD_REFS
+    fi
+    LOG_STATUS $MAKE_STATUS bundle $LOG_PATH/bundle.log
+ done
+ cd $BUILD_PATH_TOP
 }
 
 SPLIT_LINE()
@@ -554,6 +599,7 @@ LOG_STATUS()
  export CHECK_LOG=$3
  export CHECK_LOG_NAME=`basename $CHECK_LOG`
 
+ MASK_LOG $CHECK_LOG
  if [[ $CHECK_STATUS != 0 ]] ; then
 	SPLIT_LINE "ERROR LOG: $CHECK_SUBJECT"
 	BUILD_ERROR $CHECK_LOG
