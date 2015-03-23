@@ -89,6 +89,8 @@ NODE_STANDBY()
 
  export IBUILD_TARGET_PRODUCT=$(grep '^IBUILD_TARGET_PRODUCT=' $IVERIFY_SPACE/$IVER.build_info | awk -F'IBUILD_TARGET_PRODUCT=' {'print $2'})
  export ITASK_REV=$(grep '^ITASK_REV=' $IVERIFY_SPACE/$IVER.build_info | awk -F'ITASK_REV=' {'print $2'})
+ export ITASK_ORDER=$(grep '^ITASK_ORDER=' $IVERIFY_SPACE/$IVER.build_info | awk -F'ITASK_ORDER=' {'print $2'} | head -n1)
+ [[ ! -z $ITASK_ORDER ]] && export ITASK_TMP=$ITASK_ORDER || export ITASK_TMP=$ITASK_REV
  export IVERIFY_DEVICE_ID=''
 
  $ADB devices >$TASK_SPACE/iverify/adb_devices.log
@@ -108,6 +110,7 @@ NODE_STANDBY()
      echo "$NOW|$IVER|$HOSTNAME.$IBUILD_TARGET_PRODUCT.$IVERIFY_DEVICE_ID" | $NETCAT -l 5555
      echo $IVERIFY_SPACE/$IVER.build_info $IVERIFY_DEVICE_ID
      cat $IVERIFY_CONF >>$IVERIFY_SPACE/$IVER.build_info
+     cp $IVERIFY_SPACE/$IVER.build_info /tmp/$IVER.build_info
      RUN_hostrunner $IVERIFY_SPACE/$IVER.build_info $IVERIFY_DEVICE_ID
  fi
 }
@@ -137,16 +140,20 @@ export PATH=/usr/lib/jvm/java-7-openjdk-amd64/bin:~/iverify/bin:~/bin:$PATH:
 export CLASSPATH=/usr/lib/jvm/java-7-openjdk-amd64/lib:.
 export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 
+export ITASK_REV=$ITASK_TMP
+export IVER=$IVER
+export IVEREV=$IVER.$ITASK_REV
+export ITASK_SPEC_URL=/tmp/$IVER.build_info
+export IVERIFY_hostrunner_project=$IVERIFY_hostrunner_project
+export IVERIFY_hostrunner_variant=$IVERIFY_hostrunner_variant
 export KBITS_HOST=/tmp/$IVER.$DOWNLOAD_PKG_NAME
 export FASTBOOT_SERIAL=$IVERIFY_hostrunner_serial
 export PRE_COMMIT_DSN=$IVERIFY_hostrunner_serial
-export IVERIFY_hostrunner_project=$IVERIFY_hostrunner_project
-export IVERIFY_hostrunner_variant=$IVERIFY_hostrunner_variant
 
 rm -f /tmp/$IVER.$DOWNLOAD_PKG_NAME
 wget -q $DOWNLOAD_URL/$DOWNLOAD_PKG_NAME -O /tmp/$IVER.$DOWNLOAD_PKG_NAME
 
-$IVERIFY_ROOT/script/pre_commit.sh
+/bin/bash -x $IVERIFY_ROOT/script/pre_commit.sh
 
 rm -f /tmp/$IVER.$DOWNLOAD_PKG_NAME
 ">$IVERIFY_SPACE/$IVER.$IVERIFY_hostrunner_serial.sh

@@ -45,12 +45,11 @@ export ICASE_REV=$1
 export ICASE_URL=$(svn log -v -r $ICASE_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
 
 if [[ ! `echo $ICASE_URL | grep '^/icase/'` ]] ; then
-	exit
+    exit
 fi
 
 mkdir -p $TASK_SPACE/tmp.icase.$SEED
 svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/tmp.icase.$SEED/icase
-svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec $TASK_SPACE/tmp.icase.$SEED/ispec
 
 export BUILD_INFO_NAME=$(basename $ICASE_URL | head -n1)
 export BUILD_INFO=$TASK_SPACE/tmp.icase.$SEED/icase/$BUILD_INFO_NAME
@@ -66,24 +65,28 @@ export ITASK_REV=$(grep '^ITASK_REV=' $BUILD_INFO | awk -F'ITASK_REV=' {'print $
 export IVER=$(grep '^IVER=' $BUILD_INFO | awk -F'IVER=' {'print $2'})
 export IVERIFY=$(grep '^IVERIFY=' $BUILD_INFO | awk -F'IVERIFY=' {'print $2'} | tail -n1)
 export IVERIFY_PRIORITY=$(grep '^IVERIFY_PRIORITY=' $BUILD_INFO | awk -F'IVERIFY_PRIORITY=' {'print $2'} | tail -n1)
-	[[ -z $IVERIFY_PRIORITY ]] && export IVERIFY_PRIORITY=x
+    [[ -z $IVERIFY_PRIORITY ]] && export IVERIFY_PRIORITY=x
 
 if [[ $RESULT = PASSED && -z $MAKE_STATUS && ! -z $DOWNLOAD_PKG_NAME && ! -z $IVERIFY ]] ; then
-	if [[ $IBUILD_MODE = bundle ]] ; then
-		touch $QUEUE_SPACE/$IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT
-		echo $IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT >>$TASK_SPACE/icase-$TODAY.list
-	fi
-	chmod 777 -R $QUEUE_SPACE
+    if [[ $IBUILD_MODE = bundle ]] ; then
+        touch $QUEUE_SPACE/$IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT
+        echo $IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT >>$TASK_SPACE/icase-$TODAY.list
+    fi
+    chmod 777 -R $QUEUE_SPACE
 else
-	exit
+    rm -fr $TASK_SPACE/tmp.icase.$SEED
+    exit
 fi
 
-[[ -f $TASK_SPACE/queue_icase.lock ]] && exit
+if [[ -f $TASK_SPACE/queue_icase.lock || `ps aux | grep bash | grep queue_icase` ]] ; then
+    rm -fr $TASK_SPACE/tmp.icase.$SEED
+    exit
+fi
 
 while [[ `ls $QUEUE_SPACE` || -f /tmp/EXIT ]] ;
 do
-	$DEBUG $IBUILD_ROOT/ihook/device_matching.sh $QUEUE_SPACE $TASK_SPACE/tmp.icase.$SEED $BUILD_INFO >/tmp/device_matching.log 2>&1
-	sleep `expr $RANDOM % 7 + 10`
+    $DEBUG $IBUILD_ROOT/ihook/device_matching.sh $QUEUE_SPACE >/tmp/device_matching.log 2>&1
+    sleep `expr $RANDOM % 7 + 10`
 done
 
 rm -f $TASK_SPACE/queue_icase.lock

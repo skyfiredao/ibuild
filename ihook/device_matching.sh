@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 # Copyright (C) <2014,2015>  <Ding Wei>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,7 @@ source /etc/bash.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
 export TASK_SPACE=/dev/shm
+export SEED=$RANDOM
 [[ `echo $* | grep debug` ]] && export DEBUG=echo
 export HOME=/root
 
@@ -36,6 +37,7 @@ EXPORT_IBUILD_CONF
 EXIT()
 {
  rm -f $TASK_SPACE/queue_icase.lock
+ rm -fr $IVERFY_SPACE
  exit
 }
 
@@ -46,9 +48,16 @@ MATCHING()
  export ICASE_REV=$(echo $PRIORITY_ICASE_REV | awk -F'.' {'print $2'})
  export IBUILD_TARGET_PRODUCT=$(echo $PRIORITY_ICASE_REV | awk -F'.' {'print $3'})
 
- if [[ ! -d $IVERFY_SPACE/inode.lock ]] ; then
-	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iverify/iverify/inode $IVERFY_SPACE/inode.lock
+ if [[ ! -d $IVERFY_SPACE/inode.lock/.svn ]] ; then
+     svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iverify/iverify/inode $IVERFY_SPACE/inode.lock
  fi
+
+ export ICASE_URL=$(svn log -v -r $ICASE_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
+ if [[ ! -d $IVERFY_SPACE/icase.svn/.svn ]] ; then
+     svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $IVERFY_SPACE/icase.svn
+ fi
+ export BUILD_INFO_NAME=$(basename $ICASE_URL | head -n1)
+ export BUILD_INFO=$IVERFY_SPACE/icase.svn/$BUILD_INFO_NAME
 
  for HOST_DEVICE in `ls $IVERFY_SPACE/inode.lock | grep $IBUILD_TARGET_PRODUCT`
  do
@@ -75,8 +84,9 @@ MATCHING()
 }
 
 export QUEUE_SPACE=$1
-export IVERFY_SPACE=$2
-export BUILD_INFO=$3
+export IVERFY_SPACE=$TASK_SPACE/tmp.iverify.$SEED
+
+[[ ! -d $IVERFY_SPACE ]] && mkdir -p $IVERFY_SPACE >/dev/null 2>&1
 
 for PRIORITY_ICASE_REV in `ls $QUEUE_SPACE`
 do

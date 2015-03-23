@@ -20,79 +20,79 @@
 
 export JSON_PATH=$1
 export GERRIT_SRV=$2
-        [[ -z $GERRIT_SRV ]] && export GERRIT_SRV="your_default_gerrit"
+    [[ -z $GERRIT_SRV ]] && export GERRIT_SRV="your_default_gerrit"
 export IBUILD_ROOT=$HOME/ibuild
-	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
+    [[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
-	echo -e "Please put ibuild in your $HOME"
-	exit 0
+    echo -e "Please put ibuild in your $HOME"
+    exit 0
 fi        
 
 export ITRACK_PATH=$IBUILD_ROOT/ichange
 
 export TASK_SPACE=/run/shm
-export NOW=`date +%y%m%d%H%M%S`
-export TOYEAR=`date +%Y`
-export TOWEEK=`date +%yw%V`
-export TODAY=`date +%y%m%d`
+export NOW=$(date +%y%m%d%H%M%S)
+export TOYEAR=$(date +%Y)
+export TOWEEK=$(date +%yw%V)
+export TODAY=$(date +%y%m%d)
 
-export HOSTNAME=`hostname`
+export HOSTNAME=$(hostname)
 if [[ ! -f $ITRACK_PATH/conf/$HOSTNAME.conf ]] ; then
-        echo -e "Can NOT find $ITRACK_PATH/conf/$HOSTNAME.conf"
-        exit 1
+    echo -e "Can NOT find $ITRACK_PATH/conf/$HOSTNAME.conf"
+    exit 1
 fi
 
-export DOMAIN_NAME=`cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'DOMAIN_NAME=' | awk -F'DOMAIN_NAME=' {'print $2'}`
-export GERRIT_SRV_LIST=`cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_LIST=' | awk -F'GERRIT_SRV_LIST=' {'print $2'}`
-export GERRIT_SRV_PORT=`cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_PORT=' | awk -F'GERRIT_SRV_PORT=' {'print $2'}`
-export GERRIT_ROBOT=`cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_ROBOT=' | awk -F'GERRIT_ROBOT=' {'print $2'}`
-export GERRIT_XML_URL=`cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_XML_URL=' | awk -F'GERRIT_XML_URL=' {'print $2'}`
-export GERRIT_BRANCH=`cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_BRANCH=' | awk -F'GERRIT_BRANCH=' {'print $2'}`
+export DOMAIN_NAME=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'DOMAIN_NAME=' | awk -F'DOMAIN_NAME=' {'print $2'})
+export GERRIT_SRV_LIST=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_LIST=' | awk -F'GERRIT_SRV_LIST=' {'print $2'})
+export GERRIT_SRV_PORT=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_PORT=' | awk -F'GERRIT_SRV_PORT=' {'print $2'})
+export GERRIT_ROBOT=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_ROBOT=' | awk -F'GERRIT_ROBOT=' {'print $2'})
+export GERRIT_XML_URL=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_XML_URL=' | awk -F'GERRIT_XML_URL=' {'print $2'})
+export GERRIT_BRANCH=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_BRANCH=' | awk -F'GERRIT_BRANCH=' {'print $2'})
 export GERRIT_SERVER=$GERRIT_ROBOT@$GERRIT_SRV.$DOMAIN_NAME
 
-export ICHANGE_SVN_SRV=`cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_SVN_SRV=' | awk -F'ICHANGE_SVN_SRV=' {'print $2'}`
-export ICHANGE_SVN_OPTION=`cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_SVN_OPTION=' | awk -F'ICHANGE_SVN_OPTION=' {'print $2'}`
+export ICHANGE_SVN_SRV=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_SVN_SRV=' | awk -F'ICHANGE_SVN_SRV=' {'print $2'})
+export ICHANGE_SVN_OPTION=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_SVN_OPTION=' | awk -F'ICHANGE_SVN_OPTION=' {'print $2'})
 
 [[ ! -d $JSON_PATH || -z $GERRIT_SRV || -f $TASK_SPACE/itrack/json2svn.lock ]] && exit 0
 touch $TASK_SPACE/itrack/json2svn.lock
 mkdir -p $TASK_SPACE/itrack/$GERRIT_SRV.tmp >/dev/null 2>&1
 
 if [[ ! `svn ls $ICHANGE_SVN_OPTION $ICHANGE_SVN_SRV/ | grep $TOYEAR` ]] ; then
-        svn mkdir -q $ICHANGE_SVN_OPTION $ICHANGE_SVN_SRV/$TOYEAR -m "auto: create $TOYEAR"
+    svn mkdir -q $ICHANGE_SVN_OPTION $ICHANGE_SVN_SRV/$TOYEAR -m "auto: create $TOYEAR"
 fi
 
 if [[ ! -f $TASK_SPACE/itrack/svn.$TODAY.lock ]] ; then
-        rm -fr $TASK_SPACE/itrack/svn
+    rm -fr $TASK_SPACE/itrack/svn
 fi
 
 if [[ -d $TASK_SPACE/itrack/svn ]] ; then
-	export SVN_REPO_LOCAL=`svn info $TASK_SPACE/itrack/svn | grep ^URL | awk -F': ' {'print $2'}`
-	if [[ `echo $ICHANGE_SVN_SRV/$TOYEAR | grep $SVN_REPO_LOCAL` ]] ; then
-		svn cleanup $TASK_SPACE/itrack/svn
-		svn up $ICHANGE_SVN_OPTION -q $TASK_SPACE/itrack/svn
-	else
-		rm -fr $TASK_SPACE/itrack/svn
-		svn co $ICHANGE_SVN_OPTION -q $ICHANGE_SVN_SRV/$TOYEAR $TASK_SPACE/itrack/svn
-	fi
+    export SVN_REPO_LOCAL=$(svn info $TASK_SPACE/itrack/svn | grep ^URL | awk -F': ' {'print $2'})
+    if [[ `echo $ICHANGE_SVN_SRV/$TOYEAR | grep $SVN_REPO_LOCAL` ]] ; then
+        svn cleanup $TASK_SPACE/itrack/svn
+        svn up $ICHANGE_SVN_OPTION -q $TASK_SPACE/itrack/svn
+    else
+        rm -fr $TASK_SPACE/itrack/svn
+        svn co $ICHANGE_SVN_OPTION -q $ICHANGE_SVN_SRV/$TOYEAR $TASK_SPACE/itrack/svn
+    fi
 else
-	svn co $ICHANGE_SVN_OPTION -q $ICHANGE_SVN_SRV/$TOYEAR $TASK_SPACE/itrack/svn
+    svn co $ICHANGE_SVN_OPTION -q $ICHANGE_SVN_SRV/$TOYEAR $TASK_SPACE/itrack/svn
 fi
 rm -f $TASK_SPACE/itrack/svn.*.lock
 touch $TASK_SPACE/itrack/svn.$TODAY.lock
 
 UPDATE_XML()
 {
- rm -fr $TASK_SPACE/itrack/manifest
+ rm -fr $TASK_SPACE/itrack/manifest >/dev/null 2>&1
  git clone -b $GERRIT_BRANCH ssh://$GERRIT_SERVER:$GERRIT_SRV_PORT/$GERRIT_XML_URL $TASK_SPACE/itrack/manifest
  if [[ -d $TASK_SPACE/itrack/svn/manifest ]] ; then
-	cd $TASK_SPACE/itrack/manifest
-	git checkout $GERRIT_BRANCH
-	mkdir -p $TASK_SPACE/itrack/svn/manifest >/dev/null
-	cp $TASK_SPACE/itrack/manifest/*.xml $TASK_SPACE/itrack/svn/manifest/
-	svn cleanup $TASK_SPACE/itrack/svn
-	svn -q add $TASK_SPACE/itrack/svn/manifest
-	svn -q add $TASK_SPACE/itrack/svn/manifest/*
-	svn ci $ICHANGE_SVN_OPTION -q -m 'auto update manifest' $TASK_SPACE/itrack/svn/manifest
+     cd $TASK_SPACE/itrack/manifest
+     git checkout $GERRIT_BRANCH
+     mkdir -p $TASK_SPACE/itrack/svn/manifest >/dev/null
+     cp $TASK_SPACE/itrack/manifest/*.xml $TASK_SPACE/itrack/svn/manifest/
+     svn cleanup $TASK_SPACE/itrack/svn
+     svn -q add $TASK_SPACE/itrack/svn/manifest
+     svn -q add $TASK_SPACE/itrack/svn/manifest/*
+     svn ci $ICHANGE_SVN_OPTION -q -m 'auto update manifest' $TASK_SPACE/itrack/svn/manifest
  fi
 }
 
@@ -104,59 +104,59 @@ SPLIT_LINE()
 SPLIT_LINE 'Format json and log'
 for JSON_FILE in `ls $JSON_PATH`
 do
-        export ORDER=`date +%y%m%d%H%M%S`.$RANDOM
+    export ORDER=$(date +%y%m%d%H%M%S).$RANDOM
 
-        cat $JSON_FILE | $IBUILD_ROOT/bin/jq '.' >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json
-        cat $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json | grep commitMessage | awk -F'"' {'print $4'} | sed 's/\\n/\n/g' >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log
-        [[ $? = 0 ]] && rm -f $JSON_FILE
+    cat $JSON_FILE | $IBUILD_ROOT/bin/jq '.' >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json
+    cat $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json | grep commitMessage | awk -F'"' {'print $4'} | sed 's/\\n/\n/g' >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log
+    [[ $? = 0 ]] && rm -f $JSON_FILE
 
-        export log_md5=`md5sum $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log | awk -F' ' {'print $1'}`
-        if [[ $log_md5 = d41d8cd98f00b204e9800998ecf8427e ]] ; then
-                echo "No_Commit_Info:" >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log
-                cat $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json >>$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log
-        fi
+    export log_md5=$(md5sum $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log | awk -F' ' {'print $1'})
+    if [[ $log_md5 = d41d8cd98f00b204e9800998ecf8427e ]] ; then
+        echo "No_Commit_Info:" >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log
+        cat $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json >>$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log
+    fi
 done
 
 SPLIT_LINE 'Input json to svn'
 cd $TASK_SPACE/itrack/$GERRIT_SRV.tmp
 for ORDER in `ls | grep json | sed 's/.json//g'`
 do
-        export g_revision=`cat $ORDER.json | egrep '"revision":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1`
-        export g_email=`cat $ORDER.json | egrep '"email":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1`
-        export g_project=`cat $ORDER.json | egrep '"project":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1`
-        export g_branch=`cat $ORDER.json | egrep '"branch":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1`
-        export g_id=`cat $ORDER.json | egrep '"id":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1`
-        export g_type=`cat $ORDER.json | egrep '"type":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1`
-        export g_newRev=`cat $ORDER.json | egrep '"newRev":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1`
-        export g_refName=`cat $ORDER.json | egrep '"refName":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1`
-        export g_username=`cat $ORDER.json | egrep '"username":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1`
-        export g_url=`cat $ORDER.json | egrep '"url":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1`
-        [[ ! -z $g_url ]] && export g_change_number=`basename $g_url`
-	[[ -z $g_change_number ]] && export g_change_number=unknow
-        export g_patchSet_number=`cat $ORDER.json | egrep '"number":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | grep -v $g_change_number`
-        export g_value=''
-        for value in `cat $ORDER.json | egrep '"value":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'}`
-        do
-                export g_value="$value,$g_value"
-        done
-        [[ -z $g_email ]] && export g_email=$g_username
-        [[ -z $g_revision ]] && export g_revision=$g_newRev
+    export g_revision=$(cat $ORDER.json | egrep '"revision":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
+    export g_email=$(cat $ORDER.json | egrep '"email":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
+    export g_project=$(cat $ORDER.json | egrep '"project":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
+    export g_branch=$(cat $ORDER.json | egrep '"branch":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
+    export g_id=$(cat $ORDER.json | egrep '"id":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
+    export g_type=$(cat $ORDER.json | egrep '"type":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
+    export g_newRev=$(cat $ORDER.json | egrep '"newRev":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
+    export g_refName=$(cat $ORDER.json | egrep '"refName":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
+    export g_username=$(cat $ORDER.json | egrep '"username":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
+    export g_url=$(cat $ORDER.json | egrep '"url":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
+    [[ ! -z $g_url ]] && export g_change_number=$(basename $g_url)
+    [[ -z $g_change_number ]] && export g_change_number=unknow
+    export g_patchSet_number=$(cat $ORDER.json | egrep '"number":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | grep -v $g_change_number)
+    export g_value=''
+    for value in `cat $ORDER.json | egrep '"value":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'}`
+    do
+        export g_value="$value,$g_value"
+    done
+    [[ -z $g_email ]] && export g_email=$g_username
+    [[ -z $g_revision ]] && export g_revision=$g_newRev
         
-        export g_path=''
-        [[ ! -z $g_project ]] && export g_path=`grep $g_project $TASK_SPACE/itrack/svn/manifest/*.xml | awk -F'path="' {'print $2'} | awk -F'" name=' {'print $1'} | awk -F'"' {'print $1'} | grep -v ^$ | sort -u | head -n1`
+    export g_path=''
+    [[ ! -z $g_project ]] && export g_path=$(grep $g_project $TASK_SPACE/itrack/svn/manifest/*.xml | awk -F'path="' {'print $2'} | awk -F'" name=' {'print $1'} | awk -F'"' {'print $1'} | grep -v ^$ | sort -u | head -n1)
 
-        if [[ ! -z $g_revision ]] ; then
-                mkdir -p $TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch
-                echo "$g_revision|$g_id|$g_email|$g_path|$g_project|$g_change_number|$g_patchSet_number|$g_value" >>$TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch/$TOWEEK.$g_type
-                echo "$g_revision|$g_id|$g_email|$g_path|$g_project|$g_change_number|$g_patchSet_number|$g_value" >>$TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch/$TOWEEK.all-change
-        fi
+    if [[ ! -z $g_revision ]] ; then
+        mkdir -p $TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch
+        echo "$g_revision|$g_id|$g_email|$g_path|$g_project|$g_change_number|$g_patchSet_number|$g_value" >>$TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch/$TOWEEK.$g_type
+        echo "$g_revision|$g_id|$g_email|$g_path|$g_project|$g_change_number|$g_patchSet_number|$g_value" >>$TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch/$TOWEEK.all-change
+    fi
 
-        for SVN_ADD in `svn st $TASK_SPACE/itrack/svn | egrep '^\?' | awk -F' ' {'print $2'}`
-        do
-                svn add -q $SVN_ADD
-        done
-        svn ci $ICHANGE_SVN_OPTION -q -F $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log $TASK_SPACE/itrack/svn
-        [[ $? = 0 ]] && rm -f $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.{json,log}
+    for SVN_ADD in `svn st $TASK_SPACE/itrack/svn | egrep '^\?' | awk -F' ' {'print $2'}`
+    do
+        svn add -q $SVN_ADD
+    done
+    svn ci $ICHANGE_SVN_OPTION -q -F $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log $TASK_SPACE/itrack/svn
+    [[ $? = 0 ]] && rm -f $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.{json,log}
 done
 
 [[ `date +%M` = 00 ]] && UPDATE_XML
@@ -170,13 +170,14 @@ touch /tmp/CLEAN_DUP.tmp
 
 for MD5SUM_FILE in `cat /tmp/CLEAN_DUP.tmp | awk -F' ' {'print $2'}`
 do
-        export MD5SUM=`grep $MD5SUM_FILE /tmp/CLEAN_DUP.tmp | awk -F' ' {'print $1'} | head -n1`
-        if [[ `grep $MD5SUM /tmp/CLEAN_DUP.tmp | wc -l` != 1 ]] ; then
-                export LAST_ONE=`grep $MD5SUM /tmp/CLEAN_DUP.tmp | tail -n1`
-                for DUP_FILE in `grep $MD5SUM /tmp/CLEAN_DUP.tmp | grep -v $LAST_ONE | awk -F' ' {'print $2'}`
-                do
-                        [[ -f $DUP_FILE ]] && rm -f $DUP_FILE
-                done
-        fi
+    export MD5SUM=$(grep $MD5SUM_FILE /tmp/CLEAN_DUP.tmp | awk -F' ' {'print $1'} | head -n1)
+    if [[ `grep $MD5SUM /tmp/CLEAN_DUP.tmp | wc -l` != 1 ]] ; then
+        export LAST_ONE=$(grep $MD5SUM /tmp/CLEAN_DUP.tmp | tail -n1)
+        for DUP_FILE in `grep $MD5SUM /tmp/CLEAN_DUP.tmp | grep -v $LAST_ONE | awk -F' ' {'print $2'}`
+        do
+            [[ -f $DUP_FILE ]] && rm -f $DUP_FILE
+            done
+    fi
 done
 rm -f /tmp/CLEAN_DUP.tmp
+

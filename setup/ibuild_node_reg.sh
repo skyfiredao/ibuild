@@ -48,7 +48,7 @@ export IBUILD_SVN_SRV_HOSTNAME=$(echo $IBUILD_SVN_SRV | awk -F'.' {'print $1'})
 
 $IBUILD_ROOT/setup/reboot.sh
 
-if [[ -f $TASK_SPACE/itask/svn.$TOWEEK.lock && -d $TASK_SPACE/itask/svn/.svn ]] ; then
+if [[ -f $TASK_SPACE/itask/svn.$TODAY.lock && -d $TASK_SPACE/itask/svn/.svn ]] ; then
 	export SVN_REV_LOC=$(svn info $TASK_SPACE/itask/svn | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
 	if [[ $IBUILD_SVN_REV_SRV != $SVN_REV_LOC ]] ; then
 		sudo chmod 777 -R $TASK_SPACE/itask
@@ -58,7 +58,7 @@ if [[ -f $TASK_SPACE/itask/svn.$TOWEEK.lock && -d $TASK_SPACE/itask/svn/.svn ]] 
 else
 	mkdir -p $TASK_SPACE/itask >/dev/null 2>&1
 	rm -fr $TASK_SPACE/itask/svn* >/dev/null 2>&1
-	touch $TASK_SPACE/itask/svn.$TOWEEK.lock
+	touch $TASK_SPACE/itask/svn.$TODAY.lock
 	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
 fi
 
@@ -115,9 +115,9 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
 		svn ci $IBUILD_SVN_OPTION -m "auto: clean" $TASK_SPACE/itask/svn/inode/
 	fi
 
-	if [[ ! -f $TASK_SPACE/ganglia-$TODAY ]] ; then
+	if [[ ! -f $TASK_SPACE/ganglia-$(date +%p) ]] ; then
 		rm -f $TASK_SPACE/ganglia-*
-		touch $TASK_SPACE/ganglia-$TODAY
+		touch $TASK_SPACE/ganglia-$(date +%p)
 		sudo /etc/init.d/gmetad restart
 		sudo /etc/init.d/ganglia-monitor restart
 	fi

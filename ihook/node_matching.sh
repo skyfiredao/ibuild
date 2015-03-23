@@ -44,40 +44,39 @@ MATCHING()
  export FREE_NODE=''
 
  if [[ ! -d $TASK_SPACE/inode.lock ]] ; then
-	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/inode $TASK_SPACE/inode.lock
+     svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/inode $TASK_SPACE/inode.lock
  fi
 
  export FREE_NODE=''
 
  for NODE in `cat $IBUILD_ROOT/conf/priority/[$LEVEL_NUMBER]-floor.conf`
  do
-	if [[ -f $TASK_SPACE/inode.lock/$NODE ]] ; then
-		export FREE_NODE=true
-	fi
+     if [[ -f $TASK_SPACE/inode.lock/$NODE ]] ; then
+         export FREE_NODE=true
+     fi
  done
 
  for NODE in `cat $IBUILD_ROOT/conf/priority/[$IBUILD_PRIORITY]-floor.conf`
  do
-	[[ -z $FREE_NODE ]] && svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.lock/$NODE
+     [[ -z $FREE_NODE ]] && svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.lock/$NODE
  done
-
-# if [[ -z $FREE_NODE ]] ; then
-#	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.lock
-# fi 
 
  for NODE in `cat $IBUILD_ROOT/conf/priority/[$LEVEL_NUMBER]-floor.conf`
  do
-	if [[ -f $TASK_SPACE/inode.lock/$NODE ]] ; then
-		export NODE_IP=$(grep '^IP=' $TASK_SPACE/inode.lock/$NODE | awk -F'IP=' {'print $2'}) 
-		export NODE_MD5=$(echo $NODE | md5sum | awk -F' ' {'print $1'})
+     if [[ -f $TASK_SPACE/inode.lock/$NODE ]] ; then
+         export NODE_IP=$(grep '^IP=' $TASK_SPACE/inode.lock/$NODE | awk -F'IP=' {'print $2'}) 
+         export NODE_MD5=$(echo $NODE | md5sum | awk -F' ' {'print $1'})
 
-		echo $ITASK_REV | $NETCAT $NODE_IP 1234
-		sleep 1
+         echo $ITASK_REV | $NETCAT $NODE_IP 1234
+         sleep 1
 
-		$NETCAT $NODE_IP 4321 >$TASK_SPACE/itask-r$ITASK_REV.jobs
-		[[ `grep $ITASK_REV_MD5 $TASK_SPACE/itask-r$ITASK_REV.jobs` ]] && ASSIGN_JOB
-	fi
+         $NETCAT $NODE_IP 4321 >$TASK_SPACE/itask-r$ITASK_REV.jobs
+         [[ `grep $ITASK_REV_MD5 $TASK_SPACE/itask-r$ITASK_REV.jobs` ]] && ASSIGN_JOB
+     fi
  done
+ if [[ -z $FREE_NODE ]] ; then
+     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.lock
+ fi
 }
 
 ASSIGN_JOB()
@@ -93,6 +92,7 @@ ASSIGN_JOB()
 
 export QUEUE_SPACE=$1
 export TOWEEK=$(date +%yw%V)
+export TODAY=$(date +%y%m%d)
 
 for PRIORITY_ITASK_REV in `ls $QUEUE_SPACE`
 do
@@ -102,12 +102,12 @@ do
 	echo $ITASK_REV >$TASK_SPACE/queue_itask.lock
 	chmod 777 $TASK_SPACE/queue_itask.lock
 
-	if [[ -f $TASK_SPACE/itask/svn.$TOWEEK.lock && -d $TASK_SPACE/itask/svn/.svn ]] ; then
+	if [[ -f $TASK_SPACE/itask/svn.$TODAY.lock && -d $TASK_SPACE/itask/svn/.svn ]] ; then
 		svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn
 	else
 		mkdir -p $TASK_SPACE/itask 
 		rm -fr $TASK_SPACE/itask/svn*
-		touch $TASK_SPACE/itask/svn.$TOWEEK.lock
+		touch $TASK_SPACE/itask/svn.$TODAY.lock
 		svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
 	fi
 	chmod 777 -R $TASK_SPACE/itask
@@ -117,6 +117,7 @@ do
 	export ITASK_SPEC_URL=$(svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
 	export ITASK_SPEC_NAME=$(basename $ITASK_SPEC_URL)
 
+	rm -f $TASK_SPACE/itask-r$ITASK_REV.lock
 	svn export -q -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/$ITASK_SPEC_URL $TASK_SPACE/itask-r$ITASK_REV.lock
 	[[ -z $IBUILD_PRIORITY ]] && export IBUILD_PRIORITY=$(grep '^IBUILD_PRIORITY=' $TASK_SPACE/itask-r$ITASK_REV.lock | awk -F'IBUILD_PRIORITY=' {'print $2'})
 	if [[ $IBUILD_PRIORITY = x ]] ; then
@@ -129,4 +130,5 @@ do
 	MATCHING $LEVEL_NUMBER
 done
 
+EXIT
 

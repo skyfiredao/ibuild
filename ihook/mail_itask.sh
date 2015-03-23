@@ -56,6 +56,7 @@ export BUILD_SPEC="$TASK_SPACE/tmp.itask.$SEED/svn/tasks/$BUILD_SPEC_NAME"
 export EMAIL_PM=$(grep '^EMAIL_PM=' $BUILD_SPEC | awk -F'EMAIL_PM=' {'print $2'})
 export EMAIL_REL=$(grep '^EMAIL_REL=' $BUILD_SPEC | awk -F'EMAIL_REL=' {'print $2'})
 export IBUILD_MODE=$(grep '^IBUILD_MODE=' $BUILD_SPEC | awk -F'IBUILD_MODE=' {'print $2'})
+export ITASK_ORDER=$(grep '^ITASK_ORDER=' $BUILD_SPEC | awk -F'ITASK_ORDER=' {'print $2'} | tail -n1)
 export IBUILD_GRTSRV=$(grep '^IBUILD_GRTSRV=' $BUILD_SPEC | awk -F'IBUILD_GRTSRV=' {'print $2'})
 export IBUILD_GRTSRV_BRANCH=$(grep '^IBUILD_GRTSRV_BRANCH=' $BUILD_SPEC | awk -F'IBUILD_GRTSRV_BRANCH=' {'print $2'})
 export IBUILD_GRTSRV_MANIFEST=$(grep '^IBUILD_GRTSRV_MANIFEST=' $BUILD_SPEC | awk -F'IBUILD_GRTSRV_MANIFEST=' {'print $2'})
@@ -111,8 +112,14 @@ from ibuild system
 
 [[ $IBUILD_MODE = bundle ]] && export SUB_IBUILD_MODE="[$IBUILD_MODE]"
 [[ ! -z $GERRIT_PATCHSET_REVISION ]] && export SUB_IBUILD_MODE="[$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER]"
+[[ ! -z $ITASK_REV ]] && export SUB_ITASK_REV="[$ITASK_REV]"
+if [[ ! -z $ITASK_ORDER && $ITASK_ORDER != $ITASK_REV ]] ; then
+    export SUB_ITASK_REV="[$ITASK_ORDER]"
+    export SUB_IBUILD_MODE="[re$IBUILD_MODE]"
+    echo "[$ITASK_ORDER][$ITASK_REV][re$IBUILD_MODE]" >>$TASK_SPACE/tmp.itask.$SEED/$ITASK_REV.mail
+fi
 
-cat $TASK_SPACE/tmp.itask.$SEED/$ITASK_REV.mail | mail -s "[ibuild][assign][$ITASK_REV]$SUB_IBUILD_MODE $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT in $SLAVE_HOST" $MAIL_LIST
+cat $TASK_SPACE/tmp.itask.$SEED/$ITASK_REV.mail | mail -s "[ibuild][assign]$SUB_ITASK_REV$SUB_IBUILD_MODE $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT in $SLAVE_HOST" $MAIL_LIST
 
 $DEBUG rm -fr $TASK_SPACE/tmp.itask.$SEED
 

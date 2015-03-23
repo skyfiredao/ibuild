@@ -72,4 +72,4 @@ do
         STREAM_EVENTS $GERRIT_SRV &
 done
 
-ps aux | grep ssh | grep gerrit
+[[ ! -z $DEBUG ]] && ps aux | grep ssh | grep gerrit

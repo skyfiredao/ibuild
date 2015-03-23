@@ -27,6 +27,7 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 	exit 0
 fi
 export ITASK_REV=$1
+export ITASK_TMP=$ITASK_REV
 
 source $IBUILD_ROOT/imake/function
 touch $TASK_SPACE/itask.lock

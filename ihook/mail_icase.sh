@@ -72,6 +72,7 @@ export IBUILD_TARGET_PRODUCT=$(grep '^IBUILD_TARGET_PRODUCT=' $BUILD_INFO | awk 
 export IBUILD_MODE=$(grep '^IBUILD_MODE=' $BUILD_INFO | awk -F'IBUILD_MODE=' {'print $2'})
 export IVER=$(grep '^IVER=' $BUILD_INFO | awk -F'IVER=' {'print $2'})
 export ITASK_REV=$(grep '^ITASK_REV=' $BUILD_INFO | awk -F'ITASK_REV=' {'print $2'} | tail -n1)
+export ITASK_ORDER=$(grep '^ITASK_ORDER=' $BUILD_INFO | awk -F'ITASK_ORDER=' {'print $2'} | tail -n1)
 export SLAVE_HOST=$(grep '^SLAVE_HOST=' $BUILD_INFO | awk -F'SLAVE_HOST=' {'print $2'})
 export SLAVE_IP=$(grep '^SLAVE_IP=' $BUILD_INFO | awk -F'SLAVE_IP=' {'print $2'})
 export DOWNLOAD_URL=$(grep '^DOWNLOAD_URL=' $BUILD_INFO | awk -F'DOWNLOAD_URL=' {'print $2'} | head -n1)
@@ -151,6 +152,10 @@ if [[ $IBUILD_MODE = bundle ]] ; then
         echo "https://$IBUILD_GRTSRV_DOMAIN_NAME/gerrit/$BUNDLE_PATCH_ENTRY_NUMBER" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
         echo "$EMAIL_TMP|$BUNDLE_PATCH_ENTRY" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
     done
+    grep '^IBUILD_FETCH_HEAD=' $BUILD_INFO | awk -F'IBUILD_FETCH_HEAD=' {'print $2'} | while read BUNDLE_PATCH_ENTRY
+    do
+        echo "$BUNDLE_PATCH_ENTRY" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
+    done
     export SUB_IBUILD_MODE="[$IBUILD_MODE]"
 fi
 
@@ -168,6 +173,12 @@ from ibuild system
 " >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
 
 [[ ! -z $ITASK_REV ]] && export SUB_ITASK_REV="[$ITASK_REV]"
+if [[ ! -z $ITASK_ORDER && $ITASK_ORDER != $ITASK_REV ]] ; then
+    export SUB_ITASK_REV="[$ITASK_ORDER]"
+    export SUB_IBUILD_MODE="[re$IBUILD_MODE]"
+    echo "[$ITASK_ORDER][$ITASK_REV][re$IBUILD_MODE]" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
+fi
+
 cat $TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail | mail -s "[ibuild][$RESULT]$SUB_ITASK_REV$SUB_IBUILD_MODE $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT in $SLAVE_HOST" $MAIL_LIST
 
 $DEBUG rm -fr $TASK_SPACE/tmp.icase.mail.$SEED
