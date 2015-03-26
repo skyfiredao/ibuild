@@ -55,11 +55,13 @@ fi
 
 [[ -f $TASK_SPACE/queue_itask.lock ]] && exit
 
-while [[ `ls $QUEUE_SPACE` || -f /tmp/EXIT ]] ;
+while [[ `ls $QUEUE_SPACE` || ! -f /tmp/EXIT ]] ;
 do
 	$IBUILD_ROOT/ihook/node_matching.sh $QUEUE_SPACE >/tmp/node_matching.log 2>&1
 	sleep `expr $RANDOM % 7 + 3`
 done
+
+[[ -d $TASK_SPACE/inode.lock/.svn ]] && svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.lock
 
 rm -f $TASK_SPACE/queue_itask.lock
 

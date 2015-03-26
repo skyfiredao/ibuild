@@ -52,7 +52,7 @@ export BUILD_INFO_NAME=$(basename $ICASE_URL | head -n1)
 export BUILD_INFO=$TASK_SPACE/tmp.icase.mail.$SEED/icase/$BUILD_INFO_NAME
 
 export RESULT=$(grep '^RESULT=' $BUILD_INFO | awk -F'RESULT=' {'print $2'} | head -n1)
-export MAKE_STATUS=$(grep '^MAKE_STATUS=' $BUILD_INFO | awk -F'MAKE_STATUS=' {'print $2'} | head -n1)
+export STATUS_MAKE=$(grep '^STATUS_MAKE=' $BUILD_INFO | awk -F'STATUS_MAKE=' {'print $2'} | head -n1)
 export BUILD_SPEC=$(grep spec.build $BUILD_INFO | awk -F'#' {'print $2'} | head -n1)
 export EMAIL_PM=$(grep '^EMAIL_PM=' $BUILD_INFO | awk -F'EMAIL_PM=' {'print $2'})
 export EMAIL_REL=$(grep '^EMAIL_REL=' $BUILD_INFO | awk -F'EMAIL_REL=' {'print $2'})
@@ -100,9 +100,9 @@ if [[ ! -z $EMAIL_TMP && ! `echo $EMAIL_TMP | egrep 'root|ubuntu'` ]] ; then
     export MAIL_LIST="$MAIL_LIST,$EMAIL_TMP"
 fi
 
-if [[ ! -z $OWNER_EMAIL && ! -z $MAKE_STATUS ]] ; then
+if [[ ! -z $OWNER_EMAIL && ! -z $STATUS_MAKE ]] ; then
     export MAIL_LIST="$MAIL_LIST,$OWNER_EMAIL"
-elif [[ ! -z $MAKE_STATUS || ! -z $DOWNLOAD_PKG_NAME ]] ; then
+elif [[ ! -z $STATUS_MAKE || ! -z $DOWNLOAD_PKG_NAME ]] ; then
     [[ ! -z $EMAIL_PM ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_PM"
     [[ ! -z $EMAIL_REL ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_REL"
     [[ ! -z $EMAIL_PATCH_OWNER ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_PATCH_OWNER"

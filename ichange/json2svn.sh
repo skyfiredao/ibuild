@@ -68,8 +68,8 @@ fi
 if [[ -d $TASK_SPACE/itrack/svn ]] ; then
     export SVN_REPO_LOCAL=$(svn info $TASK_SPACE/itrack/svn | grep ^URL | awk -F': ' {'print $2'})
     if [[ `echo $ICHANGE_SVN_SRV/$TOYEAR | grep $SVN_REPO_LOCAL` ]] ; then
-        svn cleanup $TASK_SPACE/itrack/svn
-        svn up $ICHANGE_SVN_OPTION -q $TASK_SPACE/itrack/svn
+        sleep 3
+        svn up $ICHANGE_SVN_OPTION -q $TASK_SPACE/itrack/svn >/dev/null 2>&1
     else
         rm -fr $TASK_SPACE/itrack/svn
         svn co $ICHANGE_SVN_OPTION -q $ICHANGE_SVN_SRV/$TOYEAR $TASK_SPACE/itrack/svn
@@ -150,11 +150,12 @@ do
         echo "$g_revision|$g_id|$g_email|$g_path|$g_project|$g_change_number|$g_patchSet_number|$g_value" >>$TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch/$TOWEEK.$g_type
         echo "$g_revision|$g_id|$g_email|$g_path|$g_project|$g_change_number|$g_patchSet_number|$g_value" >>$TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch/$TOWEEK.all-change
     fi
-
+    svn cleanup $TASK_SPACE/itrack/svn
     for SVN_ADD in `svn st $TASK_SPACE/itrack/svn | egrep '^\?' | awk -F' ' {'print $2'}`
     do
         svn add -q $SVN_ADD
     done
+    svn cleanup $TASK_SPACE/itrack/svn
     svn ci $ICHANGE_SVN_OPTION -q -F $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log $TASK_SPACE/itrack/svn
     [[ $? = 0 ]] && rm -f $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.{json,log}
 done

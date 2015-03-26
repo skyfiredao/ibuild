@@ -55,7 +55,7 @@ export BUILD_INFO_NAME=$(basename $ICASE_URL | head -n1)
 export BUILD_INFO=$TASK_SPACE/tmp.icase.$SEED/icase/$BUILD_INFO_NAME
 
 export RESULT=$(grep '^RESULT=' $BUILD_INFO | awk -F'RESULT=' {'print $2'} | head -n1)
-export MAKE_STATUS=$(grep '^MAKE_STATUS=' $BUILD_INFO | awk -F'MAKE_STATUS=' {'print $2'} | head -n1)
+export STATUS_MAKE=$(grep '^STATUS_MAKE=' $BUILD_INFO | awk -F'STATUS_MAKE=' {'print $2'} | head -n1)
 export BUILD_SPEC=$(grep spec.build $BUILD_INFO | awk -F'#' {'print $2'} | head -n1)
 export IBUILD_MODE=$(grep '^IBUILD_MODE=' $BUILD_INFO | awk -F'IBUILD_MODE=' {'print $2'})
 export IBUILD_TARGET_BUILD_VARIANT=$(grep '^IBUILD_TARGET_BUILD_VARIANT=' $BUILD_INFO | awk -F'IBUILD_TARGET_BUILD_VARIANT=' {'print $2'})
@@ -67,7 +67,7 @@ export IVERIFY=$(grep '^IVERIFY=' $BUILD_INFO | awk -F'IVERIFY=' {'print $2'} | 
 export IVERIFY_PRIORITY=$(grep '^IVERIFY_PRIORITY=' $BUILD_INFO | awk -F'IVERIFY_PRIORITY=' {'print $2'} | tail -n1)
     [[ -z $IVERIFY_PRIORITY ]] && export IVERIFY_PRIORITY=x
 
-if [[ $RESULT = PASSED && -z $MAKE_STATUS && ! -z $DOWNLOAD_PKG_NAME && ! -z $IVERIFY ]] ; then
+if [[ $RESULT = PASSED && -z $STATUS_MAKE && ! -z $DOWNLOAD_PKG_NAME && ! -z $IVERIFY ]] ; then
     if [[ $IBUILD_MODE = bundle ]] ; then
         touch $QUEUE_SPACE/$IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT
         echo $IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT >>$TASK_SPACE/icase-$TODAY.list
@@ -78,15 +78,15 @@ else
     exit
 fi
 
-if [[ -f $TASK_SPACE/queue_icase.lock || `ps aux | grep bash | grep queue_icase` ]] ; then
+if [[ -f $TASK_SPACE/queue_icase.lock ]] ; then
     rm -fr $TASK_SPACE/tmp.icase.$SEED
     exit
 fi
 
-while [[ `ls $QUEUE_SPACE` || -f /tmp/EXIT ]] ;
+while [[ `ls $QUEUE_SPACE` || ! -f /tmp/EXIT ]] ;
 do
     $DEBUG $IBUILD_ROOT/ihook/device_matching.sh $QUEUE_SPACE >/tmp/device_matching.log 2>&1
-    sleep `expr $RANDOM % 7 + 10`
+    sleep `expr $RANDOM % 7 + 1`
 done
 
 rm -f $TASK_SPACE/queue_icase.lock

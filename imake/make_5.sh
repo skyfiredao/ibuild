@@ -61,12 +61,12 @@ rm -fr out/* >/dev/null 2>&1
 
 SPLIT_LINE "make -j$JOBS"
 time make -j$JOBS >$LOG_PATH/full_build.log 2>&1
-export MAKE_STATUS=$?
-LOG_STATUS $MAKE_STATUS make_j$JOBS $LOG_PATH/full_build.log
+export STATUS_MAKE=$?
+LOG_STATUS $STATUS_MAKE make_j$JOBS $LOG_PATH/full_build.log
 
 SPLIT_LINE make_release
 time make -j$JOBS release >$LOG_PATH/release.log 2>&1
-export MAKE_STATUS=$?
-LOG_STATUS $MAKE_STATUS make_release $LOG_PATH/release.log
+export STATUS_MAKE=$?
+LOG_STATUS $STATUS_MAKE make_release $LOG_PATH/release.log
 
 

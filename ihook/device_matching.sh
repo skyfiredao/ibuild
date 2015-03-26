@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 # Copyright (C) <2014,2015>  <Ding Wei>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -61,26 +61,28 @@ MATCHING()
 
  for HOST_DEVICE in `ls $IVERFY_SPACE/inode.lock | grep $IBUILD_TARGET_PRODUCT`
  do
-	export HOST_IP=$(grep '^IP=' $IVERFY_SPACE/inode.lock/$HOST_DEVICE | awk -F'IP=' {'print $2'})
-	export DEVICE_STATUS=$(grep '^DEVICE_STATUS=' $IVERFY_SPACE/inode.lock/$HOST_DEVICE | awk -F'DEVICE_STATUS=' {'print $2'})
-	export DEVICE_ID=$(grep '^DEVICE_ID=' $IVERFY_SPACE/inode.lock/$HOST_DEVICE | awk -F'DEVICE_ID=' {'print $2'})
-	export TARGET_PRODUCT=$(grep '^TARGET_PRODUCT=' $IVERFY_SPACE/inode.lock/$HOST_DEVICE | awk -F'TARGET_PRODUCT=' {'print $2'})
+     export HOSTNAME_DEVICE=$(echo $HOST_DEVICE | awk -F".$IBUILD_TARGET_PRODUCT" {'print $1'})
+     export HOST_IP=$(grep '^IP=' $IVERFY_SPACE/inode.lock/$HOST_DEVICE | awk -F'IP=' {'print $2'})
+     export DEVICE_STATUS=$(grep '^DEVICE_STATUS=' $IVERFY_SPACE/inode.lock/$HOST_DEVICE | awk -F'DEVICE_STATUS=' {'print $2'})
+     export DEVICE_ID=$(grep '^DEVICE_ID=' $IVERFY_SPACE/inode.lock/$HOST_DEVICE | awk -F'DEVICE_ID=' {'print $2'})
+     export TARGET_PRODUCT=$(grep '^TARGET_PRODUCT=' $IVERFY_SPACE/inode.lock/$HOST_DEVICE | awk -F'TARGET_PRODUCT=' {'print $2'})
 
-	cat $BUILD_INFO | $NETCAT $HOST_IP 4444
-	sleep 1
-	$NETCAT $HOST_IP 5555 >$IVERFY_SPACE/$HOST_DEVICE.assign
-	export ASSIGN_HOST_DEVICE=$(cat $IVERFY_SPACE/$HOST_DEVICE.assign | awk -F'|' {'print $3'})
-	if [[ $ASSIGN_HOST_DEVICE = $HOST_DEVICE ]] ; then
-		rm -f $QUEUE_SPACE/$PRIORITY_ICASE_REV
-		rm -f $IVERFY_SPACE/inode.lock/$HOST_DEVICE
-		EXIT
-	fi
+     cat $BUILD_INFO | $NETCAT $HOST_IP 4444
+     sleep 1
+     $NETCAT $HOST_IP 5555 >$IVERFY_SPACE/$HOST_DEVICE.assign
+#     export ASSIGN_HOST_DEVICE=$(cat $IVERFY_SPACE/$HOST_DEVICE.assign | awk -F'|' {'print $3'})
+#     if [[ $ASSIGN_HOST_DEVICE = $HOST_DEVICE ]] ; then
+     if [[ `grep $HOSTNAME_DEVICE $IVERFY_SPACE/$HOST_DEVICE.assign` ]] ; then
+         rm -f $QUEUE_SPACE/$PRIORITY_ICASE_REV
+         rm -f $IVERFY_SPACE/inode.lock/$HOST_DEVICE
+         EXIT
+     fi
  done
 
- export FREE_HOST_DEVICE=$(ls $IVERFY_SPACE/inode.lock | grep $IBUILD_TARGET_PRODUCT | wc -l)
- if [[ -z $FREE_HOST_DEVICE ]] ; then
-	svn up -q $IBUILD_SVN_OPTION $IVERFY_SPACE/inode.lock
- fi 
+# export FREE_HOST_DEVICE=$(ls $IVERFY_SPACE/inode.lock | grep $IBUILD_TARGET_PRODUCT | wc -l)
+# if [[ $FREE_HOST_DEVICE = 0 ]] ; then
+#     svn up -q $IBUILD_SVN_OPTION $IVERFY_SPACE/inode.lock
+# fi 
 }
 
 export QUEUE_SPACE=$1

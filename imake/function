@@ -156,11 +156,16 @@ EXPORT_IBUILD_SPEC()
 FILTER_BAD_PATCH()
 {
  export BAD_PATCH_FILTER=$1
+ echo $BAD_PATCH_FILTER >>$LOG_PATH/rebundle.log 2>&1
 # export BAD_PATCH_PROJECT=$(grep error $LOG_PATH/bundle.log | egrep 'not found' | awk -F' ' {'print $3'})
  export NEW_IBUILD_SPEC_NAME=rebundle.spec.build.$(basename $IBUILD_SPEC | awk -F'spec.build.' {'print $2'})
  export BAD_PATCH_ENTRY=$(grep $BAD_PATCH_FILTER $IBUILD_SPEC | head -n1)
+ [[ `echo $BAD_PATCH_ENTRY | grep '|'` ]] && export BAD_PATCH_ENTRY=$BAD_PATCH_FILTER
  cp $IBUILD_SPEC /tmp/$NEW_IBUILD_SPEC_NAME
+
+ echo $BAD_PATCH_ENTRY >>$LOG_PATH/rebundle.log 2>&1
  egrep -v "$BAD_PATCH_ENTRY|^ITASK_ORDER=$" /tmp/$NEW_IBUILD_SPEC_NAME >$TASK_SPACE/tmp.spec.$SEED
+
  if [[ ! `grep '^ITASK_ORDER=' $TASK_SPACE/tmp.spec.$SEED` ]] ; then
      [[ -z $ITASK_ORDER ]] && export ITASK_ORDER=$ITASK_TMP
      echo "ITASK_ORDER=$ITASK_TMP" >>$TASK_SPACE/tmp.spec.$SEED
@@ -173,7 +178,7 @@ FILTER_BAD_PATCH()
  chmod +x /tmp/itask
 
  SPLIT_LINE "add new task after remove $BAD_PATCH_ENTRY"
- /tmp/itask /tmp/$NEW_IBUILD_SPEC_NAME 
+ /tmp/itask /tmp/$NEW_IBUILD_SPEC_NAME >>$LOG_PATH/rebundle.log 2>&1
 }
 
 BUNDLE_BUILD()
@@ -187,9 +192,9 @@ BUNDLE_BUILD()
      SPLIT_LINE "bundle: repo download $BUNDLE_PATCH"
      echo "------------------------- $EMAIL_PATCH_OWNER|$BUNDLE_PATCH" >>$LOG_PATH/bundle.log 2>&1
      time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
-     export MAKE_STATUS=$?
-     [[ $MAKE_STATUS != 0 && ! -z $BUNDLE_PATCH ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
-     LOG_STATUS $MAKE_STATUS bundle $LOG_PATH/bundle.log
+     export STATUS_REPO=$?
+     [[ $STATUS_REPO != 0 && ! -z $BUNDLE_PATCH ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
+     LOG_STATUS $STATUS_REPO bundle $LOG_PATH/bundle.log
  done
 # repo download mode
  grep '^repo download' $IBUILD_SPEC | while read BUNDLE_PATCH_ENTRY
@@ -200,32 +205,36 @@ BUNDLE_BUILD()
      SPLIT_LINE "bundle: repo download $BUNDLE_PATCH"
      echo "------------------------- $EMAIL_PATCH_OWNER|$BUNDLE_PATCH" >>$LOG_PATH/bundle.log 2>&1
      time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
-     export MAKE_STATUS=$?
-     [[ $MAKE_STATUS != 0 && ! -z $BUNDLE_PATCH ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
-     LOG_STATUS $MAKE_STATUS bundle $LOG_PATH/bundle.log
+     export STATUS_REPO=$?
+     [[ $STATUS_REPO != 0 && ! -z $BUNDLE_PATCH ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
+     LOG_STATUS $STATUS_REPO bundle $LOG_PATH/bundle.log
  done
 # git fetch mode
- grep '^IBUILD_FETCH_HEAD=' $IBUILD_SPEC | awk -F'IBUILD_FETCH_HEAD=' {'print $2'} | while read IBUILD_FETCH_HEAD_ENTRY
+ grep '^IBUILD_FETCH_HEAD=' $IBUILD_SPEC | grep -v '|$'| awk -F'IBUILD_FETCH_HEAD=' {'print $2'} | while read IBUILD_FETCH_HEAD_ENTRY
  do
     export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F'|' {'print $1'})
     export IBUILD_FETCH_HEAD_REFS=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F'|' {'print $2'})
     export IBUILD_FETCH_HEAD_PATH=$($REPO_CMD list | grep $IBUILD_FETCH_HEAD_PROJECT$ | awk -F':' {'print $1'} | head -n1)
     [[ -z $IBUILD_FETCH_HEAD_PATH ]] && export IBUILD_FETCH_HEAD_PATH="NO_path_for_$IBUILD_FETCH_HEAD_PROJECT"
-    echo "cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH" >>$LOG_PATH/bundle.log 2>&1
-    cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH >>$LOG_PATH/bundle.log 2>&1
-    export MAKE_STATUS=$?
     SPLIT_LINE "bundle: git fetch $IBUILD_FETCH_HEAD_REFS in $IBUILD_FETCH_HEAD_PATH"
     echo "------------------------- $IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS" >>$LOG_PATH/bundle.log 2>&1
-    echo "git fetch ssh://$IBUILD_GRTSRV/$IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS" >>$LOG_PATH/bundle.log 2>&1
+    echo -e "cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH" >>$LOG_PATH/bundle.log 2>&1
+    cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH >>$LOG_PATH/bundle.log 2>&1
+    export STATUS_GIT=$?
+    echo -e "git fetch ssh://$IBUILD_GRTSRV/$IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS\n" >>$LOG_PATH/bundle.log 2>&1
     time git fetch ssh://$IBUILD_GRTSRV_ID@$IBUILD_GRTSRV/$IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS >>$LOG_PATH/bundle.log 2>&1
-    export MAKE_STATUS=$?
-    if [[ $MAKE_STATUS = 0 ]] ; then
-        echo "git cherry-pick FETCH_HEAD" >>$LOG_PATH/bundle.log 2>&1
+    export STATUS_GIT=$?
+    echo $STATUS_GIT >>$LOG_PATH/bundle.log
+    if [[ $STATUS_GIT = 0 ]] ; then
+        echo -e "\ngit cherry-pick FETCH_HEAD\n" >>$LOG_PATH/bundle.log 2>&1
         git cherry-pick FETCH_HEAD >>$LOG_PATH/bundle.log 2>&1
-        export MAKE_STATUS=$?
+        export STATUS_GIT=$?
+        echo $STATUS_GIT >>$LOG_PATH/bundle.log
     fi
-    [[ $MAKE_STATUS != 0 && ! -z $IBUILD_FETCH_HEAD_REFS ]] && FILTER_BAD_PATCH $IBUILD_FETCH_HEAD_REFS
-    LOG_STATUS $MAKE_STATUS bundle $LOG_PATH/bundle.log
+    if [[ $STATUS_GIT != 0 && ! -z $IBUILD_FETCH_HEAD_REFS ]] ; then
+        FILTER_BAD_PATCH $IBUILD_FETCH_HEAD_REFS
+    fi
+    LOG_STATUS $STATUS_GIT bundle $LOG_PATH/bundle.log
  done
  cd $BUILD_PATH_TOP
 }
@@ -356,20 +365,25 @@ IBUILD_ADD_STEP_2()
 REPO_SYNC()
 {
  cd $1
+ export REPO_SYNC_MD5_INFO=$1.info
  export REPO_SYNC_LOG_NAME=sync-`basename $1`
  export INDEX_LOCK=''
 
  $IBUILD_ROOT/hotfix/clean_dirty.sh
 
- if [[ $IBUILD_GRTSRV_MANIFEST != default.xml ]] ; then
+ if [[ ! -f $REPO_SYNC_MD5_INFO ]] ; then
     SPLIT_LINE repo_init_$IBUILD_GRTSRV_MANIFEST
     time $REPO_CMD init -u ssh://$IBUILD_GRTSRV_ID@$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD >>$LOG_PATH/init.log 2>&1
+    MASK_LOG $LOG_PATH/init.log
+ else
+    SPLIT_LINE repo_init
+    /bin/bash $REPO_SYNC_MD5_INFO >>$LOG_PATH/init.log 2>&1
     MASK_LOG $LOG_PATH/init.log
  fi
 
  SPLIT_LINE repo_sync
  time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
- export REPO_SYNC_STATUS=$?
+ export STATUS_SYNC=$?
 
  for INDEX_LOCK_REPO in `grep index.lock $LOG_PATH/$REPO_SYNC_LOG_NAME.log | awk -F"'" {'print $2'} | awk -F'/.git' {'print $1'}`
  do
@@ -379,10 +393,10 @@ REPO_SYNC()
 
  if [[ ! -z $INDEX_LOCK ]] ; then
     time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
-    export REPO_SYNC_STATUS=$?
+    export STATUS_SYNC=$?
  fi
 
- LOG_STATUS $REPO_SYNC_STATUS repo_sync $LOG_PATH/$REPO_SYNC_LOG_NAME.log
+ LOG_STATUS $STATUS_SYNC repo_sync $LOG_PATH/$REPO_SYNC_LOG_NAME.log
  CCACHE_HOTFIX
 
  rm -f out
@@ -460,7 +474,10 @@ SETUP_ICASE()
  [[ -z $RESULT ]] && export RESULT=ISSUE
 
  echo "RESULT=$RESULT
-MAKE_STATUS=$MAKE_STATUS
+STATUS_SYNC=$STATUS_SYNC
+STATUS_GIT=$STATUS_GIT
+STATUS_REPO=$STATUS_REPO
+STATUS_MAKE=$STATUS_MAKE
 EMAIL_PATCH_OWNER=$EMAIL_PATCH_OWNER
 SLAVE_HOST=`hostname`
 SLAVE_IP=$IP
@@ -565,7 +582,7 @@ SETUP_BUILD_OUT()
 	cp $LOG_PATH/BUILD_ERROR $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/
 	cp /tmp/build-*.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/
  else
-	export RESULT=PASSED
+     export RESULT=PASSED
  fi
 
  time cp -R $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME $AUTOUT_UPLOAD_PATH/$TODAY/
@@ -605,6 +622,7 @@ CLEAN_EXIT()
 {
  rm -fr $TASK_SPACE/*spec.build*
  rm -f $TASK_SPACE/itask.lock
+ rm -fr $AUTOUT_PATH/r*
  mv /tmp/build-$ITASK_REV.log /tmp/old.build-$ITASK_REV.log
  exit $1
 }
@@ -618,17 +636,17 @@ LOG_STATUS()
 
  MASK_LOG $CHECK_LOG
  if [[ $CHECK_STATUS != 0 ]] ; then
-	SPLIT_LINE "ERROR LOG: $CHECK_SUBJECT"
-	BUILD_ERROR $CHECK_LOG
-	export RESULT=FAILED
-        echo $CHECK_LOG >$LOG_PATH/BUILD_ERROR
-	SETUP_BUILD_OUT
-	sleep 5 && pkill -9 $IBUILD_MAKE_TOOL >/dev/null 2>&1 &
+     SPLIT_LINE "ERROR LOG: $CHECK_SUBJECT"
+     BUILD_ERROR $CHECK_LOG
+     export RESULT=FAILED
+     echo $CHECK_LOG >$LOG_PATH/BUILD_ERROR
+     SETUP_BUILD_OUT
+     sleep 5 && pkill -9 $IBUILD_MAKE_TOOL >/dev/null 2>&1 &
 
-	SPLIT_LINE "STOP_BUILD $CHECK_LOG_NAME"
-	CLEAN_EXIT $CHECK_STATUS
+     SPLIT_LINE "STOP_BUILD $CHECK_LOG_NAME"
+     CLEAN_EXIT $CHECK_STATUS
  else
-	export RESULT=PASSED
+     export RESULT=PASSED
  fi
 }
 
@@ -636,8 +654,8 @@ REPO_DOWNLOAD()
 {
  SPLIT_LINE "repo download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER"
  time $REPO_CMD download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER >>$LOG_PATH/repo_download.log 2>&1
- export MAKE_STATUS=$?
- LOG_STATUS $MAKE_STATUS repo_download $LOG_PATH/repo_download.log
+ export STATUS_REPO=$?
+ LOG_STATUS $STATUS_REPO repo_download $LOG_PATH/repo_download.log
 }
 
 GET_ICHANGE_STRING()

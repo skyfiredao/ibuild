@@ -47,12 +47,12 @@ MATCHING()
      svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/inode $TASK_SPACE/inode.lock
  fi
 
- export FREE_NODE=''
-
  for NODE in `cat $IBUILD_ROOT/conf/priority/[$LEVEL_NUMBER]-floor.conf`
  do
      if [[ -f $TASK_SPACE/inode.lock/$NODE ]] ; then
          export FREE_NODE=true
+     else
+         export FREE_NODE=''
      fi
  done
 
@@ -102,16 +102,16 @@ do
 	echo $ITASK_REV >$TASK_SPACE/queue_itask.lock
 	chmod 777 $TASK_SPACE/queue_itask.lock
 
-	if [[ -f $TASK_SPACE/itask/svn.$TODAY.lock && -d $TASK_SPACE/itask/svn/.svn ]] ; then
-		svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn
+	if [[ -f $TASK_SPACE/itask/itask.lock.$TODAY.lock && -d $TASK_SPACE/itask/itask.lock/.svn ]] ; then
+		svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/itask.lock
 	else
 		mkdir -p $TASK_SPACE/itask 
-		rm -fr $TASK_SPACE/itask/svn*
-		touch $TASK_SPACE/itask/svn.$TODAY.lock
-		svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
+		rm -fr $TASK_SPACE/itask/itask.lock*
+		touch $TASK_SPACE/itask/itask.lock.$TODAY.lock
+		svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask/itask.lock
 	fi
 	chmod 777 -R $TASK_SPACE/itask
-	export ITASK_PATH=$TASK_SPACE/itask/svn
+	export ITASK_PATH=$TASK_SPACE/itask/itask.lock
 
 	export ITASK_REV_MD5=$(echo $ITASK_REV | md5sum | awk -F' ' {'print $1'})
 	export ITASK_SPEC_URL=$(svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
