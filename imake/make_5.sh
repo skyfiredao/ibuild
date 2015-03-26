@@ -66,7 +66,7 @@ LOG_STATUS $STATUS_MAKE make_j$JOBS $LOG_PATH/full_build.log
 
 SPLIT_LINE make_release
 time make -j$JOBS release >$LOG_PATH/release.log 2>&1
-export STATUS_MAKE=$?
-LOG_STATUS $STATUS_MAKE make_release $LOG_PATH/release.log
+export STATUS_MAKE_REL=$?
+LOG_STATUS $STATUS_MAKE_REL make_release $LOG_PATH/release.log
 
 

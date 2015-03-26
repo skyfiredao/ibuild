@@ -39,10 +39,16 @@ EXIT()
  do
      rm -f $SVN_M_URL
  done
+ for DOT_SVN in `find $IVERIFY_ROOT/hostrunner/ | grep '.svn$'`
+ do
+     rm -fr $DOT_SVN >/dev/null 2>&1
+ done
  svn up -q ~/iverify/{bin,conf,inode}
  rm -f $IVERIFY_SPACE/build_info.[0-9]*
  rm -f $IVERIFY_SPACE/[0-9]*.build_info
  rm -f $IVERIFY_SPACE/iverify_node_run.sh.lock
+ mkdir -p $HOME/.log >/dev/null 2>&1
+ cp $HISTORY_IVERIFY_LOG/*.log $HOME/.log/ >/dev/null 2>&1
  exit
 }
 
@@ -123,7 +129,7 @@ export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 export ITASK_REV=$ITASK_TMP
 export IVER=$IVER
 export IVEREV=$IVER.$ITASK_REV
-export ITASK_SPEC_URL=/tmp/$IVERIFY_REVER.build_info
+export ITASK_SPEC_URL=$HISTORY_IVERIFY_LOG/$IVERIFY_REVER.build_info
 export IVERIFY_hostrunner_project=$IVERIFY_hostrunner_project
 export IVERIFY_hostrunner_variant=$IVERIFY_hostrunner_variant
 export KBITS_HOST=/tmp/$IVERIFY_REVER.$DOWNLOAD_PKG_NAME
@@ -148,6 +154,7 @@ echo ------------------------- END: \`date\`
  chmod +x $HISTORY_IVERIFY_LOG/$IVERIFY_REVER.$IVERIFY_hostrunner_serial.sh
  echo $HISTORY_IVERIFY_LOG/$IVERIFY_REVER.$IVERIFY_hostrunner_serial.sh
  /bin/mv $BUILD_INFO $HISTORY_IVERIFY_LOG
+ rm -fr $IVERIFY_ROOT/hostrunner/.svn >/dev/null 2>&1
 
  if [[ ! -z $EMAIL_TMP ]] ; then
      export EMAIL_LIST=$EMAIL_TMP,$IVERIFY_FOUNDER_EMAIL
@@ -159,15 +166,16 @@ echo ------------------------- END: \`date\`
 
  source $HISTORY_IVERIFY_LOG/$IVERIFY_REVER.$IVERIFY_hostrunner_serial.sh >>$HISTORY_IVERIFY_LOG/$IVERIFY_REVER.$IVERIFY_hostrunner_serial.log 2>&1
 
- cat $HISTORY_IVERIFY_LOG/$IVERIFY_REVER.$IVERIFY_hostrunner_serial.log | mail -s "[iverify][$ITASK_TMP] $HOSTNAME.$IBUILD_TARGET_PRODUCT.$DEVICE_ONLINE" $EMAIL_LIST
+ cat $HISTORY_IVERIFY_LOG/$IVERIFY_REVER.$IVERIFY_hostrunner_serial.log | mail -s "[iverify][end][$ITASK_TMP] $HOSTNAME.$IBUILD_TARGET_PRODUCT.$DEVICE_ONLINE" $EMAIL_LIST
 
  rm -f $IVERIFY_SPACE/lock.$IVERIFY_hostrunner_serial
+ rm -fr $IVERIFY_ROOT/hostrunner/.svn >/dev/null 2>&1
 }
 
 export IVERIFY_SPACE=$TASK_SPACE/iverify
 export ADB=$IVERIFY_ROOT/bin/adb
-export LOCAL_IVERIFY_QUEUE=$HOME/queue.iverify.local
-export HISTORY_IVERIFY_LOG==$HOME/history.iverify.log
+export LOCAL_IVERIFY_QUEUE=$HOME/iverify.queue.local
+export HISTORY_IVERIFY_LOG=$HOME/iverify.history.log
 mkdir -p $LOCAL_IVERIFY_QUEUE $IVERIFY_SPACE $HISTORY_IVERIFY_LOG >/dev/null 2>&1
 
 if [[ -f $IVERIFY_SPACE/iverify_node_run.sh.lock ]] ; then

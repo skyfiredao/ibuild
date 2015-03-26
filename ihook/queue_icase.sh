@@ -83,8 +83,12 @@ if [[ -f $TASK_SPACE/queue_icase.lock ]] ; then
     exit
 fi
 
-while [[ `ls $QUEUE_SPACE` || ! -f /tmp/EXIT ]] ;
+while [[ `ls $QUEUE_SPACE` ]] ;
 do
+    if [[ -f /tmp/EXIT ]] ; then
+        rm -f $TASK_SPACE/queue_icase.lock
+        exit
+    fi
     $DEBUG $IBUILD_ROOT/ihook/device_matching.sh $QUEUE_SPACE >/tmp/device_matching.log 2>&1
     sleep `expr $RANDOM % 7 + 1`
 done

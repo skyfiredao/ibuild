@@ -37,7 +37,7 @@ fi
 
 echo ------------------------- `date`
 
-mkdir -p $HOME/queue.iverify.local >/dev/null 2>&1
+mkdir -p $HOME/iverify.queue.local >/dev/null 2>&1
 
 if [[ -f /usr/lib/jvm/java-7-openjdk-amd64/bin/java ]] ; then
 	export PATH=/usr/lib/jvm/java-7-openjdk-amd64/bin:$PATH:
@@ -50,6 +50,10 @@ fi
 export ADB=$IVERIFY_ROOT/bin/adb
 
 svn up -q $IVERIFY_ROOT >/dev/null 2>&1
+for DOT_SVN in `find $IVERIFY_ROOT/hostrunner/ | grep '.svn$'`
+do
+    rm -fr $DOT_SVN >/dev/null 2>&1
+done
 
 export IVERIFY_SVN_SRV=$(grep '^IVERIFY_SVN_SRV=' $IVERIFY_ROOT/conf/iverify.conf | awk -F'IVERIFY_SVN_SRV=' {'print $2'})
 export IVERIFY_SVN_OPTION=$(grep '^IVERIFY_SVN_OPTION=' $IVERIFY_ROOT/conf/iverify.conf | awk -F'IVERIFY_SVN_OPTION=' {'print $2'})

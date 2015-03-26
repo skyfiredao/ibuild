@@ -53,7 +53,8 @@ export GERRIT_SERVER=$GERRIT_ROBOT@$GERRIT_SRV.$DOMAIN_NAME
 export ICHANGE_SVN_SRV=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_SVN_SRV=' | awk -F'ICHANGE_SVN_SRV=' {'print $2'})
 export ICHANGE_SVN_OPTION=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_SVN_OPTION=' | awk -F'ICHANGE_SVN_OPTION=' {'print $2'})
 
-[[ ! -d $JSON_PATH || -z $GERRIT_SRV || -f $TASK_SPACE/itrack/json2svn.lock ]] && exit 0
+[[ ! -d $JSON_PATH || -z $GERRIT_SRV ]] && exit 0
+[[ -f $TASK_SPACE/itrack/json2svn.lock ]] && exit 0
 touch $TASK_SPACE/itrack/json2svn.lock
 mkdir -p $TASK_SPACE/itrack/$GERRIT_SRV.tmp >/dev/null 2>&1
 
@@ -68,7 +69,6 @@ fi
 if [[ -d $TASK_SPACE/itrack/svn ]] ; then
     export SVN_REPO_LOCAL=$(svn info $TASK_SPACE/itrack/svn | grep ^URL | awk -F': ' {'print $2'})
     if [[ `echo $ICHANGE_SVN_SRV/$TOYEAR | grep $SVN_REPO_LOCAL` ]] ; then
-        sleep 3
         svn up $ICHANGE_SVN_OPTION -q $TASK_SPACE/itrack/svn >/dev/null 2>&1
     else
         rm -fr $TASK_SPACE/itrack/svn
@@ -84,12 +84,11 @@ UPDATE_XML()
 {
  rm -fr $TASK_SPACE/itrack/manifest >/dev/null 2>&1
  git clone -b $GERRIT_BRANCH ssh://$GERRIT_SERVER:$GERRIT_SRV_PORT/$GERRIT_XML_URL $TASK_SPACE/itrack/manifest
- if [[ -d $TASK_SPACE/itrack/svn/manifest ]] ; then
+ if [[ -d $TASK_SPACE/itrack/svn/manifest && -d $TASK_SPACE/itrack/manifest ]] ; then
      cd $TASK_SPACE/itrack/manifest
      git checkout $GERRIT_BRANCH
      mkdir -p $TASK_SPACE/itrack/svn/manifest >/dev/null
      cp $TASK_SPACE/itrack/manifest/*.xml $TASK_SPACE/itrack/svn/manifest/
-     svn cleanup $TASK_SPACE/itrack/svn
      svn -q add $TASK_SPACE/itrack/svn/manifest
      svn -q add $TASK_SPACE/itrack/svn/manifest/*
      svn ci $ICHANGE_SVN_OPTION -q -m 'auto update manifest' $TASK_SPACE/itrack/svn/manifest
@@ -102,11 +101,11 @@ SPLIT_LINE()
 }
 
 SPLIT_LINE 'Format json and log'
-for JSON_FILE in `ls $JSON_PATH`
+for JSON_FILE in `ls $JSON_PATH | grep json$`
 do
     export ORDER=$(date +%y%m%d%H%M%S).$RANDOM
 
-    cat $JSON_FILE | $IBUILD_ROOT/bin/jq '.' >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json
+    cat $JSON_PATH/$JSON_FILE | $IBUILD_ROOT/bin/jq '.' >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json
     cat $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json | grep commitMessage | awk -F'"' {'print $4'} | sed 's/\\n/\n/g' >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log
     [[ $? = 0 ]] && rm -f $JSON_FILE
 
@@ -150,11 +149,11 @@ do
         echo "$g_revision|$g_id|$g_email|$g_path|$g_project|$g_change_number|$g_patchSet_number|$g_value" >>$TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch/$TOWEEK.$g_type
         echo "$g_revision|$g_id|$g_email|$g_path|$g_project|$g_change_number|$g_patchSet_number|$g_value" >>$TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch/$TOWEEK.all-change
     fi
-    svn cleanup $TASK_SPACE/itrack/svn
     for SVN_ADD in `svn st $TASK_SPACE/itrack/svn | egrep '^\?' | awk -F' ' {'print $2'}`
     do
         svn add -q $SVN_ADD
     done
+    svn up -q $ICHANGE_SVN_OPTION --force $TASK_SPACE/itrack/svn
     svn cleanup $TASK_SPACE/itrack/svn
     svn ci $ICHANGE_SVN_OPTION -q -F $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log $TASK_SPACE/itrack/svn
     [[ $? = 0 ]] && rm -f $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.{json,log}
@@ -181,4 +180,5 @@ do
     fi
 done
 rm -f /tmp/CLEAN_DUP.tmp
+svn cleanup $TASK_SPACE/itrack/svn
 

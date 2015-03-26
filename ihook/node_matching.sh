@@ -91,6 +91,7 @@ ASSIGN_JOB()
 }
 
 export QUEUE_SPACE=$1
+    [[ -z $QUEUE_SPACE ]] && export QUEUE_SPACE=/dev/shm/queue_itask
 export TOWEEK=$(date +%yw%V)
 export TODAY=$(date +%y%m%d)
 
