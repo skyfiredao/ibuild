@@ -20,9 +20,12 @@ source /etc/bash.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
 export TASK_SPACE=/dev/shm
-export USER=`whoami`
-export TOHOUR=`date +%H`
-echo $TOHOUR >$TASK_SPACE/repo_sync.lock
+export USER=$(whoami)
+export TOHOUR=$(date +%H)
+export LOCK_SPACE=/dev/shm/lock
+mkdir -p $LOCK_SPACE >/dev/null 2>&1
+
+echo $TOHOUR >$LOCK_SPACE/repo_sync.lock
 
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'

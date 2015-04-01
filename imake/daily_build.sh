@@ -34,9 +34,11 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 fi
 export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
 export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
+export LOCK_SPACE=/dev/shm/lock
+mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
-if [[ `cat $TASK_SPACE/daily_build.lock` != $TOHOUR ]] ; then
-	echo $TOHOUR >$TASK_SPACE/daily_build.lock
+if [[ `cat $LOCK_SPACE/daily_build.lock` != $TOHOUR ]] ; then
+	echo $TOHOUR >$LOCK_SPACE/daily_build.lock
 else
 	exit
 fi

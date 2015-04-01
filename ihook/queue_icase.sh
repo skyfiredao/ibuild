@@ -70,7 +70,20 @@ export IVERIFY_PRIORITY=$(grep '^IVERIFY_PRIORITY=' $BUILD_INFO | awk -F'IVERIFY
 if [[ $RESULT = PASSED && -z $STATUS_MAKE && ! -z $DOWNLOAD_PKG_NAME && ! -z $IVERIFY ]] ; then
     if [[ $IBUILD_MODE = bundle ]] ; then
         touch $QUEUE_SPACE/$IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT
-        echo $IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT >>$TASK_SPACE/icase-$TODAY.list
+
+        if [[ -d $TASK_SPACE/ispec.svn/.svn ]] ; then
+            svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/ispec.svn
+        else
+            rm -fr $TASK_SPACE/ispec.svn >/dev/null 2>&1
+            svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec $TASK_SPACE/ispec.svn
+        fi
+        if [[ ! `grep "# $TODAY$" $TASK_SPACE/ispec.svn/queue/icase-$TOWEEK.list` ]] ; then
+            echo "# $TODAY" >>$TASK_SPACE/ispec.svn/queue/icase-$TOWEEK.list
+            svn add $TASK_SPACE/ispec.svn/queue/icase-$TOWEEK.list >/dev/null 2>&1
+            chmod 777 -R $TASK_SPACE/ispec.svn
+            svn ci -q $IBUILD_SVN_OPTION -m 'auto add queue history' $TASK_SPACE/ispec.svn/queue
+        fi
+        echo $IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT >>$TASK_SPACE/ispec.svn/queue/icase-$TOWEEK.list
     fi
     chmod 777 -R $QUEUE_SPACE
 else

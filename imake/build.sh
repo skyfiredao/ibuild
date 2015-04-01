@@ -28,9 +28,11 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 fi
 export ITASK_REV=$1
 export ITASK_TMP=$ITASK_REV
+export LOCK_SPACE=/dev/shm/lock
+mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
 source $IBUILD_ROOT/imake/function
-touch $TASK_SPACE/itask.lock
+touch $LOCK_SPACE/itask.lock
 EXPORT_IBUILD_CONF
 EXPORT_IBUILD_SPEC $ITASK_REV
 

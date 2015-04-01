@@ -21,6 +21,7 @@ export LC_CTYPE=C
 export LC_ALL=C
 export TASK_SPACE=/dev/shm
 export TODAY=$(date +%y%m%d)
+export TOWEEK=$(date +%yw%V)
 
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
@@ -31,6 +32,8 @@ fi
 
 export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
 export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
+export LOCK_SPACE=/dev/shm/lock
+mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
 export QUEUE_SPACE=$TASK_SPACE/queue_itask
 mkdir -p $QUEUE_SPACE >/dev/null 2>&1
@@ -40,35 +43,49 @@ export ITASK_REV=$1
 export ITASK_SPEC_URL=$(svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
 
 if [[ `echo $ITASK_SPEC_URL | grep '^/itask/tasks'` ]] ; then
-	export ITASK_SPEC_NAME=$(basename $ITASK_SPEC_URL)
-	export IBUILD_PRIORITY=$(svn cat -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/tasks/$ITASK_SPEC_NAME | grep '^IBUILD_PRIORITY=' | awk -F'IBUILD_PRIORITY=' {'print $2'})
-	[[ -z $IBUILD_PRIORITY ]] && export IBUILD_PRIORITY=x
+    export ITASK_SPEC_NAME=$(basename $ITASK_SPEC_URL)
+    export IBUILD_PRIORITY=$(svn cat -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/tasks/$ITASK_SPEC_NAME | grep '^IBUILD_PRIORITY=' | awk -F'IBUILD_PRIORITY=' {'print $2'})
+    [[ -z $IBUILD_PRIORITY ]] && export IBUILD_PRIORITY=x
 
-	touch $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
-	echo $IBUILD_PRIORITY.$ITASK_REV >>$TASK_SPACE/itask-$TODAY.list
-	chmod 777 -R $QUEUE_SPACE
+    touch $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
+
+    if [[ -d $TASK_SPACE/ispec.svn/.svn ]] ; then
+	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/ispec.svn
+    else
+        rm -fr $TASK_SPACE/ispec.svn >/dev/null 2>&1
+        svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec $TASK_SPACE/ispec.svn
+    fi
+    if [[ ! `grep "# $TODAY$" $TASK_SPACE/ispec.svn/queue/itask-$TOWEEK.list` ]] ; then
+        echo "# $TODAY" >>$TASK_SPACE/ispec.svn/queue/itask-$TOWEEK.list
+        svn add $TASK_SPACE/ispec.svn/queue/itask-$TOWEEK.list >/dev/null 2>&1
+        chmod 777 -R $TASK_SPACE/ispec.svn
+        svn ci -q $IBUILD_SVN_OPTION -m 'auto add queue history' $TASK_SPACE/ispec.svn/queue
+    fi
+    echo $IBUILD_PRIORITY.$ITASK_REV >>$TASK_SPACE/ispec.svn/queue/itask-$TOWEEK.list
+
+    chmod 777 -R $QUEUE_SPACE
 elif [[ `echo $ITASK_SPEC_URL | grep 'jobs.txt$'` ]] ; then
-	$IBUILD_ROOT/ihook/mail_itask.sh $ITASK_REV
+    $IBUILD_ROOT/ihook/mail_itask.sh $ITASK_REV
 else
-	exit
+    exit
 fi
 
-if [[ -f $TASK_SPACE/queue_itask.lock ]] ; then
-    echo $TASK_SPACE/queue_itask.lock
+if [[ -f $LOCK_SPACE/queue_itask.lock ]] ; then
+    echo $LOCK_SPACE/queue_itask.lock
     exit
 fi
 
 while [[ `ls $QUEUE_SPACE` ]] ;
 do
     if [[ -f /tmp/EXIT ]] ; then
-        rm -f $TASK_SPACE/queue_itask.lock
+        rm -f $LOCK_SPACE/queue_itask.lock
         exit
     fi
     $IBUILD_ROOT/ihook/node_matching.sh $QUEUE_SPACE >/tmp/node_matching.log 2>&1
     sleep `expr $RANDOM % 7 + 3`
 done
 
-[[ -d $TASK_SPACE/inode.lock/.svn ]] && svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.lock
+[[ -d $TASK_SPACE/inode.svn/.svn ]] && svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.svn
 
-rm -f $TASK_SPACE/queue_itask.lock
+rm -f $LOCK_SPACE/queue_itask.lock
 

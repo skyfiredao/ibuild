@@ -22,17 +22,20 @@ export LC_ALL=C
 export USER=`whoami`
 export TASK_SPACE=/dev/shm
 export TOWEEK=`date +%yw%V`
-touch $TASK_SPACE/count
+export LOCK_SPACE=/dev/shm/lock
+mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
-if [[ `date +%u` = 1 && ! -f $TASK_SPACE/update-$TOWEEK ]] ; then
+touch $LOCK_SPACE/count
+
+if [[ `date +%u` = 1 && ! -f $LOCK_SPACE/update-$TOWEEK ]] ; then
 	sudo aptitude update
 	sudo aptitude -y full-upgrade
-	rm -f $TASK_SPACE/update-*
-	touch $TASK_SPACE/update-$TOWEEK
-	echo "full-upgrade: "`date` >>$TASK_SPACE/count
+	rm -f $LOCK_SPACE/update-*
+	touch $LOCK_SPACE/update-$TOWEEK
+	echo "full-upgrade: "`date` >>$LOCK_SPACE/count
 fi
 
-if [[ `cat $TASK_SPACE/count | wc -l` -ge 20 ]] ; then
+if [[ `cat $LOCK_SPACE/count | wc -l` -ge 20 ]] ; then
 	touch $TASK_SPACE/reboot
 fi
 

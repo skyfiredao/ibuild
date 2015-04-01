@@ -27,17 +27,19 @@ export HOSTNAME=$(hostname)
 export DOMAIN_NAME=$(cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'})
 export BTRFS_PATH=$(mount | grep btrfs | awk -F' ' {'print $3'} | tail -n1)
 export MEMORY=$(free -g | grep Mem | awk -F' ' {'print $2'})
-	export MEMORY=$(echo $MEMORY + 1 | bc)
+    export MEMORY=$(echo $MEMORY + 1 | bc)
 export CPU=$(cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u)
 export JOBS=$(cat /proc/cpuinfo | grep CPU | wc -l)
 export TOWEEK=$(date +%yw%V)
 export TODAY=$(date +%y%m%d)
 export IBUILD_ROOT=$HOME/ibuild
-	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
+    [[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
-	echo -e "Please put ibuild in your $HOME"
-	exit 0
+    echo -e "Please put ibuild in your $HOME"
+    exit 0
 fi
+export LOCK_SPACE=/dev/shm/lock
+mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
 svn up -q $IBUILD_ROOT
 
@@ -49,22 +51,22 @@ export IBUILD_SVN_SRV_HOSTNAME=$(echo $IBUILD_SVN_SRV | awk -F'.' {'print $1'})
 $IBUILD_ROOT/setup/reboot.sh
 
 if [[ -f $TASK_SPACE/itask/svn.$TODAY.lock && -d $TASK_SPACE/itask/svn/.svn ]] ; then
-	export SVN_REV_LOC=$(svn info $TASK_SPACE/itask/svn | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
-	if [[ $IBUILD_SVN_REV_SRV != $SVN_REV_LOC ]] ; then
-		sudo chmod 777 -R $TASK_SPACE/itask
-		svn cleanup $TASK_SPACE/itask/svn
-		svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn
-	fi
+    export SVN_REV_LOC=$(svn info $TASK_SPACE/itask/svn | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
+    if [[ $IBUILD_SVN_REV_SRV != $SVN_REV_LOC ]] ; then
+        sudo chmod 777 -R $TASK_SPACE/itask
+        svn cleanup $TASK_SPACE/itask/svn
+        svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn
+    fi
 else
-	mkdir -p $TASK_SPACE/itask >/dev/null 2>&1
-	rm -fr $TASK_SPACE/itask/svn* >/dev/null 2>&1
-	touch $TASK_SPACE/itask/svn.$TODAY.lock
-	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
+    mkdir -p $TASK_SPACE/itask >/dev/null 2>&1
+    rm -fr $TASK_SPACE/itask/svn* >/dev/null 2>&1
+    touch $TASK_SPACE/itask/svn.$TODAY.lock
+    svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
 fi
 
 if [[ ! -d $TASK_SPACE/itask/svn/inode ]] ; then
-	svn mkdir $TASK_SPACE/itask/svn/inode
-	svn ci $IBUILD_SVN_OPTION -m "auto: add inode in $IP" $TASK_SPACE/itask/svn/inode
+    svn mkdir $TASK_SPACE/itask/svn/inode
+    svn ci $IBUILD_SVN_OPTION -m "auto: add inode in $IP" $TASK_SPACE/itask/svn/inode
 fi
 
 echo "# build node info
@@ -79,67 +81,67 @@ JOBS=$JOBS
 USER=$USER" | sort -u > $TASK_SPACE/itask/svn/inode/$HOSTNAME
 
 if [[ `svn st $TASK_SPACE/itask/svn/inode/$HOSTNAME | grep $HOSTNAME` ]] ; then
-	svn add $TASK_SPACE/itask/svn/inode/$HOSTNAME >/dev/null 2>&1
-	svn ci $IBUILD_SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask/svn/inode/$HOSTNAME
-	if [[ $? != 0 ]] ; then
-		rm -fr $TASK_SPACE/itask/svn
-		echo -e "Waiting for next cycle because conflict"
-		exit 1
-	fi
+    svn add $TASK_SPACE/itask/svn/inode/$HOSTNAME >/dev/null 2>&1
+    svn ci $IBUILD_SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask/svn/inode/$HOSTNAME
+    if [[ $? != 0 ]] ; then
+        rm -fr $TASK_SPACE/itask/svn
+        echo -e "Waiting for next cycle because conflict"
+        exit 1
+    fi
 fi
 
 if [[ ! `crontab -l | grep ibuild_node_reg` && -f $IBUILD_ROOT/setup/ibuild_node_reg.sh ]] ; then
-	echo "# m h  dom mon dow   command
+    echo "# m h  dom mon dow   command
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 */5 * * * * $IBUILD_ROOT/setup/ibuild_node_reg.sh >/tmp/ibuild_node_reg.log 2>&1
 " >/tmp/$USER.crontab
-	crontab -l | egrep -v '#|ibuild_node_reg.sh' >>/tmp/$USER.crontab
-	crontab /tmp/$USER.crontab
+    crontab -l | egrep -v '#|ibuild_node_reg.sh' >>/tmp/$USER.crontab
+    crontab /tmp/$USER.crontab
 fi
 
 [[ `ps aux | grep -v grep | grep gvfsd` ]] && sudo /etc/init.d/lightdm stop
 
 if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
-	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn/inode
-	for CHK_HOST in `ls $TASK_SPACE/itask/svn/inode`
-	do
-		export CHK_HOST_IP=$(grep '^IP=' $TASK_SPACE/itask/svn/inode/$CHK_HOST | awk -F'IP=' {'print $2'})
-		/bin/ping -c 3 -W 1 $CHK_HOST_IP >/dev/null 2>&1
-		if [[ $? = 1 ]] ; then
-			svn rm $TASK_SPACE/itask/svn/inode/$CHK_HOST
-		fi
-	done
+    svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn/inode
+    for CHK_HOST in `ls $TASK_SPACE/itask/svn/inode`
+    do
+        export CHK_HOST_IP=$(grep '^IP=' $TASK_SPACE/itask/svn/inode/$CHK_HOST | awk -F'IP=' {'print $2'})
+        /bin/ping -c 3 -W 1 $CHK_HOST_IP >/dev/null 2>&1
+        if [[ $? = 1 ]] ; then
+            svn rm $TASK_SPACE/itask/svn/inode/$CHK_HOST
+        fi
+    done
 
-	if [[ `svn st $TASK_SPACE/itask/svn/inode | grep ^D` ]] ; then
-		svn ci $IBUILD_SVN_OPTION -m "auto: clean" $TASK_SPACE/itask/svn/inode/
-	fi
+    if [[ `svn st $TASK_SPACE/itask/svn/inode | grep ^D` ]] ; then
+        svn ci $IBUILD_SVN_OPTION -m "auto: clean" $TASK_SPACE/itask/svn/inode/
+    fi
 
-	if [[ ! -f $TASK_SPACE/ganglia-$(date +%p) ]] ; then
-		rm -f $TASK_SPACE/ganglia-*
-		touch $TASK_SPACE/ganglia-$(date +%p)
-		sudo /etc/init.d/gmetad restart
-		sudo /etc/init.d/ganglia-monitor restart
-	fi
+    if [[ ! -f $LOCK_SPACE/ganglia-$(date +%p) ]] ; then
+        rm -f $LOCK_SPACE/ganglia-*
+        touch $LOCK_SPACE/ganglia-$(date +%p)
+        sudo /etc/init.d/gmetad restart
+        sudo /etc/init.d/ganglia-monitor restart
+    fi
 
-	export SHARE_POINT=$(df | grep local | grep share | awk -F' ' {'print $6'})
-	export SHARE_POINT_USAGE=$(df | grep local | grep share | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
-	export SHARE_POINT_OLD=$(ls $SHARE_POINT | grep [0-9] | cut -c1-4 | sort -u | head -n1)
-	if [[ $SHARE_POINT_USAGE -ge 90 ]] ; then
-		sudo rm -fr $SHARE_POINT/$SHARE_POINT_OLD*
-	fi
+    export SHARE_POINT=$(df | grep local | grep share | awk -F' ' {'print $6'})
+    export SHARE_POINT_USAGE=$(df | grep local | grep share | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
+    export SHARE_POINT_OLD=$(ls $SHARE_POINT | grep [0-9] | cut -c1-4 | sort -u | head -n1)
+    if [[ $SHARE_POINT_USAGE -ge 90 ]] ; then
+        sudo rm -fr $SHARE_POINT/$SHARE_POINT_OLD*
+    fi
 
-	if [[ ! -f $TASK_SPACE/clean_task_spec-$TOWEEK ]] ; then
-		rm -f $TASK_SPACE/clean_task_spec-*
-		touch $TASK_SPACE/clean_task_spec-$TOWEEK
-		$IBUILD_ROOT/misc/clean_task_spec.sh >/tmp/clean_task_spec.log
-	else
-		rm -f /tmp/clean_task_spec.log
-	fi
+    if [[ ! -f $LOCK_SPACE/clean_task_spec-$TOWEEK ]] ; then
+        rm -f $LOCK_SPACE/clean_task_spec-*
+        touch $LOCK_SPACE/clean_task_spec-$TOWEEK
+        $IBUILD_ROOT/misc/clean_task_spec.sh >/tmp/clean_task_spec.log
+    else
+        rm -f /tmp/clean_task_spec.log
+    fi
 
-	$IBUILD_ROOT/imake/daily_build.sh >>/tmp/daily_build.log 2>&1 &
+    $IBUILD_ROOT/imake/daily_build.sh >>/tmp/daily_build.log 2>&1 &
 else
-	bash -x $IBUILD_ROOT/setup/ibuild_node_daemon.sh $TASK_SPACE/itask/svn >/tmp/ibuild_node_daemon.log 2>&1 &
+    bash -x $IBUILD_ROOT/setup/ibuild_node_daemon.sh $TASK_SPACE/itask/svn >/tmp/ibuild_node_daemon.log 2>&1 &
 fi
 
 $IBUILD_ROOT/setup/sync_repo_local_mirror.sh >/tmp/sync_repo_local_mirror.log 2>&1 &

@@ -26,6 +26,8 @@ export DOMAIN_NAME=`cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'}`
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
 export TOWEEK=`date +%yw%V`
 export ITASK_PATH=$1
+export LOCK_SPACE=/dev/shm/lock
+mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
 export IBUILD_ROOT=$HOME/ibuild
 	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
@@ -42,8 +44,8 @@ CHK_ITASK_LOCK()
 	echo "$TASK_SPACE/spec.build locked"
 	exit 0
  fi
- if [[ -f $TASK_SPACE/itask.lock ]] ; then
-	echo -e "$TASK_SPACE/itask.lock"
+ if [[ -f $LOCK_SPACE/itask.lock ]] ; then
+	echo -e "$LOCK_SPACE/itask.lock"
 	exit 0
  fi
 }
@@ -55,13 +57,13 @@ NODE_STANDBY()
  export HOST_MD5=`echo $HOSTNAME | md5sum | awk -F' ' {'print $1'}`
 
  CHK_ITASK_LOCK
- $NETCAT -l 1234 >$TASK_SPACE/itask.jobs
- export JOBS_REV=`cat $TASK_SPACE/itask.jobs`
+ $NETCAT -l 1234 >$LOCK_SPACE/itask.jobs
+ export JOBS_REV=`cat $LOCK_SPACE/itask.jobs`
  CHK_ITASK_LOCK
  
- echo $ITASK_PATH >$TASK_SPACE/itask.lock
+ echo $ITASK_PATH >$LOCK_SPACE/itask.lock
  if [[ -z $JOBS_REV ]] ; then
-	rm -f $TASK_SPACE/itask.lock
+	rm -f $LOCK_SPACE/itask.lock
 	exit
  fi
  export JOBS_MD5=`echo $JOBS_REV | md5sum | awk -F' ' {'print $1'}`
@@ -76,15 +78,15 @@ NODE_STANDBY()
 	svn up -q $IBUILD_ROOT
 	if [[ `cat $TASK_SPACE/itask/svn/jobs.txt | grep ^$JOBS_REV | grep $HOSTNAME` ]] ; then
 		$IBUILD_ROOT/imake/build.sh $JOBS_REV >/tmp/build-$JOBS_REV.log 2>&1
-		echo "build: "`date` >>$TASK_SPACE/count
+		echo "build: "`date` >>$LOCK_SPACE/count
 	fi
  fi
- rm -f $TASK_SPACE/itask.jobs
+ rm -f $LOCK_SPACE/itask.jobs
 }
 
 CHK_ITASK_LOCK
 
-while [ ! -f $TASK_SPACE/itask.lock ] ; 
+while [ ! -f $LOCK_SPACE/itask.lock ] ; 
 do
 	CHK_ITASK_LOCK
 	if [[ -f $TASK_SPACE/EXIT ]] ; then
@@ -95,5 +97,5 @@ do
 	NODE_STANDBY
 done
 
-rm -f $TASK_SPACE/itask.lock
+rm -f $LOCK_SPACE/itask.lock
 

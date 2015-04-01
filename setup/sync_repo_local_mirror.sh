@@ -27,6 +27,8 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 	echo -e "Please put ibuild in your $HOME"
 	exit 0
 fi
+export LOCK_SPACE=/dev/shm/lock
+mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
 export LOC_REPO_MIRROR_PATH=`grep '^LOC_REPO_MIRROR_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_REPO_MIRROR_PATH=' {'print $2'}`
 
@@ -36,8 +38,8 @@ if [[ `ps aux | grep rsync | grep -v grep` ]] ; then
 	exit
 fi
 
-if [[ `cat $TASK_SPACE/repo_sync.lock` != $TOHOUR ]] ; then
-	echo $TOHOUR >$TASK_SPACE/repo_sync.lock
+if [[ `cat $LOCK_SPACE/repo_sync.lock` != $TOHOUR ]] ; then
+	echo $TOHOUR >$LOCK_SPACE/repo_sync.lock
 	$IBUILD_ROOT/bin/repo sync -j$JOBS
 fi
 

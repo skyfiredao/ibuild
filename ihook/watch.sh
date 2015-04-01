@@ -24,6 +24,7 @@ export SEED=$RANDOM
 export TOYEAR=`date +%Y`
 export TOWEEK=`date +%yw%V`
 [[ `echo $* | grep debug` ]] && export DEBUG=echo || export DEBUG=''
+[[ `echo $* | grep stopwatch` ]] && exit
 
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
@@ -52,6 +53,8 @@ export WATCH_GERRIT_BRANCH=`cat $TASK_SPACE/$WATCH_TMP/svn.log | grep ichange | 
 
 export WATCH_GERRIT_STAGE=`cat $TASK_SPACE/$WATCH_TMP/svn.log | egrep 'Code-Review|change-abandoned|change-merged|change-restored|comment-added|merge-failed|patchset-created|reviewer-added|ref-updated' | awk -F"$TOWEEK." {'print $2'}`
 
+export SLEEP=$(expr $(ps aux | grep blame | wc -l) % 10)
+sleep $SLEEP
 svn blame $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ichange/ichange/$TOYEAR/$WATCH_GERRIT_SERVER/$WATCH_GERRIT_BRANCH/$TOWEEK.all-change >$TASK_SPACE/$WATCH_TMP/svn.blame
 export ICHANGE_ENTRY=`cat $TASK_SPACE/$WATCH_TMP/svn.blame | grep " $ICHANGE_REV " | awk -F' ' {'print $3'} | tail -n1`
 export WATCH_GERRIT_revision=`echo $ICHANGE_ENTRY | awk -F'|' {'print $1'}`

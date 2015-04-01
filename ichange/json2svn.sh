@@ -101,6 +101,12 @@ SPLIT_LINE()
 }
 
 SPLIT_LINE 'Format json and log'
+
+for JSON_FILE in `egrep 'ref-updated|Verified|comment-added|reviewer-added|change-restored|merge-failed|Code-Review' $JSON_PATH/* | awk -F':' {'print $1'}`
+do
+    rm -f $JSON_FILE
+done
+
 for JSON_FILE in `ls $JSON_PATH | grep json$`
 do
     export ORDER=$(date +%y%m%d%H%M%S).$RANDOM
@@ -153,10 +159,13 @@ do
     do
         svn add -q $SVN_ADD
     done
-    svn up -q $ICHANGE_SVN_OPTION --force $TASK_SPACE/itrack/svn
     svn cleanup $TASK_SPACE/itrack/svn
     svn ci $ICHANGE_SVN_OPTION -q -F $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log $TASK_SPACE/itrack/svn
     [[ $? = 0 ]] && rm -f $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.{json,log}
+    if [[ `ps aux | grep blame | wc -l` -ge 20 ]] ; then
+        export SLEEP=$(expr $(ps aux | grep blame | wc -l) % 7)
+        sleep $SLEEP
+    fi
 done
 
 [[ `date +%M` = 00 ]] && UPDATE_XML

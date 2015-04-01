@@ -25,9 +25,11 @@ export LC_CTYPE=C
 export HOME=/root
 export IBUILD_ROOT=$HOME/ibuild
 source /etc/bash.bashrc
+export TODAY=$(date +%y%m%d)
 
 # echo --------------------------------------- >>/tmp/ihook-ichange.log
 # echo $IHOOK_REPOS $IHOOK_REV `date` >>/tmp/ihook-ichange.log
+[[ -f /tmp/debug-$TODAY ]] && export STOP_WATCH=stopwatch
 
-$IBUILD_ROOT/ihook/watch.sh $IHOOK_REV >>/tmp/watch.log 2>&1 &
+$IBUILD_ROOT/ihook/watch.sh $IHOOK_REV $STOP_WATCH >>/tmp/watch.log 2>&1 &
 

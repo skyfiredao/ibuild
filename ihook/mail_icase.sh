@@ -73,7 +73,7 @@ export IBUILD_MODE=$(grep '^IBUILD_MODE=' $BUILD_INFO | awk -F'IBUILD_MODE=' {'p
 export IVER=$(grep '^IVER=' $BUILD_INFO | awk -F'IVER=' {'print $2'})
 export ITASK_REV=$(grep '^ITASK_REV=' $BUILD_INFO | awk -F'ITASK_REV=' {'print $2'} | tail -n1)
 export ITASK_ORDER=$(grep '^ITASK_ORDER=' $BUILD_INFO | awk -F'ITASK_ORDER=' {'print $2'} | tail -n1)
-export IVERIFY=$(grep '^IVERIFY=' $BUILD_INFO | awk -F'IVERIFY=' {'print $2'} | tail -n1)
+export IVERIFY=$(grep '^IVERIFY=' $BUILD_INFO | grep -v 'IVERIFY=$' | awk -F'IVERIFY=' {'print $2'})
 export SLAVE_HOST=$(grep '^SLAVE_HOST=' $BUILD_INFO | awk -F'SLAVE_HOST=' {'print $2'})
 export SLAVE_IP=$(grep '^SLAVE_IP=' $BUILD_INFO | awk -F'SLAVE_IP=' {'print $2'})
 export DOWNLOAD_URL=$(grep '^DOWNLOAD_URL=' $BUILD_INFO | awk -F'DOWNLOAD_URL=' {'print $2'} | head -n1)
@@ -179,7 +179,7 @@ if [[ ! -z $ITASK_ORDER && $ITASK_ORDER != $ITASK_REV ]] ; then
     export SUB_IBUILD_MODE="[re$IBUILD_MODE]"
     echo "[$ITASK_ORDER][$ITASK_REV][re$IBUILD_MODE]" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
 fi
-[[ ! -z $IVERIFY ]] && export $SUB_IVERIFY=[iverify]
+[[ ! -z $IVERIFY ]] && export SUB_IVERIFY=[iverify]
 
 cat $TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail | mail -s "[ibuild][$RESULT]$SUB_ITASK_REV$SUB_IVERIFY$SUB_IBUILD_MODE $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT in $SLAVE_HOST" $MAIL_LIST
 

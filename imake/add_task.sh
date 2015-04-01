@@ -34,6 +34,9 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 	exit 0
 fi
 
+export LOCK_SPACE=/dev/shm/lock
+mkdir -p $LOCK_SPACE >/dev/null 2>&1
+
 if [[ -d $TASK_SPACE/$USER.tasks.lock.$SEED ]] ; then
 	echo -e "$TASK_SPACE/$USER.tasks.lock.$SEED"
 	exit
