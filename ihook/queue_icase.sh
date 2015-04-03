@@ -37,7 +37,7 @@ fi
 export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
 export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
 
-export QUEUE_SPACE=$TASK_SPACE/queue_icase
+export QUEUE_SPACE=/local/queue/icase
 mkdir -p $QUEUE_SPACE >/dev/null 2>&1
 chmod 777 -R $QUEUE_SPACE
 
@@ -91,7 +91,7 @@ else
     exit
 fi
 
-if [[ -f $TASK_SPACE/queue_icase.lock ]] ; then
+if [[ -f $LOCK_SPACE/queue_icase.lock ]] ; then
     rm -fr $TASK_SPACE/tmp.icase.$SEED
     exit
 fi
@@ -99,14 +99,14 @@ fi
 while [[ `ls $QUEUE_SPACE` ]] ;
 do
     if [[ -f /tmp/EXIT ]] ; then
-        rm -f $TASK_SPACE/queue_icase.lock
+        rm -f $LOCK_SPACE/queue_icase.lock
         exit
     fi
     $DEBUG $IBUILD_ROOT/ihook/device_matching.sh $QUEUE_SPACE >/tmp/device_matching.log 2>&1
     sleep `expr $RANDOM % 7 + 1`
 done
 
-rm -f $TASK_SPACE/queue_icase.lock
+rm -f $LOCK_SPACE/queue_icase.lock
 $DEBUG rm -fr $TASK_SPACE/tmp.icase.$SEED
 
 

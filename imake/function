@@ -144,6 +144,8 @@ EXPORT_IBUILD_SPEC()
  export GERRIT_PATCHSET_REVISION=`grep '^GERRIT_PATCHSET_REVISION=' $IBUILD_SPEC | awk -F'GERRIT_PATCHSET_REVISION=' {'print $2'}`
  export GERRIT_PROJECT=`grep '^GERRIT_PROJECT=' $IBUILD_SPEC | awk -F'GERRIT_PROJECT=' {'print $2'}`
 # export =`grep '^=' $IBUILD_SPEC | awk -F'=' {'print $2'}`
+ export IBUILD_GRTSRV_BRANCH_TOP=$(echo $IBUILD_GRTSRV_BRANCH | awk -F'/' {'print $1'})
+ export KBITS_PROJECT=${IBUILD_TARGET_PRODUCT}$(echo $IBUILD_GRTSRV_BRANCH | awk -F"$IBUILD_GRTSRV_BRANCH_TOP" {'print $2'} | sed 's/\//_/g')
 
  export SPEC_NAME=`basename $IBUILD_SPEC`
  export AUTOUT_PATH=$LOC_WORKSPACE/autout

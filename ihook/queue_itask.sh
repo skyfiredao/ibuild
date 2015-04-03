@@ -35,7 +35,7 @@ export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.c
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
-export QUEUE_SPACE=$TASK_SPACE/queue_itask
+export QUEUE_SPACE=/local/queue/itask
 mkdir -p $QUEUE_SPACE >/dev/null 2>&1
 chmod 777 -R $QUEUE_SPACE
 
