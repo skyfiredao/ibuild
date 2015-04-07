@@ -241,6 +241,7 @@ BUNDLE_BUILD()
     LOG_STATUS $STATUS_GIT bundle $LOG_PATH/bundle.log
  done
  cd $BUILD_PATH_TOP
+ EXPORT_MANIFEST $LOG_PATH/after_patch_manifest.xml
 }
 
 SPLIT_LINE()
@@ -400,6 +401,8 @@ REPO_SYNC()
     export STATUS_SYNC=$?
  fi
 
+ EXPORT_MANIFEST $LOG_PATH/after_sync_manifest.xml
+
  LOG_STATUS $STATUS_SYNC repo_sync $LOG_PATH/$REPO_SYNC_LOG_NAME.log
  CCACHE_HOTFIX
 
@@ -536,15 +539,17 @@ else
 EXPORT_MANIFEST()
 {
  export EXPORT_MANIFEST_URL=$1
+ export EXPORT_MANIFEST_PATH=$(dirname $EXPORT_MANIFEST_URL)
  SPLIT_LINE export_manifest
  time $REPO_CMD manifest -r -o tmp_manifest.xml >/dev/null 2>&1
- cp tmp_manifest.xml $EXPORT_MANIFEST_URL >/dev/null 2>&1
+ /bin/cp tmp_manifest.xml $EXPORT_MANIFEST_URL >/dev/null 2>&1
+ /bin/cp tmp_manifest.xml $EXPORT_MANIFEST_PATH/manifest.xml >/dev/null 2>&1
 }
 
 SETUP_BUILD_OUT()
 {
  [[ -d $BUILD_PATH_TOP ]] && cd $BUILD_PATH_TOP
- EXPORT_MANIFEST $LOG_PATH/manifest.xml
+ EXPORT_MANIFEST $LOG_PATH/after_build_manifest.xml
 
  if [[ $RESULT != FAILED ]] ; then
 	if [[ -f images_$IBUILD_TARGET_PRODUCT.txz ]] ; then

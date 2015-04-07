@@ -43,6 +43,7 @@ mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
 svn up -q $IBUILD_ROOT
 
+export IBUILD_FOUNDER_EMAIL=$(grep '^IBUILD_FOUNDER_EMAIL=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_FOUNDER_EMAIL=' {'print $2'})
 export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
 export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
 export IBUILD_SVN_REV_SRV=$(svn info $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
@@ -135,6 +136,8 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
         rm -f $LOCK_SPACE/clean_task_spec-*
         touch $LOCK_SPACE/clean_task_spec-$TOWEEK
         $IBUILD_ROOT/misc/clean_task_spec.sh >/tmp/clean_task_spec.log
+        $IBUILD_ROOT/misc/status_ibuild.sh >/tmp/status_ibuild.log
+        cat /tmp/status_ibuild.log | mail -s "[ibuild] `date +%yw%W` build status" $IBUILD_FOUNDER_EMAIL
     else
         rm -f /tmp/clean_task_spec.log
     fi
