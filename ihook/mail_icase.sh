@@ -70,6 +70,7 @@ export IBUILD_GRTSRV_MANIFEST=$(grep '^IBUILD_GRTSRV_MANIFEST=' $BUILD_INFO | aw
 export IBUILD_TARGET_BUILD_VARIANT=$(grep '^IBUILD_TARGET_BUILD_VARIANT=' $BUILD_INFO | awk -F'IBUILD_TARGET_BUILD_VARIANT=' {'print $2'})
 export IBUILD_TARGET_PRODUCT=$(grep '^IBUILD_TARGET_PRODUCT=' $BUILD_INFO | awk -F'IBUILD_TARGET_PRODUCT=' {'print $2'})
 export IBUILD_MODE=$(grep '^IBUILD_MODE=' $BUILD_INFO | awk -F'IBUILD_MODE=' {'print $2'})
+export IBUILD_NOTE=$(grep '^IBUILD_NOTE=' $BUILD_INFO | awk -F'IBUILD_NOTE=' {'print $2'})
 export IVER=$(grep '^IVER=' $BUILD_INFO | awk -F'IVER=' {'print $2'})
 export ITASK_REV=$(grep '^ITASK_REV=' $BUILD_INFO | awk -F'ITASK_REV=' {'print $2'} | tail -n1)
 export ITASK_ORDER=$(grep '^ITASK_ORDER=' $BUILD_INFO | awk -F'ITASK_ORDER=' {'print $2'} | tail -n1)
@@ -164,6 +165,12 @@ if [[ -f $TASK_SPACE/tmp.icase.mail.$SEED/error.log ]] ; then
     echo -e "\n------------------------- Error log" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
     cat $TASK_SPACE/tmp.icase.mail.$SEED/error.log | egrep -v '32m|0m' | tail -n50 >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
     echo -e "------------------------- End" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
+fi
+
+if [[ ! -z $IBUILD_NOTE ]] ; then
+    echo "
+Note:
+$IBUILD_NOTE">>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
 fi
 
 echo -e "
