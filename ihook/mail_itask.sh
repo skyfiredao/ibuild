@@ -40,7 +40,7 @@ export IBUILD_FOUNDER_EMAIL=$(grep '^IBUILD_FOUNDER_EMAIL=' $IBUILD_ROOT/conf/ib
 export ITASK_JOBS_REV=$1
 mkdir -p $TASK_SPACE/tmp.itask.$SEED
 svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/tmp.itask.$SEED/svn
-svn blame $IBUILD_SVN_OPTION $TASK_SPACE/tmp.itask.$SEED/svn/jobs.txt >$TASK_SPACE/tmp.itask.$SEED/jobs.txt-$ITASK_JOBS_REV
+svn blame $IBUILD_SVN_OPTION -r $ITASK_JOBS_REV:$ITASK_JOBS_REV $TASK_SPACE/tmp.itask.$SEED/svn/jobs.txt >$TASK_SPACE/tmp.itask.$SEED/jobs.txt-$ITASK_JOBS_REV
 export ITASK_REV=$(cat $TASK_SPACE/tmp.itask.$SEED/jobs.txt-$ITASK_JOBS_REV | grep " $ITASK_JOBS_REV " | awk -F' ' {'print $3'} | awk -F'|' {'print $1'})
 
 if [[ -z $ITASK_REV ]] ; then
@@ -57,7 +57,7 @@ export EMAIL_PM=$(grep '^EMAIL_PM=' $BUILD_SPEC | awk -F'EMAIL_PM=' {'print $2'}
 export EMAIL_REL=$(grep '^EMAIL_REL=' $BUILD_SPEC | awk -F'EMAIL_REL=' {'print $2'})
 export IBUILD_MODE=$(grep '^IBUILD_MODE=' $BUILD_SPEC | awk -F'IBUILD_MODE=' {'print $2'})
 export IBUILD_NOTE=$(grep '^IBUILD_NOTE=' $BUILD_SPEC | awk -F'IBUILD_NOTE=' {'print $2'})
-export IVERIFY=$(grep '^IVERIFY=' $IBUILD_SPEC | awk -F'IVERIFY=' {'print $2'})
+export IVERIFY=$(grep '^IVERIFY=' $BUILD_SPEC | awk -F'IVERIFY=' {'print $2'})
 export ITASK_ORDER=$(grep '^ITASK_ORDER=' $BUILD_SPEC | awk -F'ITASK_ORDER=' {'print $2'} | tail -n1)
 export IBUILD_GRTSRV=$(grep '^IBUILD_GRTSRV=' $BUILD_SPEC | awk -F'IBUILD_GRTSRV=' {'print $2'})
 export IBUILD_GRTSRV_BRANCH=$(grep '^IBUILD_GRTSRV_BRANCH=' $BUILD_SPEC | awk -F'IBUILD_GRTSRV_BRANCH=' {'print $2'})

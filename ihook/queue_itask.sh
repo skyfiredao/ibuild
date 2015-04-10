@@ -48,6 +48,7 @@ if [[ `echo $ITASK_SPEC_URL | grep '^/itask/tasks'` ]] ; then
     [[ -z $IBUILD_PRIORITY ]] && export IBUILD_PRIORITY=x
 
     touch $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
+    ls $QUEUE_SPACE
 
     if [[ -d $TASK_SPACE/ispec.svn/.svn ]] ; then
 	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/ispec.svn

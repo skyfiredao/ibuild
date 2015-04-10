@@ -51,11 +51,12 @@ export WATCH_GERRIT_BRANCH=`cat $TASK_SPACE/$WATCH_TMP/svn.log | grep ichange | 
 
 [[ `echo $WATCH_GERRIT_BRANCH | grep all-change` ]] && export WATCH_GERRIT_BRANCH=''
 
-export WATCH_GERRIT_STAGE=`cat $TASK_SPACE/$WATCH_TMP/svn.log | egrep 'Code-Review|change-abandoned|change-merged|change-restored|comment-added|merge-failed|patchset-created|reviewer-added|ref-updated' | awk -F"$TOWEEK." {'print $2'}`
+# Code-Review|change-abandoned|change-merged|change-restored|comment-added|merge-failed|patchset-created|reviewer-added|ref-updated
+export WATCH_GERRIT_STAGE=`cat $TASK_SPACE/$WATCH_TMP/svn.log | egrep 'change-merged|change-restored|merge-failed|patchset-created' | awk -F"$TOWEEK." {'print $2'}`
 
 export SLEEP=$(expr $(ps aux | grep blame | wc -l) % 10)
 sleep $SLEEP
-svn blame $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ichange/ichange/$TOYEAR/$WATCH_GERRIT_SERVER/$WATCH_GERRIT_BRANCH/$TOWEEK.all-change >$TASK_SPACE/$WATCH_TMP/svn.blame
+svn blame $IBUILD_SVN_OPTION -r $ICHANGE_REV:$ICHANGE_REV svn://$IBUILD_SVN_SRV/ichange/ichange/$TOYEAR/$WATCH_GERRIT_SERVER/$WATCH_GERRIT_BRANCH/$TOWEEK.all-change >$TASK_SPACE/$WATCH_TMP/svn.blame
 export ICHANGE_ENTRY=`cat $TASK_SPACE/$WATCH_TMP/svn.blame | grep " $ICHANGE_REV " | awk -F' ' {'print $3'} | tail -n1`
 export WATCH_GERRIT_revision=`echo $ICHANGE_ENTRY | awk -F'|' {'print $1'}`
 export WATCH_GERRIT_id=`echo $ICHANGE_ENTRY | awk -F'|' {'print $2'}`
@@ -104,7 +105,7 @@ ITASK_SUBMIT()
  for SPEC_NAME in `ls $ISPEC_PATH/spec | grep $WATCHDOG_SPEC$`
  do
 	SPEC_EXT $ISPEC_PATH/spec/$SPEC_NAME
-	$DEBUG $ISPEC_PATH/itask $TASK_SPACE/$WATCH_TMP/patch.$SPEC_NAME
+	[[ $WATCH_GERRIT_email != no_mail ]] && $DEBUG $ISPEC_PATH/itask $TASK_SPACE/$WATCH_TMP/patch.$SPEC_NAME
 	$DEBUG mv $TASK_SPACE/$WATCH_TMP/patch.$SPEC_NAME $TASK_SPACE/$WATCH_TMP/patch.$SPEC_NAME.$RANDOM
  done
  echo $ICHANGE_ENTRY 

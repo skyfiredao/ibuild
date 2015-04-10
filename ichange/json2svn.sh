@@ -109,16 +109,20 @@ done
 
 for JSON_FILE in `ls $JSON_PATH | grep json$`
 do
-    export ORDER=$(date +%y%m%d%H%M%S).$RANDOM
+    if [[ `egrep 'ref-updated|Verified|comment-added|reviewer-added|change-restored|merge-failed|Code-Review' $JSON_PATH/$JSON_FILE` ]] ; then
+        rm -f $JSON_PATH/$JSON_FILE
+    else
+        export ORDER=$(date +%y%m%d%H%M%S).$RANDOM
 
-    cat $JSON_PATH/$JSON_FILE | $IBUILD_ROOT/bin/jq '.' >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json
-    cat $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json | grep commitMessage | awk -F'"' {'print $4'} | sed 's/\\n/\n/g' >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log
-    [[ $? = 0 ]] && rm -f $JSON_FILE
+        cat $JSON_PATH/$JSON_FILE | $IBUILD_ROOT/bin/jq '.' >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json
+        cat $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json | grep commitMessage | awk -F'"' {'print $4'} | sed 's/\\n/\n/g' >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log
+        [[ $? = 0 ]] && rm -f $JSON_FILE
 
-    export log_md5=$(md5sum $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log | awk -F' ' {'print $1'})
-    if [[ $log_md5 = d41d8cd98f00b204e9800998ecf8427e ]] ; then
-        echo "No_Commit_Info:" >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log
-        cat $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json >>$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log
+        export log_md5=$(md5sum $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log | awk -F' ' {'print $1'})
+        if [[ $log_md5 = d41d8cd98f00b204e9800998ecf8427e ]] ; then
+            echo "No_Commit_Info:" >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log
+            cat $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json >>$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log
+        fi
     fi
 done
 

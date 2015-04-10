@@ -70,6 +70,7 @@ export IVERIFY_PRIORITY=$(grep '^IVERIFY_PRIORITY=' $BUILD_INFO | awk -F'IVERIFY
 if [[ $RESULT = PASSED && -z $STATUS_MAKE && ! -z $DOWNLOAD_PKG_NAME && ! -z $IVERIFY ]] ; then
     if [[ $IBUILD_MODE = bundle ]] ; then
         touch $QUEUE_SPACE/$IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT
+        ls $QUEUE_SPACE
 
         if [[ -d $TASK_SPACE/ispec.svn/.svn ]] ; then
             svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/ispec.svn
