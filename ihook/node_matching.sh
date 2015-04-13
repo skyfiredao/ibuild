@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 # Copyright (C) <2014,2015>  <Ding Wei>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -49,28 +49,39 @@ MATCHING()
  if [[ ! -d $TASK_SPACE/inode.svn ]] ; then
      svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/inode $TASK_SPACE/inode.svn
      chmod 777 -R $TASK_SPACE/inode.svn >/dev/null 2>&1
+ else
+    svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.svn 
+ fi
+
+ if [[ ! -d $LOCK_SPACE/inode ]] ; then
      mkdir -p $LOCK_SPACE/inode >/dev/null 2>&1
      rsync -r --delete --exclude "*build*" --exclude ".svn" $TASK_SPACE/inode.svn/ $LOCK_SPACE/inode/
-else
-    svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.svn 
-fi
+ fi
 
  for NODE in `cat $IBUILD_ROOT/conf/priority/[$LEVEL_NUMBER]-floor.conf`
  do
-     if [[ -f $LOCK_SPACE/inode/$NODE ]] ; then
-         export FREE_NODE=true
-     else
-         export FREE_NODE=''
+     if [[ -f $TASK_SPACE/inode.svn/$NODE && -f $LOCK_SPACE/inode/$NODE ]] ; then
+         /bin/cp $TASK_SPACE/inode.svn/$NODE $LOCK_SPACE/inode/ >/dev/null 2>&1
+     elif [[ ! -f $TASK_SPACE/inode.svn/$NODE ]] ; then
+        rm -f $LOCK_SPACE/inode/$NODE
      fi
  done
 
  for NODE in `cat $IBUILD_ROOT/conf/priority/[$IBUILD_PRIORITY]-floor.conf`
  do
-     if [[ -z $FREE_NODE ]] ; then
-         svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.svn/$NODE
+     if [[ -f $TASK_SPACE/inode.svn/$NODE && -f $LOCK_SPACE/inode/$NODE ]] ; then
+         export FREE_NODE=true
          /bin/cp $TASK_SPACE/inode.svn/$NODE $LOCK_SPACE/inode/ >/dev/null 2>&1
+         break
      fi
  done
+
+ if [[ -z $FREE_NODE ]] ; then
+     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.svn
+     chmod 777 -R $TASK_SPACE/inode.svn >/dev/null 2>&1
+     mkdir -p $LOCK_SPACE/inode >/dev/null 2>&1
+     rsync -r --delete --exclude "*build*" --exclude ".svn" $TASK_SPACE/inode.svn/ $LOCK_SPACE/inode/
+ fi
 
  for NODE in `cat $IBUILD_ROOT/conf/priority/[$LEVEL_NUMBER]-floor.conf`
  do
@@ -85,12 +96,6 @@ fi
          [[ `grep $ITASK_REV_MD5 $LOCK_SPACE/itask-r$ITASK_REV.jobs` ]] && ASSIGN_JOB
      fi
  done
- if [[ -z $FREE_NODE ]] ; then
-     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.svn
-     chmod 777 -R $TASK_SPACE/inode.svn >/dev/null 2>&1
-     mkdir -p $LOCK_SPACE/inode >/dev/null 2>&1
-     rsync -r --delete --exclude "*build*" --exclude ".svn" $TASK_SPACE/inode.svn/ $LOCK_SPACE/inode/
- fi
 }
 
 ASSIGN_JOB()

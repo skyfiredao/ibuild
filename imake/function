@@ -579,8 +579,14 @@ SETUP_BUILD_OUT()
  mv $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME
 
  if [[ ! -f $AUTOUT_UPLOAD_PATH/README ]] ; then
-	sshfs -o nonempty $IBUILD_ROBOT@$IBUILD_UPLOAD_URL $AUTOUT_UPLOAD_PATH >$LOG_PATH/sshfs.log 2>&1
-	LOG_STATUS $? sshfs_$AUTOUT_UPLOAD_PATH $LOG_PATH/sshfs.log 
+     sshfs -o nonempty $IBUILD_ROBOT@$IBUILD_UPLOAD_URL $AUTOUT_UPLOAD_PATH >$LOG_PATH/sshfs.log 2>&1
+     export MOUNT_STATUS=$?
+     if [[ $MOUNT_STATUS != 0 ]] ; then
+         sleep 60
+         sshfs -o nonempty $IBUILD_ROBOT@$IBUILD_UPLOAD_URL $AUTOUT_UPLOAD_PATH >$LOG_PATH/sshfs.log 2>&1
+         export MOUNT_STATUS=$?
+     fi
+     LOG_STATUS $MOUNT_STATUS sshfs_$AUTOUT_UPLOAD_PATH $LOG_PATH/sshfs.log 
  fi
 
  mkdir -p $AUTOUT_UPLOAD_PATH/$TODAY

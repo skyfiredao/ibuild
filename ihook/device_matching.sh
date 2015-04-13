@@ -92,11 +92,12 @@ export IVERFY_SPACE=$TASK_SPACE/tmp.iverify.$SEED
 
 for PRIORITY_ICASE_REV in `ls $QUEUE_SPACE`
 do
-	[[ -f /tmp/EXIT ]] && EXIT
-	echo $PRIORITY_ICASE_REV >$TASK_SPACE/queue_icase.lock
-	chmod 777 $TASK_SPACE/queue_icase.lock
+    [[ -f /tmp/EXIT ]] && EXIT
+    echo $PRIORITY_ICASE_REV >$TASK_SPACE/queue_icase.lock
+    chmod 777 $TASK_SPACE/queue_icase.lock
 
-	MATCHING $PRIORITY_ICASE_REV
+    MATCHING $PRIORITY_ICASE_REV
+    sleep 10
 done
 
 EXIT

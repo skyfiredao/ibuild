@@ -90,7 +90,6 @@ done
 if [[ -d $TASK_SPACE/inode.svn/.svn ]] ; then
     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.svn
     mkdir -p $LOCK_SPACE/inode >/dev/null 2>&1
-    rsync -r --delete --exclude "*build*" --exclude ".svn" $TASK_SPACE/inode.svn/ $LOCK_SPACE/inode/
 fi
 
 rm -f $LOCK_SPACE/queue_itask.lock
