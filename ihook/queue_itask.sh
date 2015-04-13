@@ -34,6 +34,7 @@ export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | 
 export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
+chmod 777 -R $LOCK_SPACE >/dev/null 2>&1
 
 export QUEUE_SPACE=/local/queue/itask
 mkdir -p $QUEUE_SPACE >/dev/null 2>&1
@@ -86,7 +87,11 @@ do
     sleep `expr $RANDOM % 7 + 3`
 done
 
-[[ -d $TASK_SPACE/inode.svn/.svn ]] && svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.svn
+if [[ -d $TASK_SPACE/inode.svn/.svn ]] ; then
+    svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.svn
+    mkdir -p $LOCK_SPACE/inode >/dev/null 2>&1
+    rsync -r --delete --exclude "*build*" --exclude ".svn" $TASK_SPACE/inode.svn/ $LOCK_SPACE/inode/
+fi
 
 rm -f $LOCK_SPACE/queue_itask.lock
 

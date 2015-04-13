@@ -70,6 +70,7 @@ export IBUILD_GRTSRV_MANIFEST=$(grep '^IBUILD_GRTSRV_MANIFEST=' $BUILD_INFO | aw
 export IBUILD_TARGET_BUILD_VARIANT=$(grep '^IBUILD_TARGET_BUILD_VARIANT=' $BUILD_INFO | awk -F'IBUILD_TARGET_BUILD_VARIANT=' {'print $2'})
 export IBUILD_TARGET_PRODUCT=$(grep '^IBUILD_TARGET_PRODUCT=' $BUILD_INFO | awk -F'IBUILD_TARGET_PRODUCT=' {'print $2'})
 export IBUILD_MODE=$(grep '^IBUILD_MODE=' $BUILD_INFO | awk -F'IBUILD_MODE=' {'print $2'})
+    [[ -z $IBUILD_MODE ]] && export IBUILD_MODE=normal
 export IBUILD_NOTE=$(grep '^IBUILD_NOTE=' $BUILD_INFO | awk -F'IBUILD_NOTE=' {'print $2'})
 export IVER=$(grep '^IVER=' $BUILD_INFO | awk -F'IVER=' {'print $2'})
 export ITASK_REV=$(grep '^ITASK_REV=' $BUILD_INFO | awk -F'ITASK_REV=' {'print $2'} | tail -n1)
@@ -158,8 +159,9 @@ if [[ $IBUILD_MODE = bundle ]] ; then
     do
         echo "$BUNDLE_PATCH_ENTRY" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
     done
-    export SUB_IBUILD_MODE="[$IBUILD_MODE]"
 fi
+
+[[ $IBUILD_MODE = bundle || $IBUILD_MODE = normal ]] && export SUB_IBUILD_MODE="[$IBUILD_MODE]"
 
 if [[ -f $TASK_SPACE/tmp.icase.mail.$SEED/error.log ]] ; then
     echo -e "\n------------------------- Error log" >>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail

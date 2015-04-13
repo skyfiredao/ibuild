@@ -40,6 +40,7 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 fi
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
+sudo chmod 777 -R $LOCK_SPACE >/dev/null 2>&1
 
 svn up -q $IBUILD_ROOT
 

@@ -29,6 +29,7 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 fi
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
+chmod 777 -R $LOCK_SPACE >/dev/null 2>&1
 
 source $IBUILD_ROOT/imake/function
 EXPORT_IBUILD_CONF
@@ -48,11 +49,15 @@ MATCHING()
  if [[ ! -d $TASK_SPACE/inode.svn ]] ; then
      svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/inode $TASK_SPACE/inode.svn
      chmod 777 -R $TASK_SPACE/inode.svn >/dev/null 2>&1
- fi
+     mkdir -p $LOCK_SPACE/inode >/dev/null 2>&1
+     rsync -r --delete --exclude "*build*" --exclude ".svn" $TASK_SPACE/inode.svn/ $LOCK_SPACE/inode/
+else
+    svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.svn 
+fi
 
  for NODE in `cat $IBUILD_ROOT/conf/priority/[$LEVEL_NUMBER]-floor.conf`
  do
-     if [[ -f $TASK_SPACE/inode.svn/$NODE ]] ; then
+     if [[ -f $LOCK_SPACE/inode/$NODE ]] ; then
          export FREE_NODE=true
      else
          export FREE_NODE=''
@@ -61,13 +66,16 @@ MATCHING()
 
  for NODE in `cat $IBUILD_ROOT/conf/priority/[$IBUILD_PRIORITY]-floor.conf`
  do
-     [[ -z $FREE_NODE ]] && svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.svn/$NODE
+     if [[ -z $FREE_NODE ]] ; then
+         svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.svn/$NODE
+         /bin/cp $TASK_SPACE/inode.svn/$NODE $LOCK_SPACE/inode/ >/dev/null 2>&1
+     fi
  done
 
  for NODE in `cat $IBUILD_ROOT/conf/priority/[$LEVEL_NUMBER]-floor.conf`
  do
-     if [[ -f $TASK_SPACE/inode.svn/$NODE ]] ; then
-         export NODE_IP=$(grep '^IP=' $TASK_SPACE/inode.svn/$NODE | awk -F'IP=' {'print $2'}) 
+     if [[ -f $LOCK_SPACE/inode/$NODE ]] ; then
+         export NODE_IP=$(grep '^IP=' $LOCK_SPACE/inode/$NODE | awk -F'IP=' {'print $2'}) 
          export NODE_MD5=$(echo $NODE | md5sum | awk -F' ' {'print $1'})
 
          echo $ITASK_REV | $NETCAT $NODE_IP 1234
@@ -80,6 +88,8 @@ MATCHING()
  if [[ -z $FREE_NODE ]] ; then
      svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.svn
      chmod 777 -R $TASK_SPACE/inode.svn >/dev/null 2>&1
+     mkdir -p $LOCK_SPACE/inode >/dev/null 2>&1
+     rsync -r --delete --exclude "*build*" --exclude ".svn" $TASK_SPACE/inode.svn/ $LOCK_SPACE/inode/
  fi
 }
 
@@ -90,7 +100,7 @@ ASSIGN_JOB()
 	svn ci -q $IBUILD_SVN_OPTION -m "auto: assign itask-r$ITASK_REV to $NODE" $ITASK_PATH/jobs.txt
 	rm -f $QUEUE_SPACE/$PRIORITY_ITASK_REV
  fi
- rm -f $TASK_SPACE/inode.svn/$NODE
+ rm -f $LOCK_SPACE/inode/$NODE
  EXIT
 }
 

@@ -102,11 +102,6 @@ SPLIT_LINE()
 
 SPLIT_LINE 'Format json and log'
 
-for JSON_FILE in `egrep 'ref-updated|Verified|comment-added|reviewer-added|change-restored|merge-failed|Code-Review' $JSON_PATH/* | awk -F':' {'print $1'}`
-do
-    rm -f $JSON_FILE
-done
-
 for JSON_FILE in `ls $JSON_PATH | grep json$`
 do
     if [[ `egrep 'ref-updated|Verified|comment-added|reviewer-added|change-restored|merge-failed|Code-Review' $JSON_PATH/$JSON_FILE` ]] ; then
