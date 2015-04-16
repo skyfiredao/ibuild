@@ -58,6 +58,10 @@ if [[ -f $TASK_SPACE/itask/svn.$TODAY.lock && -d $TASK_SPACE/itask/svn/.svn ]] ;
         sudo chmod 777 -R $TASK_SPACE/itask
         svn cleanup $TASK_SPACE/itask/svn
         svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn
+        if [[ $? != 0 ]] ; then
+            rm -fr $TASK_SPACE/itask/svn >/dev/null 2>&1
+            svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
+        fi
     fi
 else
     mkdir -p $TASK_SPACE/itask >/dev/null 2>&1
@@ -87,6 +91,7 @@ if [[ `svn st $TASK_SPACE/itask/svn/inode/$HOSTNAME | grep $HOSTNAME` ]] ; then
     svn ci $IBUILD_SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask/svn/inode/$HOSTNAME
     if [[ $? != 0 ]] ; then
         rm -fr $TASK_SPACE/itask/svn
+        svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
         echo -e "Waiting for next cycle because conflict"
         exit 1
     fi

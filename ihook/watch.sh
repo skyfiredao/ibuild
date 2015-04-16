@@ -57,7 +57,7 @@ export WATCH_GERRIT_STAGE=`cat $TASK_SPACE/$WATCH_TMP/svn.log | egrep 'change-me
 export SLEEP=$(expr $(ps aux | grep blame | wc -l) % 10)
 sleep $SLEEP
 svn blame $IBUILD_SVN_OPTION -r $ICHANGE_REV:$ICHANGE_REV svn://$IBUILD_SVN_SRV/ichange/ichange/$TOYEAR/$WATCH_GERRIT_SERVER/$WATCH_GERRIT_BRANCH/$TOWEEK.all-change >$TASK_SPACE/$WATCH_TMP/svn.blame
-export ICHANGE_ENTRY=`cat $TASK_SPACE/$WATCH_TMP/svn.blame | grep " $ICHANGE_REV " | awk -F' ' {'print $3'} | tail -n1`
+export ICHANGE_ENTRY=`tail -n1 $TASK_SPACE/$WATCH_TMP/svn.blame | awk -F' ' {'print $3'}`
 export WATCH_GERRIT_revision=`echo $ICHANGE_ENTRY | awk -F'|' {'print $1'}`
 export WATCH_GERRIT_id=`echo $ICHANGE_ENTRY | awk -F'|' {'print $2'}`
 export WATCH_GERRIT_email=`echo $ICHANGE_ENTRY | awk -F'|' {'print $3'}`
@@ -73,7 +73,7 @@ SPEC_EXT()
  export SPEC_EXT_URL=$1
  export SPEC_EXT_NAME=patch.`basename $SPEC_EXT_URL`
 
- cp $SPEC_EXT_URL $TASK_SPACE/$WATCH_TMP/$SPEC_EXT_NAME
+ cat $SPEC_EXT_URL | egrep -v 'IBUILD_MODE=|IBUILD_PRIORITY=' >$TASK_SPACE/$WATCH_TMP/$SPEC_EXT_NAME
  cat << _EOF_ >>$TASK_SPACE/$WATCH_TMP/$SPEC_EXT_NAME
 GERRIT_CHANGE_NUMBER=$WATCH_GERRIT_change_number
 GERRIT_CHANGE_ID=$WATCH_GERRIT_id
@@ -84,6 +84,7 @@ GERRIT_PATCHSET_NUMBER=$WATCH_GERRIT_patchSet_number
 GERRIT_PATCHSET_REVISION=$WATCH_GERRIT_revision
 GERRIT_PROJECT=$WATCH_GERRIT_PROJECT
 IBUILD_MODE=patch
+IBUILD_PRIORITY=3
 _EOF_
 
  if [[ `echo $WATCH_GERRIT_STAGE | grep 'change-merged'` ]] ; then
@@ -108,6 +109,7 @@ ITASK_SUBMIT()
 	[[ $WATCH_GERRIT_email != no_mail ]] && $DEBUG $ISPEC_PATH/itask $TASK_SPACE/$WATCH_TMP/patch.$SPEC_NAME
 	$DEBUG mv $TASK_SPACE/$WATCH_TMP/patch.$SPEC_NAME $TASK_SPACE/$WATCH_TMP/patch.$SPEC_NAME.$RANDOM
  done
+ echo $ICHANGE_REV
  echo $ICHANGE_ENTRY 
 }
 

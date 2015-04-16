@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 # Copyright (C) <2014,2015>  <Ding Wei>
 #
 # This program is free software: you can redistribute it and/or modify

@@ -45,11 +45,11 @@ export ITASK_SPEC_URL=$(svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUIL
 
 if [[ `echo $ITASK_SPEC_URL | grep '^/itask/tasks'` ]] ; then
     export ITASK_SPEC_NAME=$(basename $ITASK_SPEC_URL)
-    export IBUILD_PRIORITY=$(svn cat -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/tasks/$ITASK_SPEC_NAME | grep '^IBUILD_PRIORITY=' | awk -F'IBUILD_PRIORITY=' {'print $2'})
+    export IBUILD_PRIORITY=$(svn cat -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/tasks/$ITASK_SPEC_NAME | grep '^IBUILD_PRIORITY=' | awk -F'IBUILD_PRIORITY=' {'print $2'} | tail -n1)
     [[ -z $IBUILD_PRIORITY ]] && export IBUILD_PRIORITY=x
 
     touch $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
-    ls $QUEUE_SPACE
+    ls $QUEUE_SPACE $LOCK_SPACE/inode
 
     if [[ -d $TASK_SPACE/ispec.svn/.svn ]] ; then
 	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/ispec.svn
