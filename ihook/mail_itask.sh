@@ -83,6 +83,25 @@ if [[ ! -z $EMAIL_TMP && ! `echo $EMAIL_TMP | egrep 'root|ubuntu|builder'` ]] ; 
     export MAIL_LIST="$MAIL_LIST,$EMAIL_TMP"
 fi
 
+if [[ -d /local/queue/istatus-$TOWEEK ]] ; then
+    svn up -q $IBUILD_SVN_OPTION /local/queue/iversion-$TOWEEK
+else
+    rm -fr /local/queue/istatus-*
+    svn mkdir -q $IBUILD_SVN_OPTION -m "auto: add istatus/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK >/dev/null 2>&1
+    svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK /local/queue/istatus-$TOWEEK
+fi
+
+if [[ $ITASK_REV = $ITASK_ORDER ]] ; then
+    touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+    svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV >/dev/null 2>&1
+else
+    touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+    echo "assign: $ITASK_REV|$SLAVE_HOST|$SLAVE_IP" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+    svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER >/dev/null 2>&1
+fi
+echo "assign: $SLAVE_HOST|$SLAVE_IP" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+svn ci -q $IBUILD_SVN_OPTION -m "auto: add $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/*
+
 #if [[ ! -z $GERRIT_CHANGE_OWNER_EMAIL ]] ; then
 #	export MAIL_LIST="$MAIL_LIST,$GERRIT_CHANGE_OWNER_EMAIL"
 #else

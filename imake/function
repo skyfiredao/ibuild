@@ -147,6 +147,12 @@ EXPORT_IBUILD_SPEC()
 # export =`grep '^=' $IBUILD_SPEC | awk -F'=' {'print $2'}`
  export IBUILD_GRTSRV_BRANCH_TOP=$(echo $IBUILD_GRTSRV_BRANCH | awk -F'/' {'print $1'})
  export KBITS_PROJECT=${IBUILD_TARGET_PRODUCT}$(echo $IBUILD_GRTSRV_BRANCH | awk -F"$IBUILD_GRTSRV_BRANCH_TOP" {'print $2'} | sed 's/\//_/g')
+ export THE_BUILD_NUMBER=$ITASK_REV
+ if [[ $IBUILD_GRTSRV_MANIFEST != default.xml ]] ; then
+     export ACOS_BUILD_TYPE=Nightly
+ else
+     export ACOS_BUILD_TYPE=''
+ fi
 
  export SPEC_NAME=`basename $IBUILD_SPEC`
  export AUTOUT_PATH=$LOC_WORKSPACE/autout
@@ -199,6 +205,7 @@ BUNDLE_BUILD()
      time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
      export STATUS_REPO=$?
      [[ $STATUS_REPO != 0 && ! -z $BUNDLE_PATCH ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
+     SETUP_ISTATUS "BUNDLE_PATCH_ENTRY"
      LOG_STATUS $STATUS_REPO bundle $LOG_PATH/bundle.log
  done
 # repo download mode
@@ -212,6 +219,7 @@ BUNDLE_BUILD()
      time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
      export STATUS_REPO=$?
      [[ $STATUS_REPO != 0 && ! -z $BUNDLE_PATCH ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
+     SETUP_ISTATUS "$BUNDLE_PATCH_ENTRY"
      LOG_STATUS $STATUS_REPO bundle $LOG_PATH/bundle.log
  done
 # git fetch mode
@@ -239,6 +247,7 @@ BUNDLE_BUILD()
     if [[ $STATUS_GIT != 0 && ! -z $IBUILD_FETCH_HEAD_REFS ]] ; then
         FILTER_BAD_PATCH $IBUILD_FETCH_HEAD_REFS
     fi
+    SETUP_ISTATUS "$IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS"
     LOG_STATUS $STATUS_GIT bundle $LOG_PATH/bundle.log
  done
  cd $BUILD_PATH_TOP
@@ -442,31 +451,55 @@ CCACHE_HOTFIX()
  fi
 }
 
+SETUP_ISTATUS()
+{
+ export ISTATUS_ENTRY=$1
+ if [[ -d $TASK_SPACE/istatus-$TOWEEK ]] ; then
+     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOWEEK
+ else
+     rm -fr $TASK_SPACE/istatus-*
+     svn mkdir -q $IBUILD_SVN_OPTION -m "auto: add istatus/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK >/dev/null 2>&1
+     svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK
+ fi
+ 
+ if [[ $ITASK_REV = $ITASK_ORDER ]] ; then
+     touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+ else
+     touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+     echo $ISTATUS_ENTRY >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+ fi 
+ echo $ISTATUS_ENTRY >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+
+ svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV >/dev/null 2>&1
+ svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER >/dev/null 2>&1
+ svn ci -q $IBUILD_SVN_OPTION -m "auto: add $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/*
+}
+
 SETUP_IVER()
 {
  export ORIG_MAINFEST_URL=$1
  export IVER_MAINFEST_NAME=$2.xml
 
  if [[ -d $TASK_SPACE/iversion-$TOWEEK ]] ; then
-	export IBUILD_SVN_REV_LOC=`svn info $TASK_SPACE/iversion-$TOWEEK | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
-	if [[ $IBUILD_SVN_REV_SRV != $IBUILD_SVN_REV_LOC ]] ; then
-		svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOWEEK
-	fi
+     export IBUILD_SVN_REV_LOC=`svn info $TASK_SPACE/iversion-$TOWEEK | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+     if [[ $IBUILD_SVN_REV_SRV != $IBUILD_SVN_REV_LOC ]] ; then
+         svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOWEEK
+     fi
 else
-	rm -fr $TASK_SPACE/iversion-*
-	svn mkdir -q $IBUILD_SVN_OPTION -m "auto: add iversion/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK >/dev/null 2>&1
-	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK $TASK_SPACE/iversion-$TOWEEK
+     rm -fr $TASK_SPACE/iversion-*
+     svn mkdir -q $IBUILD_SVN_OPTION -m "auto: add iversion/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK >/dev/null 2>&1
+     svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK $TASK_SPACE/iversion-$TOWEEK
  fi
  cp $ORIG_MAINFEST_URL $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME
  SPLIT_LINE $IVER_MAINFEST_NAME
  svn add $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME >/dev/null 2>&1
  svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVER_MAINFEST_NAME" $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME
  if [[ $? = 0 ]] ; then
-	export IVER=r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+     export IVER=r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
  else
-	SPLIT_LINE iversion_issue
-	echo $IVER_MAINFEST_NAME
-	export IVER=r$BUILD_TIME$SEED
+     SPLIT_LINE iversion_issue
+     echo $IVER_MAINFEST_NAME
+     export IVER=r$BUILD_TIME$SEED
  fi
 }
 
@@ -489,6 +522,9 @@ STATUS_MAKE=$STATUS_MAKE
 STATUS_MAKE_REL=$STATUS_MAKE_REL
 EMAIL_PATCH_OWNER=$EMAIL_PATCH_OWNER
 SLAVE_HOST=`hostname`
+KBITS_PROJECT=$KBITS_PROJECT
+THE_BUILD_NUMBER=$THE_BUILD_NUMBER
+ACOS_BUILD_TYPE=$ACOS_BUILD_TYPE
 SLAVE_IP=$IP
 START_TIME=$BUILD_TIME
 END_TIME=$END_TIME
@@ -507,6 +543,12 @@ GERRIT_PROJECT=$GERRIT_PROJECT
 DOWNLOAD_URL=http://$IBUILD_SVN_SRV/ibuild/$ICASE_UPLOAD_URL
 DOWNLOAD_PKG_NAME=$DOWNLOAD_PKG_NAME
 " >>$LOG_PATH/build_info.txt
+
+ if [[ `grep '^RESULT=' $LOG_PATH/build_info.txt | wc -l` != 1 ]] ; then
+    grep -v '^RESULT=' $LOG_PATH/build_info.txt >$LOG_PATH/build_info.tmp
+    cp $LOG_PATH/build_info.tmp $LOG_PATH/build_info.txt
+    echo 'RESULT=ISSUE' >>$LOG_PATH/build_info.txt
+ fi
 
  if [[ $ITASK_ORDER != $ITASK_TMP ]] ; then
      [[ -z $ITASK_ORDER && ! -z $ITASK_TMP ]] && export ITASK_ORDER=$ITASK_TMP
@@ -650,6 +692,8 @@ LOG_STATUS()
  export CHECK_SUBJECT=$2
  export CHECK_LOG=$3
  export CHECK_LOG_NAME=`basename $CHECK_LOG`
+
+ SETUP_ISTATUS "$CHECK_STATUS:$CHECK_SUBJECT"
 
  MASK_LOG $CHECK_LOG
  if [[ $CHECK_STATUS != 0 ]] ; then

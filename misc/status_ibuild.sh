@@ -138,9 +138,9 @@ CHECK_BUSY_MAP()
 
 CHECK_PASSRATE()
 {
- echo -e "build PASSED:\t"`grep RESULT=PASSED *.txt | sort -u | wc -l`
- echo -e "build FAILED:\t"`egrep 'RESULT=FAILED' *.txt | sort -u | wc -l`
- echo -e "build ISSUE:\t"`egrep 'RESULT=ISSUE|RESULT=$' *.txt | sort -u | wc -l`
+ echo -e "build PASSED:\t"`grep RESULT=PASSED *.txt | awk -F':' {'print $1'} | sort -u | wc -l`
+ echo -e "build FAILED:\t"`egrep 'RESULT=FAILED' *.txt | awk -F':' {'print $1'} | sort -u | wc -l`
+ echo -e "build ISSUE:\t"`egrep 'RESULT=ISSUE|RESULT=$' *.txt | awk -F':' {'print $1'} | sort -u | wc -l`
 }
 
 SETUP_ICASE()
