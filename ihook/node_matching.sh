@@ -101,9 +101,9 @@ MATCHING()
 ASSIGN_JOB()
 {
  if [[ `cat $LOCK_SPACE/itask-r$ITASK_REV.jobs | grep $ITASK_REV_MD5 | grep $NODE_MD5` ]] ; then
-	echo "$ITASK_REV|$NODE|$NODE_IP|$ITASK_SPEC_NAME" >>$ITASK_PATH/jobs.txt
-	svn ci -q $IBUILD_SVN_OPTION -m "auto: assign itask-r$ITASK_REV to $NODE" $ITASK_PATH/jobs.txt
-	rm -f $QUEUE_SPACE/$PRIORITY_ITASK_REV
+     echo "$ITASK_REV|$NODE|$NODE_IP|$ITASK_SPEC_NAME" >>$ITASK_PATH/jobs.txt
+     svn ci -q $IBUILD_SVN_OPTION -m "auto: assign itask-r$ITASK_REV to $NODE" $ITASK_PATH/jobs.txt
+     svn rm $QUEUE_SPACE/$PRIORITY_ITASK_REV
  fi
  rm -f $LOCK_SPACE/inode/$NODE
  EXIT

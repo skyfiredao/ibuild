@@ -44,6 +44,7 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 fi
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
+[[ ! -z $1 ]] && export ITASK_REV=$1
 
 export NETCAT=`which nc`
 	[[ -z $NETCAT ]] && export NETCAT="$IBUILD_ROOT/bin/netcat.openbsd-u14.04"
@@ -205,7 +206,7 @@ BUNDLE_BUILD()
      time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
      export STATUS_REPO=$?
      [[ $STATUS_REPO != 0 && ! -z $BUNDLE_PATCH ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
-     SETUP_ISTATUS "BUNDLE_PATCH_ENTRY"
+     SETUP_ISTATUS "BUNDLE_PATCH_ENTRY" $ITASK_REV
      LOG_STATUS $STATUS_REPO bundle $LOG_PATH/bundle.log
  done
 # repo download mode
@@ -219,7 +220,7 @@ BUNDLE_BUILD()
      time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
      export STATUS_REPO=$?
      [[ $STATUS_REPO != 0 && ! -z $BUNDLE_PATCH ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
-     SETUP_ISTATUS "$BUNDLE_PATCH_ENTRY"
+     SETUP_ISTATUS "$BUNDLE_PATCH_ENTRY" $ITASK_REV
      LOG_STATUS $STATUS_REPO bundle $LOG_PATH/bundle.log
  done
 # git fetch mode
@@ -247,7 +248,7 @@ BUNDLE_BUILD()
     if [[ $STATUS_GIT != 0 && ! -z $IBUILD_FETCH_HEAD_REFS ]] ; then
         FILTER_BAD_PATCH $IBUILD_FETCH_HEAD_REFS
     fi
-    SETUP_ISTATUS "$IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS"
+    SETUP_ISTATUS "$IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS" $ITASK_REV
     LOG_STATUS $STATUS_GIT bundle $LOG_PATH/bundle.log
  done
  cd $BUILD_PATH_TOP
@@ -454,21 +455,30 @@ CCACHE_HOTFIX()
 SETUP_ISTATUS()
 {
  export ISTATUS_ENTRY=$1
- if [[ -d $TASK_SPACE/istatus-$TOWEEK ]] ; then
-     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOWEEK
- else
-     rm -fr $TASK_SPACE/istatus-*
-     svn mkdir -q $IBUILD_SVN_OPTION -m "auto: add istatus/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK >/dev/null 2>&1
+ [[ -z $ITASK_REV ]] && export ITASK_REV=`ls /tmp/*.log | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1`
+
+ if [[ ! -d $TASK_SPACE/istatus-$TOWEEK ]] ; then
+     rm -fr $TASK_SPACE/istatus-* >/dev/null 2>&1
      svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK
- fi
- 
- if [[ $ITASK_REV = $ITASK_ORDER ]] ; then
-     touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+     if [[ $? != 0 ]] ; then
+         svn mkdir -q $IBUILD_SVN_OPTION -m "auto: add istatus/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK >/dev/null 2>&1
+         svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK
+     fi
  else
-     touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/istatus-$TOWEEK
+ fi
+
+ if [[ $ITASK_REV = $ITASK_ORDER ]] ; then
+     if [[ ! `grep "^assign: $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV` ]] ; then
+         echo "assign: $ITASK_REV|$HOSTNAME|$IP" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+     fi
+     echo $ISTATUS_ENTRY >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+ elif [[ ! -z $ITASK_ORDER ]] ; then
+     if [[ ! `grep "^assign: $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER` ]] ; then
+         echo "assign: $ITASK_REV|$HOSTNAME|$IP" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+     fi
      echo $ISTATUS_ENTRY >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
- fi 
- echo $ISTATUS_ENTRY >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+ fi
 
  svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV >/dev/null 2>&1
  svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER >/dev/null 2>&1
@@ -693,7 +703,7 @@ LOG_STATUS()
  export CHECK_LOG=$3
  export CHECK_LOG_NAME=`basename $CHECK_LOG`
 
- SETUP_ISTATUS "$CHECK_STATUS:$CHECK_SUBJECT"
+ SETUP_ISTATUS "$CHECK_STATUS:$CHECK_SUBJECT" $ITASK_REV
 
  MASK_LOG $CHECK_LOG
  if [[ $CHECK_STATUS != 0 ]] ; then

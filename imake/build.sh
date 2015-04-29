@@ -31,7 +31,7 @@ export ITASK_TMP=$ITASK_REV
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
-source $IBUILD_ROOT/imake/function
+source $IBUILD_ROOT/imake/function $ITASK_REV
 touch $LOCK_SPACE/itask.lock
 EXPORT_IBUILD_CONF
 EXPORT_IBUILD_SPEC $ITASK_REV
@@ -46,7 +46,7 @@ echo itask:$ITASK_REV
 REPO_INFO
 $IBUILD_ROOT/imake/$IBUILD_MAKE_TOOL
  
-SETUP_BUILD_OUT
+[[ ! -f $LOG_PATH/BUILD_ERROR ]] && SETUP_BUILD_OUT
 SPLIT_LINE DONE
 
 REPO_INFO

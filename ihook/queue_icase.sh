@@ -38,8 +38,15 @@ export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | 
 export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
 
 export QUEUE_SPACE=/local/queue/icase
-mkdir -p $QUEUE_SPACE >/dev/null 2>&1
-chmod 777 -R $QUEUE_SPACE
+export QUEUE_SPACE_TOP=$(dirname $QUEUE_SPACE)
+if [[ ! -d $QUEUE_SPACE_TOP ]] ; then
+    svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/istatus/queue $QUEUE_SPACE_TOP
+    chmod 777 -R $QUEUE_SPACE_TOP
+else
+    svn cleanup $QUEUE_SPACE_TOP
+    svn ci -q $IBUILD_SVN_OPTION -m "auto: cleanup" $QUEUE_SPACE_TOP
+    svn up -q $IBUILD_SVN_OPTION $QUEUE_SPACE_TOP
+fi
 
 export ICASE_REV=$1
 export ICASE_URL=$(svn log -v -r $ICASE_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
@@ -70,6 +77,8 @@ export IVERIFY_PRIORITY=$(grep '^IVERIFY_PRIORITY=' $BUILD_INFO | awk -F'IVERIFY
 if [[ $RESULT = PASSED && -z $STATUS_MAKE && ! -z $DOWNLOAD_PKG_NAME && ! -z $IVERIFY ]] ; then
     if [[ $IBUILD_MODE = bundle ]] ; then
         touch $QUEUE_SPACE/$IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT
+        svn add -q $QUEUE_SPACE/$IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT
+        svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT" $QUEUE_SPACE/$IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT
         ls $QUEUE_SPACE
 
         if [[ -d $TASK_SPACE/ispec.svn/.svn ]] ; then

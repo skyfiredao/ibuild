@@ -37,8 +37,15 @@ mkdir -p $LOCK_SPACE >/dev/null 2>&1
 chmod 777 -R $LOCK_SPACE >/dev/null 2>&1
 
 export QUEUE_SPACE=/local/queue/itask
-mkdir -p $QUEUE_SPACE >/dev/null 2>&1
-chmod 777 -R $QUEUE_SPACE
+export QUEUE_SPACE_TOP=$(dirname $QUEUE_SPACE)
+if [[ ! -d $QUEUE_SPACE_TOP ]] ; then
+    svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/istatus/queue $QUEUE_SPACE_TOP 
+    chmod 777 -R $QUEUE_SPACE_TOP
+else
+    svn cleanup $QUEUE_SPACE_TOP
+    svn ci -q $IBUILD_SVN_OPTION -m "auto: cleanup" $QUEUE_SPACE_TOP
+    svn up -q $IBUILD_SVN_OPTION $QUEUE_SPACE_TOP
+fi
 
 export ITASK_REV=$1
 export ITASK_SPEC_URL=$(svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
@@ -49,6 +56,8 @@ if [[ `echo $ITASK_SPEC_URL | grep '^/itask/tasks'` ]] ; then
     [[ -z $IBUILD_PRIORITY ]] && export IBUILD_PRIORITY=x
 
     touch $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
+    svn add -q $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
+    svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IBUILD_PRIORITY.$ITASK_REV" $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
     ls $QUEUE_SPACE $LOCK_SPACE/inode
 
     if [[ -d $TASK_SPACE/ispec.svn/.svn ]] ; then
