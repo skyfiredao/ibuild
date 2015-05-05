@@ -133,9 +133,10 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
 
     export SHARE_POINT=$(df | grep local | grep share | awk -F' ' {'print $6'})
     export SHARE_POINT_USAGE=$(df | grep local | grep share | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
-    export SHARE_POINT_OLD=$(ls $SHARE_POINT | grep [0-9] | cut -c1-4 | sort -u | head -n1)
-    if [[ $SHARE_POINT_USAGE -ge 90 ]] ; then
-        sudo rm -fr $SHARE_POINT/$SHARE_POINT_OLD*
+    export RM_ENTRY=$(ls $SHARE_POINT | head -n1)
+    if [[ $SHARE_POINT_USAGE -ge 90 && ! -z $RM_ENTRY ]] ; then
+        echo "rm -fr $SHARE_POINT/$RM_ENTRY" >>/tmp/clean_share.log 2>&1
+        sudo rm -fr $SHARE_POINT/$RM_ENTRY >>/tmp/clean_share.log 2>&1
     fi
 
     if [[ ! -f $LOCK_SPACE/clean_task_spec-$TOWEEK ]] ; then

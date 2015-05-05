@@ -26,6 +26,9 @@ export TOWEEK=$(date +%yw%V)
 
 export IVERIFY_ROOT=$HOME/iverify
 export IVERIFY_CONF=$HOME/iverify/conf/iverify.conf
+export IVERIFY_SVN_SRV=$(grep '^IVERIFY_SVN_SRV=' $IVERIFY_CONF | awk -F'IVERIFY_CONF=' {'print $2'})
+export IVERIFY_SVN_OPTION=$(grep '^IVERIFY_SVN_OPTION=' $IVERIFY_CONF | awk -F'IVERIFY_SVN_OPTION=' {'print $2'})
+
 if [[ ! -f $HOME/iverify/conf/iverify.conf ]] ; then
     echo -e "Please put iverify in your $HOME"
     exit 0
@@ -76,13 +79,13 @@ SETUP_ISTATUS()
 
  if [[ ! -d $TASK_SPACE/istatus-$TOWEEK ]] ; then
      rm -fr $TASK_SPACE/istatus-* >/dev/null 2>&1
-     svn co -q svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK
+     svn co -q $IVERIFY_SVN_OPTION svn://$IVERIFY_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK
      if [[ $? != 0 ]] ; then
-         svn mkdir -q -m "auto: add istatus/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK >/dev/null 2>&1
-         svn co -q svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK
+         svn mkdir -q $IVERIFY_SVN_OPTION -m "auto: add istatus/$TOYEAR/$TOWEEK" svn://$IVERIFY_SVN_SRV/istatus/$TOYEAR/$TOWEEK >/dev/null 2>&1
+         svn co -q $IVERIFY_SVN_OPTION svn://$IVERIFY_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK
      fi
  else
-     svn up -q $TASK_SPACE/istatus-$TOWEEK
+     svn up -q $IVERIFY_SVN_OPTION $TASK_SPACE/istatus-$TOWEEK
  fi
 
  touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
@@ -95,7 +98,7 @@ SETUP_ISTATUS()
 
  svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV >/dev/null 2>&1
  svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER >/dev/null 2>&1
- svn ci -q -m "auto: add $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/*
+ svn ci -q $IVERIFY_SVN_OPTION -m "auto: add $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/*
 }
 
 export IVERIFY_SPACE=$TASK_SPACE/iverify
