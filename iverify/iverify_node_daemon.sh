@@ -65,8 +65,37 @@ LOCAL_QUEUE()
  echo "$NOW|$IVER|$HOSTNAME" | $NETCAT -l 5555
  cat $IVERIFY_CONF | egrep 'EMAIL' >>$IVERIFY_SPACE/$IVER.build_info
  /bin/mv $IVERIFY_SPACE/$IVER.build_info $LOCAL_IVERIFY_QUEUE/$NEW_BUILD_INFO_NAME
+ SETUP_ISTATUS "queue: $HOSTNAME|$LOCAL_IVERIFY_QUEUE/$NEW_BUILD_INFO_NAME"
  echo $LOCAL_IVERIFY_QUEUE/$NEW_BUILD_INFO_NAME
  $IVERIFY_ROOT/bin/iverify_node_run >/tmp/iverify_node_run.log 2>&1 &
+}
+
+SETUP_ISTATUS()
+{
+ export ISTATUS_ENTRY=$1
+
+ if [[ ! -d $TASK_SPACE/istatus-$TOWEEK ]] ; then
+     rm -fr $TASK_SPACE/istatus-* >/dev/null 2>&1
+     svn co -q svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK
+     if [[ $? != 0 ]] ; then
+         svn mkdir -q -m "auto: add istatus/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK >/dev/null 2>&1
+         svn co -q svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK
+     fi
+ else
+     svn up -q $TASK_SPACE/istatus-$TOWEEK
+ fi
+
+ touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+ touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+ if [[ $ITASK_REV = $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV ]] ; then
+     echo $ISTATUS_ENTRY >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+ elif [[ ! -z $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV ]] ; then
+     echo $ISTATUS_ENTRY >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+ fi
+
+ svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV >/dev/null 2>&1
+ svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER >/dev/null 2>&1
+ svn ci -q -m "auto: add $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/*
 }
 
 export IVERIFY_SPACE=$TASK_SPACE/iverify

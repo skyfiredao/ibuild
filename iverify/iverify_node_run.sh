@@ -103,6 +103,34 @@ ASSIGN_DEVICE()
  fi
 }
 
+SETUP_ISTATUS()
+{
+ export ISTATUS_ENTRY=$1
+
+ if [[ ! -d $TASK_SPACE/istatus-$TOWEEK ]] ; then
+     rm -fr $TASK_SPACE/istatus-* >/dev/null 2>&1
+     svn co -q svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK
+     if [[ $? != 0 ]] ; then
+         svn mkdir -q -m "auto: add istatus/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK >/dev/null 2>&1
+         svn co -q svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK
+     fi
+ else
+     svn up -q $TASK_SPACE/istatus-$TOWEEK
+ fi
+
+ touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+ touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+ if [[ $ITASK_REV = $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV ]] ; then
+     echo $ISTATUS_ENTRY >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+ elif [[ ! -z $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV ]] ; then
+     echo $ISTATUS_ENTRY >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+ fi
+
+ svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV >/dev/null 2>&1
+ svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER >/dev/null 2>&1
+ svn ci -q -m "auto: add $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/*
+}
+
 RUN_hostrunner()
 {
  export BUILD_INFO=$1
@@ -118,6 +146,8 @@ RUN_hostrunner()
  export IVERIFY_hostrunner_project=${IBUILD_TARGET_PRODUCT}$(echo $IBUILD_GRTSRV_BRANCH | awk -F"$IBUILD_GRTSRV_BRANCH_TOP" {'print $2'} | sed 's/\//_/g')
  export IVERIFY_FOUNDER_EMAIL=$(grep '^IVERIFY_FOUNDER_EMAIL=' $IVERIFY_CONF | awk -F'IVERIFY_FOUNDER_EMAIL=' {'print $2'})
  export EMAIL_TMP=$(grep '^EMAIL_TMP=' $BUILD_INFO | awk -F'EMAIL_TMP=' {'print $2'} | head -n1)
+
+ SETUP_ISTATUS "iverify assign: $IVERIFY_hostrunner_serial $IVERIFY_hostrunner_project $IVERIFY_hostrunner_variant"
 
  echo "#!/bin/bash -x
 # `date`
@@ -140,9 +170,10 @@ touch $IVERIFY_SPACE/lock.$IVERIFY_hostrunner_serial
 echo ------------------------- START: \`date\`
 
 rm -f /tmp/$IVERIFY_REVER.$DOWNLOAD_PKG_NAME
-echo wget $DOWNLOAD_URL/$DOWNLOAD_PKG_NAME
+echo "wget $DOWNLOAD_URL/$DOWNLOAD_PKG_NAME"
 time wget -q $DOWNLOAD_URL/$DOWNLOAD_PKG_NAME -O /tmp/$IVERIFY_REVER.$DOWNLOAD_PKG_NAME
 
+echo ------------------------- VERIFY: \`date\`
 echo $IVERIFY_ROOT/script/pre_commit.sh
 time /bin/bash $IVERIFY_ROOT/script/pre_commit.sh
 
@@ -167,6 +198,9 @@ echo ------------------------- END: \`date\`
  source $HISTORY_IVERIFY_LOG/$IVERIFY_REVER.$IVERIFY_hostrunner_serial.sh >>$HISTORY_IVERIFY_LOG/$IVERIFY_REVER.$IVERIFY_hostrunner_serial.log 2>&1
 
  cat $HISTORY_IVERIFY_LOG/$IVERIFY_REVER.$IVERIFY_hostrunner_serial.log | mail -s "[iverify][end][$ITASK_TMP] $HOSTNAME.$IBUILD_TARGET_PRODUCT.$DEVICE_ONLINE" $EMAIL_LIST
+
+ SETUP_ISTATUS "wget time: `cat $HISTORY_IVERIFY_LOG/$IVERIFY_REVER.$IVERIFY_hostrunner_serial.log | grep real | head -n1`"
+ SETUP_ISTATUS "hostrunner time: `cat $HISTORY_IVERIFY_LOG/$IVERIFY_REVER.$IVERIFY_hostrunner_serial.log | grep real | tail -n1`"
 
  rm -f $IVERIFY_SPACE/lock.$IVERIFY_hostrunner_serial
  rm -fr $IVERIFY_ROOT/hostrunner/.svn >/dev/null 2>&1

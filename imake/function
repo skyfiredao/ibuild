@@ -468,12 +468,15 @@ SETUP_ISTATUS()
      svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/istatus-$TOWEEK
  fi
 
- if [[ $ITASK_REV = $ITASK_ORDER ]] ; then
+ touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+ touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+
+ if [[ $ITASK_REV = $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV ]] ; then
      if [[ ! `grep "^assign: $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV` ]] ; then
          echo "assign: $ITASK_REV|$HOSTNAME|$IP" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
      fi
      echo $ISTATUS_ENTRY >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
- elif [[ ! -z $ITASK_ORDER ]] ; then
+ elif [[ ! -z $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV ]] ; then
      if [[ ! `grep "^assign: $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER` ]] ; then
          echo "assign: $ITASK_REV|$HOSTNAME|$IP" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
      fi
@@ -560,6 +563,7 @@ DOWNLOAD_PKG_NAME=$DOWNLOAD_PKG_NAME
     echo 'RESULT=ISSUE' >>$LOG_PATH/build_info.txt
  fi
 
+ [[ ! -z $IVERIFY ]] && SETUP_ISTATUS "iverify: enable"
  if [[ $ITASK_ORDER != $ITASK_TMP ]] ; then
      [[ -z $ITASK_ORDER && ! -z $ITASK_TMP ]] && export ITASK_ORDER=$ITASK_TMP
      echo "ITASK_ORDER=$ITASK_ORDER" >>$LOG_PATH/build_info.txt

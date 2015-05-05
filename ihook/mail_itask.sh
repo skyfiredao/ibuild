@@ -109,8 +109,7 @@ fi
 
 if [[ ! -z $IBUILD_NOTE ]] ; then
     echo "
-Note:
-$IBUILD_NOTE" >>$TASK_SPACE/tmp.itask.$SEED/$ITASK_REV.mail
+Note: $IBUILD_NOTE" >>$TASK_SPACE/tmp.itask.$SEED/$ITASK_REV.mail
 fi
 
 echo "

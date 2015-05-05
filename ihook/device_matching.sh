@@ -73,7 +73,7 @@ MATCHING()
 #     export ASSIGN_HOST_DEVICE=$(cat $IVERFY_SPACE/$HOST_DEVICE.assign | awk -F'|' {'print $3'})
 #     if [[ $ASSIGN_HOST_DEVICE = $HOST_DEVICE ]] ; then
      if [[ `grep $HOSTNAME_DEVICE $IVERFY_SPACE/$HOST_DEVICE.assign` ]] ; then
-         svn rm $QUEUE_SPACE/$PRIORITY_ICASE_REV
+         svn rm --force $QUEUE_SPACE/$PRIORITY_ICASE_REV
          rm -f $IVERFY_SPACE/inode.lock/$HOST_DEVICE
          EXIT
      fi

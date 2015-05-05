@@ -171,8 +171,7 @@ fi
 
 if [[ ! -z $IBUILD_NOTE ]] ; then
     echo "
-Note:
-$IBUILD_NOTE">>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
+Note: $IBUILD_NOTE">>$TASK_SPACE/tmp.icase.mail.$SEED/$ICASE_REV.mail
 fi
 
 echo -e "
