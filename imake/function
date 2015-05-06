@@ -472,15 +472,15 @@ SETUP_ISTATUS()
  touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
 
  if [[ $ITASK_REV = $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV ]] ; then
-     if [[ ! `grep "^assign: $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV` ]] ; then
-         echo "assign: $ITASK_REV|$HOSTNAME|$IP" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+     if [[ ! `grep "|assign: $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV` ]] ; then
+         echo `date +%y%m%d-%H%M%S`"|assign: $ITASK_REV|$HOSTNAME|$IP" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
      fi
-     echo $ISTATUS_ENTRY >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+     echo `date +%y%m%d-%H%M%S`"|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
  elif [[ ! -z $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV ]] ; then
-     if [[ ! `grep "^assign: $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER` ]] ; then
-         echo "assign: $ITASK_REV|$HOSTNAME|$IP" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+     if [[ ! `grep "|assign: $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER` ]] ; then
+         echo `date +%y%m%d-%H%M%S`"|assign: $ITASK_REV|$HOSTNAME|$IP" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
      fi
-     echo $ISTATUS_ENTRY >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+     echo `date +%y%m%d-%H%M%S`"|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
  fi
 
  svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV >/dev/null 2>&1
@@ -707,7 +707,7 @@ LOG_STATUS()
  export CHECK_LOG=$3
  export CHECK_LOG_NAME=`basename $CHECK_LOG`
 
- SETUP_ISTATUS "$CHECK_STATUS:$CHECK_SUBJECT" $ITASK_REV
+ SETUP_ISTATUS "$CHECK_STATUS: $CHECK_SUBJECT" $ITASK_REV
 
  MASK_LOG $CHECK_LOG
  if [[ $CHECK_STATUS != 0 ]] ; then

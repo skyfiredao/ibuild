@@ -23,6 +23,7 @@ export USER=$(whoami)
 export TASK_SPACE=/run/shm
 export HOSTNAME=$(hostname)
 export TOWEEK=$(date +%yw%V)
+export TOYEAR=$(date +%Y)
 
 export IVERIFY_ROOT=$HOME/iverify
 export IVERIFY_CONF=$HOME/iverify/conf/iverify.conf
@@ -91,9 +92,9 @@ SETUP_ISTATUS()
  touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
  touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
  if [[ $ITASK_REV = $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV ]] ; then
-     echo $ISTATUS_ENTRY >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+     echo `date +%y%m%d-%H%M%S`"|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
  elif [[ ! -z $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV ]] ; then
-     echo $ISTATUS_ENTRY >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+     echo `date +%y%m%d-%H%M%S`"|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
  fi
 
  svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV >/dev/null 2>&1
