@@ -27,7 +27,7 @@ export TOYEAR=$(date +%Y)
 
 export IVERIFY_ROOT=$HOME/iverify
 export IVERIFY_CONF=$HOME/iverify/conf/iverify.conf
-export IVERIFY_SVN_SRV=$(grep '^IVERIFY_SVN_SRV=' $IVERIFY_CONF | awk -F'IVERIFY_CONF=' {'print $2'})
+export IVERIFY_SVN_SRV=$(grep '^IVERIFY_SVN_SRV=' $IVERIFY_CONF | awk -F'IVERIFY_SVN_SRV=' {'print $2'})
 export IVERIFY_SVN_OPTION=$(grep '^IVERIFY_SVN_OPTION=' $IVERIFY_CONF | awk -F'IVERIFY_SVN_OPTION=' {'print $2'})
 
 if [[ ! -f $HOME/iverify/conf/iverify.conf ]] ; then
@@ -125,9 +125,9 @@ SETUP_ISTATUS()
  touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
  touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
  if [[ $ITASK_REV = $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV ]] ; then
-     echo `date +%y%m%d-%H%M%S`"|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+     echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
  elif [[ ! -z $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV ]] ; then
-     echo `date +%y%m%d-%H%M%S`"|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+     echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
  fi
 
  svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV >/dev/null 2>&1
@@ -151,7 +151,7 @@ RUN_hostrunner()
  export IVERIFY_FOUNDER_EMAIL=$(grep '^IVERIFY_FOUNDER_EMAIL=' $IVERIFY_CONF | awk -F'IVERIFY_FOUNDER_EMAIL=' {'print $2'})
  export EMAIL_TMP=$(grep '^EMAIL_TMP=' $BUILD_INFO | awk -F'EMAIL_TMP=' {'print $2'} | head -n1)
 
- SETUP_ISTATUS `date +%y%m%d-%H%M%S`"|iverify assign: $IVERIFY_hostrunner_serial $IVERIFY_hostrunner_project $IVERIFY_hostrunner_variant"
+ SETUP_ISTATUS "iverify assign: $IVERIFY_hostrunner_serial $IVERIFY_hostrunner_project $IVERIFY_hostrunner_variant"
 
  echo "#!/bin/bash -x
 # `date`
@@ -203,8 +203,8 @@ echo ------------------------- END: \`date\`
 
  cat $HISTORY_IVERIFY_LOG/$IVERIFY_REVER.$IVERIFY_hostrunner_serial.log | mail -s "[iverify][end][$ITASK_TMP] $HOSTNAME.$IBUILD_TARGET_PRODUCT.$DEVICE_ONLINE" $EMAIL_LIST
 
- SETUP_ISTATUS "wget time: `cat $HISTORY_IVERIFY_LOG/$IVERIFY_REVER.$IVERIFY_hostrunner_serial.log | grep real | head -n1`"
- SETUP_ISTATUS "hostrunner time: `cat $HISTORY_IVERIFY_LOG/$IVERIFY_REVER.$IVERIFY_hostrunner_serial.log | grep real | tail -n1`"
+ SETUP_ISTATUS "wget time: `cat $HISTORY_IVERIFY_LOG/$IVERIFY_REVER.$IVERIFY_hostrunner_serial.log | grep real | awk -F' ' {'print $2'} | head -n1`"
+ SETUP_ISTATUS "hostrunner time: `cat $HISTORY_IVERIFY_LOG/$IVERIFY_REVER.$IVERIFY_hostrunner_serial.log | grep real | awk -F' ' {'print $2'} | tail -n1`"
 
  rm -f $IVERIFY_SPACE/lock.$IVERIFY_hostrunner_serial
  rm -fr $IVERIFY_ROOT/hostrunner/.svn >/dev/null 2>&1

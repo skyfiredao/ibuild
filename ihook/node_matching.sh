@@ -55,7 +55,7 @@ MATCHING()
 
  if [[ ! -d $LOCK_SPACE/inode ]] ; then
      mkdir -p $LOCK_SPACE/inode >/dev/null 2>&1
-     rsync -r --delete --exclude "*build*" --exclude ".svn" $TASK_SPACE/inode.svn/ $LOCK_SPACE/inode/
+     rsync -r --delete --exclude "*ibuild*" --exclude ".svn" $TASK_SPACE/inode.svn/ $LOCK_SPACE/inode/
  fi
 
  for NODE in `cat $IBUILD_ROOT/conf/priority/[$LEVEL_NUMBER]-floor.conf`
@@ -80,7 +80,7 @@ MATCHING()
      svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.svn
      chmod 777 -R $TASK_SPACE/inode.svn >/dev/null 2>&1
      mkdir -p $LOCK_SPACE/inode >/dev/null 2>&1
-     rsync -r --delete --exclude "*build*" --exclude ".svn" $TASK_SPACE/inode.svn/ $LOCK_SPACE/inode/
+     rsync -r --delete --exclude "*ibuild*" --exclude ".svn" $TASK_SPACE/inode.svn/ $LOCK_SPACE/inode/
  fi
 
  for NODE in `cat $IBUILD_ROOT/conf/priority/[$LEVEL_NUMBER]-floor.conf`
@@ -103,7 +103,13 @@ ASSIGN_JOB()
  if [[ `cat $LOCK_SPACE/itask-r$ITASK_REV.jobs | grep $ITASK_REV_MD5 | grep $NODE_MD5` ]] ; then
      echo "$ITASK_REV|$NODE|$NODE_IP|$ITASK_SPEC_NAME" >>$ITASK_PATH/jobs.txt
      svn ci -q $IBUILD_SVN_OPTION -m "auto: assign itask-r$ITASK_REV to $NODE" $ITASK_PATH/jobs.txt
+     export QUEUE_SPACE_C=$(svn st $QUEUE_SPACE | grep '^!' | awk -F' ' {'print $3'} | head -n1)
      svn rm --force $QUEUE_SPACE/$PRIORITY_ITASK_REV
+     if [[ ! -z $QUEUE_SPACE_C ]] ; then
+         svn revert -q $QUEUE_SPACE_C
+         svn rm --force $QUEUE_SPACE_C
+         sleep 1
+     fi
  fi
  rm -f $LOCK_SPACE/inode/$NODE
  EXIT

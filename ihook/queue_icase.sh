@@ -79,7 +79,7 @@ if [[ $RESULT = PASSED && -z $STATUS_MAKE && ! -z $DOWNLOAD_PKG_NAME && ! -z $IV
         touch $QUEUE_SPACE/$IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT
         svn add -q $QUEUE_SPACE/$IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT
         svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT" $QUEUE_SPACE/$IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT
-        ls $QUEUE_SPACE
+        echo icase: `ls $QUEUE_SPACE | wc -l`
 
         if [[ -d $TASK_SPACE/ispec.svn/.svn ]] ; then
             svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/ispec.svn

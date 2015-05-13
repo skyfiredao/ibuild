@@ -49,6 +49,8 @@ fi
 
 export ITASK_REV=$1
 export ITASK_SPEC_URL=$(svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
+echo itask: `ls $QUEUE_SPACE | wc -l`
+echo inode: `ls $LOCK_SPACE/inode | wc -l`
 
 if [[ `echo $ITASK_SPEC_URL | grep '^/itask/tasks'` ]] ; then
     export ITASK_SPEC_NAME=$(basename $ITASK_SPEC_URL)
@@ -58,7 +60,6 @@ if [[ `echo $ITASK_SPEC_URL | grep '^/itask/tasks'` ]] ; then
     touch $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
     svn add -q $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
     svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IBUILD_PRIORITY.$ITASK_REV" $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
-    ls $QUEUE_SPACE $LOCK_SPACE/inode
 
     if [[ -d $TASK_SPACE/ispec.svn/.svn ]] ; then
 	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/ispec.svn
@@ -93,7 +94,7 @@ do
         exit
     fi
     $IBUILD_ROOT/ihook/node_matching.sh $QUEUE_SPACE >/tmp/node_matching.log 2>&1
-    sleep `expr $RANDOM % 7 + 3`
+    sleep `expr $RANDOM % 3 + 1`
 done
 
 if [[ -d $TASK_SPACE/inode.svn/.svn ]] ; then

@@ -167,7 +167,7 @@ do
     fi
 done
 
-[[ `date +%M` = 00 ]] && UPDATE_XML
+[[ `date +%H%M` = 1200 ]] && UPDATE_XML
 rm -f $TASK_SPACE/itrack/json2svn.lock
 
 cd $TASK_SPACE/itrack/$GERRIT_SRV.tmp

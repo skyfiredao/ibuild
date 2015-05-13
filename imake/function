@@ -206,7 +206,7 @@ BUNDLE_BUILD()
      time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
      export STATUS_REPO=$?
      [[ $STATUS_REPO != 0 && ! -z $BUNDLE_PATCH ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
-     SETUP_ISTATUS "BUNDLE_PATCH_ENTRY" $ITASK_REV
+     SETUP_ISTATUS "patch: BUNDLE_PATCH_ENTRY" $ITASK_REV
      LOG_STATUS $STATUS_REPO bundle $LOG_PATH/bundle.log
  done
 # repo download mode
@@ -220,7 +220,7 @@ BUNDLE_BUILD()
      time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
      export STATUS_REPO=$?
      [[ $STATUS_REPO != 0 && ! -z $BUNDLE_PATCH ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
-     SETUP_ISTATUS "$BUNDLE_PATCH_ENTRY" $ITASK_REV
+     SETUP_ISTATUS "patch: $BUNDLE_PATCH_ENTRY" $ITASK_REV
      LOG_STATUS $STATUS_REPO bundle $LOG_PATH/bundle.log
  done
 # git fetch mode
@@ -248,7 +248,7 @@ BUNDLE_BUILD()
     if [[ $STATUS_GIT != 0 && ! -z $IBUILD_FETCH_HEAD_REFS ]] ; then
         FILTER_BAD_PATCH $IBUILD_FETCH_HEAD_REFS
     fi
-    SETUP_ISTATUS "$IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS" $ITASK_REV
+    SETUP_ISTATUS "patch: $IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS" $ITASK_REV
     LOG_STATUS $STATUS_GIT bundle $LOG_PATH/bundle.log
  done
  cd $BUILD_PATH_TOP
@@ -398,8 +398,12 @@ REPO_SYNC()
  fi
 
  SPLIT_LINE repo_sync
- time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
- export STATUS_SYNC=$?
+ if [[ -z $SYNC_ONLY ]] ; then
+    time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+    export STATUS_SYNC=$?
+ elif [[ ! -z $SYNC_ONLY ]] ; then
+    $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1 &
+ fi
 
  for INDEX_LOCK_REPO in `grep index.lock $LOG_PATH/$REPO_SYNC_LOG_NAME.log | awk -F"'" {'print $2'} | awk -F'/.git' {'print $1'}`
  do
@@ -407,21 +411,22 @@ REPO_SYNC()
     export INDEX_LOCK=true
  done
 
- if [[ ! -z $INDEX_LOCK ]] ; then
+ if [[ ! -z $INDEX_LOCK && -z $SYNC_ONLY ]] ; then
     time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
     export STATUS_SYNC=$?
  fi
 
- EXPORT_MANIFEST $LOG_PATH/after_sync_manifest.xml
-
- LOG_STATUS $STATUS_SYNC repo_sync $LOG_PATH/$REPO_SYNC_LOG_NAME.log
- CCACHE_HOTFIX
+ if [[ -z $SYNC_ONLY ]] ; then
+    EXPORT_MANIFEST $LOG_PATH/after_sync_manifest.xml
+    LOG_STATUS $STATUS_SYNC repo_sync $LOG_PATH/$REPO_SYNC_LOG_NAME.log
+    CCACHE_HOTFIX
+    find >file.list
+ fi
 
  rm -f out
  if [[ -d /local/out ]]; then
-        ln -sf /local/out
+    ln -sf /local/out
  fi
- find >file.list
 }
 
 SETUP_BUILD_REPO()
@@ -472,20 +477,23 @@ SETUP_ISTATUS()
  touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
 
  if [[ $ITASK_REV = $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV ]] ; then
-     if [[ ! `grep "|assign: $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV` ]] ; then
-         echo `date +%y%m%d-%H%M%S`"|assign: $ITASK_REV|$HOSTNAME|$IP" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+     if [[ ! `grep "|ibuild assign: $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV` ]] ; then
+         echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|ibuild assign: $ITASK_REV $IP" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
      fi
-     echo `date +%y%m%d-%H%M%S`"|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+     echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
  elif [[ ! -z $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV ]] ; then
-     if [[ ! `grep "|assign: $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER` ]] ; then
-         echo `date +%y%m%d-%H%M%S`"|assign: $ITASK_REV|$HOSTNAME|$IP" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+     if [[ ! `grep "|ibuild assign: $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER` ]] ; then
+         echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|ibuild assign: $ITASK_REV $IP" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
      fi
-     echo `date +%y%m%d-%H%M%S`"|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+     echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
  fi
 
  svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV >/dev/null 2>&1
  svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER >/dev/null 2>&1
  svn ci -q $IBUILD_SVN_OPTION -m "auto: add $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/*
+ if [[ $? != 0 ]] ; then
+    rm -fr $TASK_SPACE/istatus-$TOWEEK >/dev/null 2>&1
+ fi
 }
 
 SETUP_IVER()
@@ -563,7 +571,7 @@ DOWNLOAD_PKG_NAME=$DOWNLOAD_PKG_NAME
     echo 'RESULT=ISSUE' >>$LOG_PATH/build_info.txt
  fi
 
- [[ ! -z $IVERIFY ]] && SETUP_ISTATUS "iverify: enable"
+ [[ ! -z $IVERIFY && $RESULT = PASSED ]] && SETUP_ISTATUS "iverify globe queue: svn://$IBUILD_SVN_SRV/istatus/queue/icase"
  if [[ $ITASK_ORDER != $ITASK_TMP ]] ; then
      [[ -z $ITASK_ORDER && ! -z $ITASK_TMP ]] && export ITASK_ORDER=$ITASK_TMP
      echo "ITASK_ORDER=$ITASK_ORDER" >>$LOG_PATH/build_info.txt

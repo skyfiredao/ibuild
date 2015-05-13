@@ -27,7 +27,8 @@ export TOYEAR=$(date +%Y)
 
 export IVERIFY_ROOT=$HOME/iverify
 export IVERIFY_CONF=$HOME/iverify/conf/iverify.conf
-export IVERIFY_SVN_SRV=$(grep '^IVERIFY_SVN_SRV=' $IVERIFY_CONF | awk -F'IVERIFY_CONF=' {'print $2'})
+export IVERIFY_IGNORE_CONF=$HOME/iverify/script/ignore.conf
+export IVERIFY_SVN_SRV=$(grep '^IVERIFY_SVN_SRV=' $IVERIFY_CONF | awk -F'IVERIFY_SVN_SRV=' {'print $2'})
 export IVERIFY_SVN_OPTION=$(grep '^IVERIFY_SVN_OPTION=' $IVERIFY_CONF | awk -F'IVERIFY_SVN_OPTION=' {'print $2'})
 
 if [[ ! -f $HOME/iverify/conf/iverify.conf ]] ; then
@@ -69,9 +70,14 @@ LOCAL_QUEUE()
  echo "$NOW|$IVER|$HOSTNAME" | $NETCAT -l 5555
  cat $IVERIFY_CONF | egrep 'EMAIL' >>$IVERIFY_SPACE/$IVER.build_info
  /bin/mv $IVERIFY_SPACE/$IVER.build_info $LOCAL_IVERIFY_QUEUE/$NEW_BUILD_INFO_NAME
- SETUP_ISTATUS "queue: $HOSTNAME|$LOCAL_IVERIFY_QUEUE/$NEW_BUILD_INFO_NAME"
- echo $LOCAL_IVERIFY_QUEUE/$NEW_BUILD_INFO_NAME
- $IVERIFY_ROOT/bin/iverify_node_run >/tmp/iverify_node_run.log 2>&1 &
+ SETUP_ISTATUS "iverify local queue: $HOSTNAME:$LOCAL_IVERIFY_QUEUE/$NEW_BUILD_INFO_NAME"
+ if [[ `cat $IVERIFY_IGNORE_CONF | egrep "^$ITASK_TMP$"` ]] then
+    rm -f $LOCAL_IVERIFY_QUEUE/$NEW_BUILD_INFO_NAME
+    SETUP_ISTATUS "iverify ignore: $NEW_BUILD_INFO_NAME"
+ else 
+    echo $LOCAL_IVERIFY_QUEUE/$NEW_BUILD_INFO_NAME
+    $IVERIFY_ROOT/bin/iverify_node_run >/tmp/iverify_node_run.log 2>&1 &
+ fi
 }
 
 SETUP_ISTATUS()
@@ -92,9 +98,9 @@ SETUP_ISTATUS()
  touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
  touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
  if [[ $ITASK_REV = $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV ]] ; then
-     echo `date +%y%m%d-%H%M%S`"|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+     echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
  elif [[ ! -z $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV ]] ; then
-     echo `date +%y%m%d-%H%M%S`"|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+     echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
  fi
 
  svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV >/dev/null 2>&1
