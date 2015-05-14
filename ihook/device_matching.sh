@@ -20,6 +20,7 @@ source /etc/bash.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
 export TASK_SPACE=/dev/shm
+export LOCK_SPACE=/dev/shm/lock
 export SEED=$RANDOM
 [[ `echo $* | grep debug` ]] && export DEBUG=echo
 export HOME=/root
@@ -36,7 +37,7 @@ EXPORT_IBUILD_CONF
 
 EXIT()
 {
- rm -f $TASK_SPACE/queue_icase.lock
+ rm -f $LOCK_SPACE/queue_icase.lock
  rm -fr $IVERFY_SPACE
  exit
 }
@@ -86,15 +87,15 @@ MATCHING()
 }
 
 export QUEUE_SPACE=$1
-export IVERFY_SPACE=$TASK_SPACE/tmp.iverify.$SEED
+export IVERFY_SPACE=$TASK_SPACE/tmp/iverify.$SEED
 
 [[ ! -d $IVERFY_SPACE ]] && mkdir -p $IVERFY_SPACE >/dev/null 2>&1
 
 for PRIORITY_ICASE_REV in `ls $QUEUE_SPACE`
 do
     [[ -f /tmp/EXIT ]] && EXIT
-    echo $PRIORITY_ICASE_REV >$TASK_SPACE/queue_icase.lock
-    chmod 777 $TASK_SPACE/queue_icase.lock
+    echo $PRIORITY_ICASE_REV >$LOCK_SPACE/queue_icase.lock
+    chmod 777 $LOCK_SPACE/queue_icase.lock
 
     MATCHING $PRIORITY_ICASE_REV
     sleep 10

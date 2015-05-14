@@ -57,9 +57,11 @@ if [[ `echo $ITASK_SPEC_URL | grep '^/itask/tasks'` ]] ; then
     export IBUILD_PRIORITY=$(svn cat -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/tasks/$ITASK_SPEC_NAME | grep '^IBUILD_PRIORITY=' | awk -F'IBUILD_PRIORITY=' {'print $2'} | tail -n1)
     [[ -z $IBUILD_PRIORITY ]] && export IBUILD_PRIORITY=x
 
-    touch $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
-    svn add -q $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
-    svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IBUILD_PRIORITY.$ITASK_REV" $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
+    svn cp -q $IBUILD_SVN_OPTION -m "auto: add $IBUILD_PRIORITY.$ITASK_REV" \
+    svn://$IBUILD_SVN_SRV/istatus/queue/.zero \
+    svn://$IBUILD_SVN_SRV/istatus/queue/itask/$IBUILD_PRIORITY.$ITASK_REV
+    svn up -q $IBUILD_SVN_OPTION $QUEUE_SPACE
+    [[ ! -f $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV ]] && touch $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
 
     if [[ -d $TASK_SPACE/ispec.svn/.svn ]] ; then
 	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/ispec.svn

@@ -38,10 +38,10 @@ export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.c
 export IBUILD_FOUNDER_EMAIL=$(grep '^IBUILD_FOUNDER_EMAIL=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_FOUNDER_EMAIL=' {'print $2'})
 
 export ITASK_JOBS_REV=$1
-mkdir -p $TASK_SPACE/tmp.itask.$SEED
-svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/tmp.itask.$SEED/svn
-svn blame $IBUILD_SVN_OPTION -r $ITASK_JOBS_REV:$ITASK_JOBS_REV $TASK_SPACE/tmp.itask.$SEED/svn/jobs.txt >$TASK_SPACE/tmp.itask.$SEED/jobs.txt-$ITASK_JOBS_REV
-export ITASK_REV=$(cat $TASK_SPACE/tmp.itask.$SEED/jobs.txt-$ITASK_JOBS_REV | grep " $ITASK_JOBS_REV " | awk -F' ' {'print $3'} | awk -F'|' {'print $1'})
+mkdir -p $TASK_SPACE/tmp/itask.$SEED
+svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/tmp/itask.$SEED/svn
+svn blame $IBUILD_SVN_OPTION -r $ITASK_JOBS_REV:$ITASK_JOBS_REV $TASK_SPACE/tmp/itask.$SEED/svn/jobs.txt >$TASK_SPACE/tmp/itask.$SEED/jobs.txt-$ITASK_JOBS_REV
+export ITASK_REV=$(cat $TASK_SPACE/tmp/itask.$SEED/jobs.txt-$ITASK_JOBS_REV | grep " $ITASK_JOBS_REV " | awk -F' ' {'print $3'} | awk -F'|' {'print $1'})
 
 if [[ -z $ITASK_REV ]] ; then
     echo Can NOT find $ITASK_JOBS_REV !!! 
@@ -49,10 +49,10 @@ fi
 
 export ITASK_URL=$(svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
 export BUILD_SPEC_NAME=$(basename $ITASK_URL)
-export SLAVE_HOST=$(cat $TASK_SPACE/tmp.itask.$SEED/jobs.txt-$ITASK_JOBS_REV | grep " $ITASK_JOBS_REV " | awk -F' ' {'print $3'} | awk -F'|' {'print $2'})
-export SLAVE_IP=$(cat $TASK_SPACE/tmp.itask.$SEED/jobs.txt-$ITASK_JOBS_REV | grep " $ITASK_JOBS_REV " | awk -F' ' {'print $3'} | awk -F'|' {'print $3'})
+export SLAVE_HOST=$(cat $TASK_SPACE/tmp/itask.$SEED/jobs.txt-$ITASK_JOBS_REV | grep " $ITASK_JOBS_REV " | awk -F' ' {'print $3'} | awk -F'|' {'print $2'})
+export SLAVE_IP=$(cat $TASK_SPACE/tmp/itask.$SEED/jobs.txt-$ITASK_JOBS_REV | grep " $ITASK_JOBS_REV " | awk -F' ' {'print $3'} | awk -F'|' {'print $3'})
 
-export BUILD_SPEC="$TASK_SPACE/tmp.itask.$SEED/svn/tasks/$BUILD_SPEC_NAME"
+export BUILD_SPEC="$TASK_SPACE/tmp/itask.$SEED/svn/tasks/$BUILD_SPEC_NAME"
 export EMAIL_PM=$(grep '^EMAIL_PM=' $BUILD_SPEC | awk -F'EMAIL_PM=' {'print $2'})
 export EMAIL_REL=$(grep '^EMAIL_REL=' $BUILD_SPEC | awk -F'EMAIL_REL=' {'print $2'})
 export IBUILD_MODE=$(grep '^IBUILD_MODE=' $BUILD_SPEC | awk -F'IBUILD_MODE=' {'print $2'})
@@ -100,16 +100,16 @@ It based on $IBUILD_GRTSRV/$IBUILD_GRTSRV_URL -b $IBUILD_GRTSRV_BRANCH -m $IBUIL
 
 Other info:
 $BUILD_SPEC_NAME
-" >$TASK_SPACE/tmp.itask.$SEED/$ITASK_REV.mail
+" >$TASK_SPACE/tmp/itask.$SEED/$ITASK_REV.mail
 
 if [[ ! -z $GERRIT_PATCHSET_REVISION ]] ; then
-    echo "GERRIT_CHANGE_ID: $GERRIT_CHANGE_ID" >>$TASK_SPACE/tmp.itask.$SEED/$ITASK_REV.mail
-    echo "repo download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER" >>$TASK_SPACE/tmp.itask.$SEED/$ITASK_REV.mail
+    echo "GERRIT_CHANGE_ID: $GERRIT_CHANGE_ID" >>$TASK_SPACE/tmp/itask.$SEED/$ITASK_REV.mail
+    echo "repo download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER" >>$TASK_SPACE/tmp/itask.$SEED/$ITASK_REV.mail
 fi
 
 if [[ ! -z $IBUILD_NOTE ]] ; then
     echo "
-Note: $IBUILD_NOTE" >>$TASK_SPACE/tmp.itask.$SEED/$ITASK_REV.mail
+Note: $IBUILD_NOTE" >>$TASK_SPACE/tmp/itask.$SEED/$ITASK_REV.mail
 fi
 
 echo "
@@ -117,7 +117,7 @@ echo "
 -dw
 from ibuild system
 [Daedalus]
-" >>$TASK_SPACE/tmp.itask.$SEED/$ITASK_REV.mail
+" >>$TASK_SPACE/tmp/itask.$SEED/$ITASK_REV.mail
 
 [[ $IBUILD_MODE = bundle || $IBUILD_MODE = normal ]] && export SUB_IBUILD_MODE="[$IBUILD_MODE]"
 [[ ! -z $GERRIT_PATCHSET_REVISION ]] && export SUB_IBUILD_MODE="[$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER]"
@@ -126,11 +126,11 @@ from ibuild system
 if [[ ! -z $ITASK_ORDER && $ITASK_ORDER != $ITASK_REV ]] ; then
     export SUB_ITASK_REV="[$ITASK_ORDER]"
     export SUB_IBUILD_MODE="[re$IBUILD_MODE]"
-    echo "[$ITASK_ORDER][$ITASK_REV][re$IBUILD_MODE]" >>$TASK_SPACE/tmp.itask.$SEED/$ITASK_REV.mail
+    echo "[$ITASK_ORDER][$ITASK_REV][re$IBUILD_MODE]" >>$TASK_SPACE/tmp/itask.$SEED/$ITASK_REV.mail
 fi
 
-cat $TASK_SPACE/tmp.itask.$SEED/$ITASK_REV.mail | mail -s "[ibuild][assign]$SUB_ITASK_REV$SUB_IVERIFY$SUB_IBUILD_MODE $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT in $SLAVE_HOST" $MAIL_LIST
+cat $TASK_SPACE/tmp/itask.$SEED/$ITASK_REV.mail | mail -s "[ibuild][assign]$SUB_ITASK_REV$SUB_IVERIFY$SUB_IBUILD_MODE $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT in $SLAVE_HOST" $MAIL_LIST
 
-$DEBUG rm -fr $TASK_SPACE/tmp.itask.$SEED
+$DEBUG rm -fr $TASK_SPACE/tmp/itask.$SEED
 
 

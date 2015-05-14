@@ -55,11 +55,11 @@ if [[ ! `echo $ICASE_URL | grep '^/icase/'` ]] ; then
     exit
 fi
 
-mkdir -p $TASK_SPACE/tmp.icase.$SEED
-svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/tmp.icase.$SEED/icase
+mkdir -p $TASK_SPACE/tmp/icase.$SEED
+svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/tmp/icase.$SEED/icase
 
 export BUILD_INFO_NAME=$(basename $ICASE_URL | head -n1)
-export BUILD_INFO=$TASK_SPACE/tmp.icase.$SEED/icase/$BUILD_INFO_NAME
+export BUILD_INFO=$TASK_SPACE/tmp/icase.$SEED/icase/$BUILD_INFO_NAME
 
 export RESULT=$(grep '^RESULT=' $BUILD_INFO | awk -F'RESULT=' {'print $2'} | head -n1)
 export STATUS_MAKE=$(grep '^STATUS_MAKE=' $BUILD_INFO | awk -F'STATUS_MAKE=' {'print $2'} | head -n1)
@@ -97,12 +97,12 @@ if [[ $RESULT = PASSED && -z $STATUS_MAKE && ! -z $DOWNLOAD_PKG_NAME && ! -z $IV
     fi
     chmod 777 -R $QUEUE_SPACE
 else
-    rm -fr $TASK_SPACE/tmp.icase.$SEED
+    rm -fr $TASK_SPACE/tmp/icase.$SEED
     exit
 fi
 
 if [[ -f $LOCK_SPACE/queue_icase.lock ]] ; then
-    rm -fr $TASK_SPACE/tmp.icase.$SEED
+    rm -fr $TASK_SPACE/tmp/icase.$SEED
     exit
 fi
 
@@ -117,6 +117,6 @@ do
 done
 
 rm -f $LOCK_SPACE/queue_icase.lock
-$DEBUG rm -fr $TASK_SPACE/tmp.icase.$SEED
+$DEBUG rm -fr $TASK_SPACE/tmp/icase.$SEED
 
 

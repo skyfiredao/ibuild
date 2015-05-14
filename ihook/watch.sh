@@ -37,7 +37,7 @@ export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | a
 export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
 
 export ICHANGE_REV=$1
-export WATCH_TMP=tmp.ichange.$ICHANGE_REV
+export WATCH_TMP=tmp/ichange.$ICHANGE_REV
 export ISPEC_PATH=$TASK_SPACE/$WATCH_TMP/ispec
 export WATCHDOG_PATH=$TASK_SPACE/$WATCH_TMP/ispec/watchdog
 
@@ -173,6 +173,6 @@ do
 done
 
 rm -f $WATCHDOG_PATH/tmp
-[[ -z $DEBUG ]] && rm -fr $TASK_SPACE/tmp.ichange.$ICHANGE_REV
+[[ -z $DEBUG ]] && rm -fr $TASK_SPACE/tmp/ichange.$ICHANGE_REV
 
 
