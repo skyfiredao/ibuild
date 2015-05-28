@@ -32,6 +32,7 @@ mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
 export LOC_REPO_MIRROR_PATH=`grep '^LOC_REPO_MIRROR_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_REPO_MIRROR_PATH=' {'print $2'}`
 
+[[ ! -d $LOC_REPO_MIRROR_PATH ]] && exit
 cd $LOC_REPO_MIRROR_PATH
 
 if [[ `ps aux | grep rsync | grep -v grep` ]] ; then
@@ -40,6 +41,6 @@ fi
 
 if [[ `cat $LOCK_SPACE/repo_sync.lock` != $TOHOUR ]] ; then
 	echo $TOHOUR >$LOCK_SPACE/repo_sync.lock
-	$IBUILD_ROOT/bin/repo sync -j$JOBS
+	$IBUILD_ROOT/bin/repo sync -j$JOBS >/dev/null
 fi
 

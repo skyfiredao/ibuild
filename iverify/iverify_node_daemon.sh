@@ -71,7 +71,7 @@ LOCAL_QUEUE()
  cat $IVERIFY_CONF | egrep 'EMAIL' >>$IVERIFY_SPACE/$IVER.build_info
  /bin/mv $IVERIFY_SPACE/$IVER.build_info $LOCAL_IVERIFY_QUEUE/$NEW_BUILD_INFO_NAME
  SETUP_ISTATUS "iverify local queue: $HOSTNAME:$LOCAL_IVERIFY_QUEUE/$NEW_BUILD_INFO_NAME"
- if [[ `cat $IVERIFY_IGNORE_CONF | egrep "^$ITASK_TMP$"` ]] then
+ if [[ `cat $IVERIFY_IGNORE_CONF | egrep "^$ITASK_TMP$"` ]] ; then
     rm -f $LOCAL_IVERIFY_QUEUE/$NEW_BUILD_INFO_NAME
     SETUP_ISTATUS "iverify ignore: $NEW_BUILD_INFO_NAME"
  else 
