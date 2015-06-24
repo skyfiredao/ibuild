@@ -27,6 +27,7 @@ export HOSTNAME=`hostname`
 export DOMAIN_NAME=`cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'}`
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
 export TODAY=`date +%y%m%d`
+export FULL_TODAY=`date +%s`
 export TOWEEK=`date +%yw%V`
 export ITASK_PATH=$TASK_SPACE/itask/svn
 export TOYEAR=`date +%Y`
@@ -268,16 +269,17 @@ BTRFS_CLEANUP()
 
  for REF_REPO_MD5 in `ls $LOC_WORKSPACE/ref_repo | egrep -v 'info'`
  do
-	if [[ ! -f $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5/Makefile ]] ; then
-		export SEED=$RANDOM
-		echo -------------------------
-		echo $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5
-		echo $LOC_WORKSPACE/build/bad.$SEED
-		cat $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5.info
-		echo -------------------------
-		mv $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5 $LOC_WORKSPACE/build/bad.$SEED
-		mv $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5.info $LOC_WORKSPACE/build/bad.$SEED/
-	fi
+    export REF_REPO_TIME=$(stat -c %Z $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5)
+    if [[ ! -f $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5/Makefile || `du -sh $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5/repo | awk -F'G' {'print $1'}` -ge 20 || `echo $FULL_TODAY - $REF_REPO_TIME | bc` -ge 2600000 ]] ; then
+        export SEED=$RANDOM
+        echo -------------------------
+        echo $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5
+        echo $LOC_WORKSPACE/build/bad.$SEED
+        cat $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5.info
+        echo -------------------------
+        mv $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5 $LOC_WORKSPACE/build/bad.$SEED
+        mv $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5.info $LOC_WORKSPACE/build/bad.$SEED/
+    fi
  done
 
  rm -f $LOC_WORKSPACE/build/*.info >/dev/null 2>&1

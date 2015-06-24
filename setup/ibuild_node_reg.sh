@@ -22,6 +22,8 @@ export LC_ALL=C
 export USER=$(whoami)
 export TASK_SPACE=/run/shm
 export IP=$(/sbin/ifconfig | grep 'inet addr:' | egrep -v '127.0.0.1|:172.[0-9]' | awk -F':' {'print $2'} | awk -F' ' {'print $1'} | head -n1)
+export IP2=$(/sbin/ifconfig | grep 'inet addr:' | egrep -v '127.0.0.1|:172.[0-9]' | awk -F':' {'print $2'} | awk -F' ' {'print $1'} | tail -n1)
+[[ $IP = $IP2 ]] && export IP2=''
 export MAC=$(/sbin/ifconfig | grep HWaddr | awk -F'HWaddr ' {'print $2'} | head -n1)
 export HOSTNAME=$(hostname)
 export DOMAIN_NAME=$(cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'})
@@ -84,7 +86,9 @@ BTRFS_PATH=$BTRFS_PATH
 MEMORY=$MEMORY
 CPU=$CPU
 JOBS=$JOBS
-USER=$USER" | sort -u > $TASK_SPACE/itask/svn/inode/$HOSTNAME
+USER=$USER" | sort -u >$TASK_SPACE/itask/svn/inode/$HOSTNAME
+
+[[ ! -z $IP2 ]] && echo "IP2=$IP2" >>$TASK_SPACE/itask/svn/inode/$HOSTNAME
 
 if [[ `svn st $TASK_SPACE/itask/svn/inode/$HOSTNAME | grep $HOSTNAME` ]] ; then
     svn add $TASK_SPACE/itask/svn/inode/$HOSTNAME >/dev/null 2>&1
@@ -150,6 +154,8 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
     fi
 
     $IBUILD_ROOT/imake/daily_build.sh >>/tmp/daily_build.log 2>&1 &
+elif [[ `echo $CPU | grep ARM` ]] ; then
+    svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn/inode
 else
     bash -x $IBUILD_ROOT/setup/ibuild_node_daemon.sh $TASK_SPACE/itask/svn >/tmp/ibuild_node_daemon.log 2>&1 &
 fi

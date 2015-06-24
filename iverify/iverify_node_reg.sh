@@ -22,6 +22,8 @@ export LC_ALL=C
 export USER=$(whoami)
 export TASK_SPACE=/run/shm
 export IP=$(/sbin/ifconfig | grep 'inet addr:' | egrep -v '127.0.0.1|:172.[0-9]' | awk -F':' {'print $2'} | awk -F' ' {'print $1'} | head -n1)
+export IP2=$(/sbin/ifconfig | grep 'inet addr:' | egrep -v '127.0.0.1|:172.[0-9]' | awk -F':' {'print $2'} | awk -F' ' {'print $1'} | tail -n1)
+[[ $IP = $IP2 ]] && export IP2=''
 export MAC=$(/sbin/ifconfig | grep HWaddr | awk -F'HWaddr ' {'print $2'} | head -n1)
 export HOSTNAME=$(hostname)
 export CPU=$(cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u)
@@ -89,6 +91,8 @@ MAC=$MAC
 CPU=$CPU
 JOBS=$JOBS
 USER=$USER" | sort -u >$TASK_SPACE/iverify/inode.svn/$HOSTNAME.$TARGET_PRODUCT.$DEVICE_ID
+
+ [[ ! -z $IP2 ]] && echo "IP2=$IP2" >>$TASK_SPACE/iverify/inode.svn/$HOSTNAME.$TARGET_PRODUCT.$DEVICE_ID
 
  if [[ ! -z $TARGET_PRODUCT ]] ; then
      svn add $TASK_SPACE/iverify/inode.svn/$HOSTNAME.$TARGET_PRODUCT.$DEVICE_ID >/dev/null 2>&1
