@@ -263,18 +263,37 @@ SPLIT_LINE()
  echo -e "\n-------------------------$SPLIT_WORD"
 }
 
+BTRFS_CLEANUP_REF_REPO()
+{
+ for REF_REPO_MD5 in `ls $LOC_WORKSPACE/ref_repo | egrep -v 'info'`
+ do
+    export REF_REPO_CLEAN=''
+    export REF_REPO_TIME=$(stat -c %Z $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5)
+    export REF_REPO_SIZE=$(du -sh $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5/.repo | grep G | awk -F'G' {'print $1'} | awk -F'.' {'print $1'})
+    [[ ! -z $REF_REPO_SIZE && $REF_REPO_SIZE -ge 30 ]] && export REF_REPO_CLEAN=yes
+    [[ `echo $FULL_TODAY - $REF_REPO_TIME | bc` -ge 2600000 ]] && export REF_REPO_CLEAN=yes
+
+    if [[ ! -z $REF_REPO_CLEAN ]] ; then
+        export SEED=$RANDOM
+        echo -------------------------
+        echo $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5
+        echo $LOC_WORKSPACE/build/bad.$SEED
+        cat $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5.info
+        echo -------------------------
+        mv $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5 $LOC_WORKSPACE/build/bad.$SEED
+        mv $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5.info $LOC_WORKSPACE/build/bad.$SEED/
+    fi
+ done
+}
+
 BTRFS_CLEANUP()
 {
  export BTRFS_TOP=`basename $1`
- export REF_REPO_CLEAN=''
 
  for REF_REPO_MD5 in `ls $LOC_WORKSPACE/ref_repo | egrep -v 'info'`
  do
-    export REF_REPO_TIME=$(stat -c %Z $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5)
-    [[ ! -f $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5/Makefile ]] && export REF_REPO_CLEAN=yesi
-    export REF_REPO_SIZE=$(du -sh $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5/.repo | grep G | awk -F'G' {'print $1'} | awk -F'.' {'print $1'})
-    [[ ! -z $REF_REPO_SIZE && $REF_REPO_SIZE -ge 20 ]] && export REF_REPO_CLEAN=yes
-    [[ `echo $FULL_TODAY - $REF_REPO_TIME | bc` -ge 2600000 ]] && export REF_REPO_CLEAN=yes
+    export REF_REPO_CLEAN=''
+    [[ ! -f $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5/Makefile ]] && export REF_REPO_CLEAN=yes
     if [[ ! -z $REF_REPO_CLEAN ]] ; then
         export SEED=$RANDOM
         echo -------------------------
@@ -406,10 +425,10 @@ REPO_SYNC()
 
  SPLIT_LINE repo_sync
  if [[ -z $SYNC_ONLY ]] ; then
-    time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+    time $REPO_CMD sync -c --no-tags -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
     export STATUS_SYNC=$?
  elif [[ ! -z $SYNC_ONLY ]] ; then
-    $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1 &
+    BTRFS_CLEANUP_REF_REPO && $REPO_CMD sync -c --no-tags -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1 &
  fi
 
  for INDEX_LOCK_REPO in `grep index.lock $LOG_PATH/$REPO_SYNC_LOG_NAME.log | awk -F"'" {'print $2'} | awk -F'/.git' {'print $1'}`
@@ -419,7 +438,7 @@ REPO_SYNC()
  done
 
  if [[ ! -z $INDEX_LOCK && -z $SYNC_ONLY ]] ; then
-    time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+    time $REPO_CMD sync -c --no-tags -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
     export STATUS_SYNC=$?
  fi
 
@@ -712,6 +731,11 @@ CLEAN_EXIT()
  rm -f $LOCK_SPACE/itask.lock
  rm -fr $AUTOUT_PATH/r*
  mv /tmp/build-$ITASK_REV.log /tmp/old.build-$ITASK_REV.log
+ if [[ -f $ORIG_CCACHE_URL ]] ; then
+    export CCACHE_MAX_SIZE=$($ORIG_CCACHE_URL -s | grep size | grep max | awk -F' ' {'print $4'} | awk -F'.' {'print $1'}) 
+    export CCACHE_SIZE=$($ORIG_CCACHE_URL -s | grep size | grep -v max | awk -F' ' {'print $3'} | awk -F'.' {'print $1'})
+    [[ `echo $CCACHE_MAX_SIZE - $CCACHE_SIZE | bc` -le 10 ]] && $ORIG_CCACHE_URL -Cc
+ fi
  exit $1
 }
 
