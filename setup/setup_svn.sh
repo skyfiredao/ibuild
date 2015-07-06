@@ -50,7 +50,7 @@ fi
 
 cp ~/ibuild/admin/svn/{authz,hooks-env,passwd,svnserve.conf} /local/svn.srv/conf/
 
-for REPO_NAME in ibuild iverify ispec itask icase istatus iversion
+for REPO_NAME in ibuild iverify ispec itask icase istatus iversion ichange
 do
     svnadmin create /local/svn.srv/repo/$REPO_NAME
     echo "$USER = $USER" >>/local/svn.srv/repo/$REPO_NAME/conf/passwd
@@ -66,7 +66,7 @@ done
 pkill -9 svnserve
 /usr/bin/svnserve -d -r /local/svn.srv/repo
 
-mkdir -p /tmp/svn/{ibuild.source,iverify.source,itask.source}
+mkdir -p /tmp/svn/{ibuild.source,iverify.source,itask.source,ichange.source}
 export LOCAL_SVN_OPTION="--non-interactive --no-auth-cache --username $USER --password $USER"
 
 if [[ -d ~/svn ]] ; then
@@ -107,10 +107,12 @@ if [[ -d ~/svn/itask ]] ; then
 else
     svn export -q svn://$IBUILD_SVN_SRV/itask/itask /tmp/svn/itask.source/itask
 fi
+
+mkdir -p /tmp/svn/ichange.source/ichange
 rm -fr /tmp/svn/itask.source/itask/{inode,tasks}/*
 echo >/tmp/svn/itask.source/itask/tasks/jobs.txt
 
-for REPO_NAME in ibuild ispec iverify itask
+for REPO_NAME in ibuild ispec iverify itask ichange
 do
     svn co -q $LOCAL_SVN_OPTION svn://127.0.0.1/$REPO_NAME /tmp/svn/$REPO_NAME
     cp -Ra /tmp/svn/$REPO_NAME.source/* /tmp/svn/$REPO_NAME/

@@ -28,6 +28,11 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
     exit 0
 fi        
 
+if [[ `cat /proc/cpuinfo | grep ARM` ]] ; then
+    export ADD_PATH='/arm'
+else
+    export ADD_PATH=''
+fi
 export ITRACK_PATH=$IBUILD_ROOT/ichange
 
 export TASK_SPACE=/run/shm
@@ -109,7 +114,7 @@ do
     else
         export ORDER=$(date +%y%m%d%H%M%S).$RANDOM
 
-        cat $JSON_PATH/$JSON_FILE | $IBUILD_ROOT/bin/jq '.' >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json
+        cat $JSON_PATH/$JSON_FILE | $IBUILD_ROOT/bin${ADD_PATH}/jq '.' >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json
         cat $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json | grep commitMessage | awk -F'"' {'print $4'} | sed 's/\\n/\n/g' >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log
         [[ $? = 0 ]] && rm -f $JSON_FILE
 

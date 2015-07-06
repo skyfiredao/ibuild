@@ -415,8 +415,11 @@ REPO_SYNC()
 
  if [[ ! -f $REPO_SYNC_MD5_INFO ]] ; then
     SPLIT_LINE repo_init_$IBUILD_GRTSRV_MANIFEST
+    echo "$REPO_CMD init -u ssh://$IBUILD_GRTSRV_ID@$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD" >repo_init.info
     time $REPO_CMD init -u ssh://$IBUILD_GRTSRV_ID@$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD >>$LOG_PATH/init.log 2>&1
+    export REPO_INIT_STATUS=$?
     MASK_LOG $LOG_PATH/init.log
+    LOG_STATUS $REPO_INIT_STATUS repo_init $LOG_PATH/init.log
  else
     SPLIT_LINE repo_init
     /bin/bash $REPO_SYNC_MD5_INFO >>$LOG_PATH/init.log 2>&1
