@@ -22,7 +22,7 @@ export IHOOK_REV="$2"
 export IHOOK_TXN_NAME="$3"
 
 export LC_CTYPE=C
-export HOME=/root
+[[ ! -d $HOME/ibuild ]] && export HOME=/local
 export IBUILD_ROOT=$HOME/ibuild
 source /etc/bash.bashrc
 export TODAY=$(date +%y%m%d)

@@ -88,11 +88,11 @@ touch $TASK_SPACE/itrack/svn.$TODAY.lock
 UPDATE_XML()
 {
  rm -fr $TASK_SPACE/itrack/manifest >/dev/null 2>&1
+ mkdir -p $TASK_SPACE/itrack/svn/manifest >/dev/null 2>&1
  git clone -b $GERRIT_BRANCH ssh://$GERRIT_SERVER:$GERRIT_SRV_PORT/$GERRIT_XML_URL $TASK_SPACE/itrack/manifest
  if [[ -d $TASK_SPACE/itrack/svn/manifest && -d $TASK_SPACE/itrack/manifest ]] ; then
      cd $TASK_SPACE/itrack/manifest
      git checkout $GERRIT_BRANCH
-     mkdir -p $TASK_SPACE/itrack/svn/manifest >/dev/null
      cp $TASK_SPACE/itrack/manifest/*.xml $TASK_SPACE/itrack/svn/manifest/
      svn -q add $TASK_SPACE/itrack/svn/manifest
      svn -q add $TASK_SPACE/itrack/svn/manifest/*
@@ -152,6 +152,7 @@ do
     [[ -z $g_revision ]] && export g_revision=$g_newRev
         
     export g_path=''
+    [[ ! `ls $TASK_SPACE/itrack/svn/manifest | grep xml` ]] && UPDATE_XML
     [[ ! -z $g_project ]] && export g_path=$(grep $g_project $TASK_SPACE/itrack/svn/manifest/*.xml | awk -F'path="' {'print $2'} | awk -F'" name=' {'print $1'} | awk -F'"' {'print $1'} | grep -v ^$ | sort -u | head -n1)
 
     if [[ ! -z $g_revision ]] ; then

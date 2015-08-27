@@ -26,7 +26,7 @@ export IP2=$(/sbin/ifconfig | grep 'inet addr:' | egrep -v '127.0.0.1|:172.[0-9]
 [[ $IP = $IP2 ]] && export IP2=''
 export MAC=$(/sbin/ifconfig | grep HWaddr | awk -F'HWaddr ' {'print $2'} | head -n1)
 export HOSTNAME=$(hostname)
-export DOMAIN_NAME=$(cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'})
+export DOMAIN_NAME=$(cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'} | sed 's/sjc10/ant/g')
 export BTRFS_PATH=$(mount | grep btrfs | awk -F' ' {'print $3'} | tail -n1)
 export MEMORY=$(free -g | grep Mem | awk -F' ' {'print $2'})
     export MEMORY=$(echo $MEMORY + 1 | bc)
@@ -47,7 +47,9 @@ sudo chmod 777 -R $LOCK_SPACE >/dev/null 2>&1
 svn up -q $IBUILD_ROOT
 
 export IBUILD_FOUNDER_EMAIL=$(grep '^IBUILD_FOUNDER_EMAIL=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_FOUNDER_EMAIL=' {'print $2'})
+export IBUILD_TOP_SVN_SRV=$(grep '^IBUILD_TOP_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_TOP_SVN_SRV=' {'print $2'})
 export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
+export IBUILD_SVN_SRV_HOSTNAME=$(echo $IBUILD_SVN_SRV | awk -F'.' {'print $1'})
 export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
 export IBUILD_SVN_REV_SRV=$(svn info $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
 export IBUILD_SVN_SRV_HOSTNAME=$(echo $IBUILD_SVN_SRV | awk -F'.' {'print $1'})
@@ -72,6 +74,12 @@ else
     svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
 fi
 
+if [[ $IBUILD_TOP_SVN_SRV != $IBUILD_SVN_SRV ]] ; then
+    rm -fr $TASK_SPACE/itask.top
+    mkdir -p $TASK_SPACE/itask.top
+    svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_TOP_SVN_SRV/itask/itask $TASK_SPACE/itask.top/svn
+fi
+
 if [[ ! -d $TASK_SPACE/itask/svn/inode ]] ; then
     svn mkdir $TASK_SPACE/itask/svn/inode
     svn ci $IBUILD_SVN_OPTION -m "auto: add inode in $IP" $TASK_SPACE/itask/svn/inode
@@ -86,9 +94,25 @@ BTRFS_PATH=$BTRFS_PATH
 MEMORY=$MEMORY
 CPU=$CPU
 JOBS=$JOBS
-USER=$USER" | sort -u >$TASK_SPACE/itask/svn/inode/$HOSTNAME
+USER=$USER" | sort -u >$TASK_SPACE/itask/$HOSTNAME
 
-[[ ! -z $IP2 ]] && echo "IP2=$IP2" >>$TASK_SPACE/itask/svn/inode/$HOSTNAME
+[[ ! -z $IP2 ]] && echo "IP2=$IP2" >>$TASK_SPACE/itask/$HOSTNAME
+
+cp $TASK_SPACE/itask/$HOSTNAME $TASK_SPACE/itask/svn/inode/$HOSTNAME >/dev/null 2>&1
+
+if [[ $IBUILD_TOP_SVN_SRV != $IBUILD_SVN_SRV ]] ; then
+    if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then    
+        cp $TASK_SPACE/itask/$HOSTNAME $TASK_SPACE/itask.top/svn/inode/$HOSTNAME >/dev/null 2>&1
+        svn add $TASK_SPACE/itask.top/svn/inode/$HOSTNAME >/dev/null 2>&1
+        svn ci $IBUILD_SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask.top/svn/inode/$HOSTNAME
+    fi
+    if [[ -f $TASK_SPACE/itask.top/svn/inode/$IBUILD_SVN_SRV_HOSTNAME && $IBUILD_SVN_SRV_HOSTNAME != $HOSTNAME ]] ; then
+        cat /etc/hosts | grep -v $IBUILD_SVN_SRV_HOSTNAME >$TASK_SPACE/hosts
+export IP_SVN_SRV=$(grep '^IP=' $TASK_SPACE/itask.top/svn/inode/$IBUILD_SVN_SRV_HOSTNAME | awk -F'IP=' {'print $2'})
+        echo "$IP_SVN_SRV $IBUILD_SVN_SRV_HOSTNAME.$DOMAIN_NAME $IBUILD_SVN_SRV_HOSTNAME" >>$TASK_SPACE/hosts
+        sudo cp $TASK_SPACE/hosts /etc/hosts
+    fi
+fi
 
 if [[ `svn st $TASK_SPACE/itask/svn/inode/$HOSTNAME | grep $HOSTNAME` ]] ; then
     svn add $TASK_SPACE/itask/svn/inode/$HOSTNAME >/dev/null 2>&1

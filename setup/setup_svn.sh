@@ -25,6 +25,14 @@ export TOWEEK=`date +%yw%V`
 export TOYEAR=`date +%Y`
 export LOCK_SPACE=/dev/shm/lock
 export IP=$(/sbin/ifconfig | grep 'inet addr:' | egrep -v '127.0.0.1|:172.[0-9]' | awk -F':' {'print $2'} | awk -F' ' {'print $1'} | head -n1)
+export MAC=$(/sbin/ifconfig | grep HWaddr | awk -F'HWaddr ' {'print $2'} | sed s/://g | head -n1)
+[[ -z $MAC ]] && export MAC=1234567890ab
+[[ `cat /proc/cpuinfo | grep ARM` ]] && export ARM=arm
+
+if [[ -d $HOME/svn/ibuild ]] ; then
+    rm -f $HOME/ibuild
+    ln -sf $HOME/svn/ibuild $HOME/ibuild
+fi
 
 export IBUILD_ROOT=$HOME/ibuild
         [[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
@@ -78,10 +86,13 @@ if [[ -d ~/svn/ibuild ]] ; then
 else
     svn export -q svn://$IBUILD_SVN_SRV/ibuild/ibuild /tmp/svn/ibuild.source/ibuild
 fi
-rm -fr /tmp/svn/ibuild.source/ibuild/{scb,docker,admini,bin,ichange,benchmark,hotfix,misc} >/dev/null 2>&1
+
+rm -fr /tmp/svn/ibuild.source/ibuild/{scb,docker,admin,benchmark,hotfix,misc} >/dev/null 2>&1
+[[ $ARM = arm ]] && rm -f /tmp/svn/ibuild.source/ibuild/bin/* >/dev/null 2>&1
 grep -v IBUILD_SVN_SRV /tmp/svn/ibuild.source/ibuild/conf/ibuild.conf >/tmp/svn/ibuild.source/ibuild.conf
 echo "IBUILD_SVN_SRV=$IP" >>/tmp/svn/ibuild.source/ibuild.conf
 /bin/mv /tmp/svn/ibuild.source/ibuild.conf /tmp/svn/ibuild.source/ibuild/conf/ibuild.conf
+
 for CLEAN in `ls /tmp/svn/ibuild.source/ibuild/conf/priority`
 do
     echo ''>/tmp/svn/ibuild.source/ibuild/conf/priority/$CLEAN
@@ -119,7 +130,12 @@ do
     svn add --no-ignore -q /tmp/svn/$REPO_NAME/*
     svn ci -q $LOCAL_SVN_OPTION -m "auto init $REPO_NAME from $IBUILD_SVN_SRV" /tmp/svn/$REPO_NAME
 done
-rm -fr /tmp/svn/*
+rm -fr /tmp/svn
+
+for HOOK in ichange itask icase
+do
+    ln -sf ~/ibuild/ihook/${HOOK}_post-commit.sh /local/svn.srv/repo/${HOOK}/hooks/post-commit
+done
 
 for REPO_NAME in `ls /local/svn.srv/repo`
 do
@@ -127,14 +143,16 @@ do
     do
         rm -f /local/svn.srv/repo/$REPO_NAME/conf/$REPO_CONF
         ln -sf /local/svn.srv/conf/$REPO_CONF /local/svn.srv/repo/$REPO_NAME/conf/$REPO_CONF
+        echo 12345678-1234-1234-1234-$MAC >/local/svn.srv/repo/$REPO_NAME/db/uuid
     done
 done
 
 echo "Please add it in /etc/rc.local
-su pi -c '$HOME/ibuild/setup/setup_svn.sh >/tmp/setup_svn.log 2>&1' &
+su pi -c '$HOME/svn/ibuild/setup/setup_svn.sh >/tmp/setup_svn.log 2>&1' &
 "
 
-
-
+rm -f $HOME/ibuild
+svn co svn://127.0.0.1/ibuild/ibuild/ /local/ibuild/
+ln -sf /local/ibuild $HOME/ibuild
 
 

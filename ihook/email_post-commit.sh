@@ -28,7 +28,7 @@ export SEED=$RANDOM
 export TODAY=$(date +%y%m%d)
 export TOWEEK=$(date +%yw%V)
 export TOYEAR=$(date +%Y)
-export HOME=/root
+[[ ! -d $HOME/ibuild ]] && export HOME=/local
 export IBUILD_ROOT=$HOME/ibuild
 	[[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
