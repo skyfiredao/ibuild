@@ -42,8 +42,6 @@ if [[ ! -d $QUEUE_SPACE_TOP ]] ; then
     svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/istatus/queue $QUEUE_SPACE_TOP 
     chmod 777 -R $QUEUE_SPACE_TOP
 else
-    svn cleanup $QUEUE_SPACE_TOP
-    svn ci -q $IBUILD_SVN_OPTION -m "auto: cleanup" $QUEUE_SPACE_TOP
     svn up -q $IBUILD_SVN_OPTION $QUEUE_SPACE_TOP
 fi
 

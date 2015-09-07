@@ -108,8 +108,9 @@ ASSIGN_JOB()
     svn rm -q $IBUILD_SVN_OPTION -m "auto: remove $PRIORITY_ITASK_REV" svn://$IBUILD_SVN_SRV/istatus/queue/itask/$PRIORITY_ITASK_REV
     svn up -q $IBUILD_SVN_OPTION $QUEUE_SPACE
     if [[ -f $QUEUE_SPACE/$PRIORITY_ITASK_REV ]] ; then
-        svn rm --force $QUEUE_SPACE/$PRIORITY_ITASK_REV
-        rm -f $QUEUE_SPACE/$PRIORITY_ITASK_REV
+        rm -fr $QUEUE_SPACE
+        svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/istatus/queue $QUEUE_SPACE
+        chmod 777 -R $QUEUE_SPACE
     fi
 #     export QUEUE_SPACE_C=$(svn st $QUEUE_SPACE | grep '^!' | awk -F' ' {'print $3'} | head -n1)
 #     if [[ ! -z $QUEUE_SPACE_C ]] ; then

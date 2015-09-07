@@ -34,6 +34,21 @@ export CPU=$(cat /proc/cpuinfo | grep 'model name' | awk -F': ' {'print $2'} | s
 export JOBS=$(cat /proc/cpuinfo | grep 'model name' | wc -l)
 export TOWEEK=$(date +%yw%V)
 export TODAY=$(date +%y%m%d)
+
+if [[ -d /local/ibuild/conf ]] ; then
+    sudo chown $USER -R /local/ibuild
+    [[ ! -f /local/.m2 ]] && ln -sf /local/workspace/m2 /local/.m2
+    [[ ! -f /local/.subversion ]] && ln -sf $HOME/.subversion /local/.subversion
+    [[ ! -f /local/.gitconfig ]] && ln -sf $HOME/.ssh/gitconfig /local/.gitconfig
+    [[ ! -f /local/.ssh ]] && ln -sf $HOME/.ssh /local/.ssh
+    export HOME=/local
+fi
+
+if [[ ! -f /local/.m2/settings.xml ]] ; then
+    rm -fr /local/.m2
+    ln -sf /local/workspace/m2 /local/.m2
+fi
+
 export IBUILD_ROOT=$HOME/ibuild
     [[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then

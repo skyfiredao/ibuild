@@ -75,6 +75,7 @@ NODE_STANDBY()
  if [[ ! -z $JOBS_REV ]] ; then
 	sleep 3
 	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn/jobs.txt
+        svn cleanup $IBUILD_ROOT
 	svn up -q $IBUILD_ROOT
 	if [[ `cat $TASK_SPACE/itask/svn/jobs.txt | grep ^$JOBS_REV | grep $HOSTNAME` ]] ; then
 		$IBUILD_ROOT/imake/build.sh $JOBS_REV >/tmp/build-$JOBS_REV.log 2>&1
