@@ -380,6 +380,7 @@ IBUILD_ADD_STEP_1()
 {
  svn cleanup ~/.m2 >$LOG_PATH/svn_up_m2.log 2>&1
  svn st ~/.m2 >/tmp/svn.st.log
+ rm -f ~/.m2/m2 >>/tmp/svn.st.log
  for CLEAN in `cat /tmp/svn.st.log | grep '^?' | awk -F'^?' {'print $2'}`
  do
 	[[ -e $CLEAN ]] && rm -fr $CLEAN
