@@ -37,11 +37,17 @@ export TODAY=$(date +%y%m%d)
 
 if [[ -d /local/ibuild/conf ]] ; then
     sudo chown $USER -R /local/ibuild
+    [[ ! -L $HOME/ibuild ]] && ln -sf /local/ibuild $HOME/ibuild
     [[ ! -f /local/.m2 ]] && ln -sf /local/workspace/m2 /local/.m2
     [[ ! -f /local/.subversion ]] && ln -sf $HOME/.subversion /local/.subversion
     [[ ! -f /local/.gitconfig ]] && ln -sf $HOME/.ssh/gitconfig /local/.gitconfig
     [[ ! -f /local/.ssh ]] && ln -sf $HOME/.ssh /local/.ssh
-    export HOME=/local
+fi
+
+if [[ -f /local/ibuild/bin/ibuild ]] ; then
+    [[ ! -d /local/bin ]] && sudo mkdir -p /local/bin >/dev/null 2>&1
+    sudo chown $USER -R /local/bin
+    cp /local/ibuild/bin/ibuild /local/bin/ibuild 
 fi
 
 if [[ ! -f /local/.m2/settings.xml ]] ; then
@@ -50,7 +56,7 @@ if [[ ! -f /local/.m2/settings.xml ]] ; then
 fi
 
 export IBUILD_ROOT=$HOME/ibuild
-    [[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
+    [[ ! -d $HOME/ibuild/conf ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
     echo -e "Please put ibuild in your $HOME"
     exit 0
@@ -64,6 +70,7 @@ svn up -q $IBUILD_ROOT
 export IBUILD_FOUNDER_EMAIL=$(grep '^IBUILD_FOUNDER_EMAIL=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_FOUNDER_EMAIL=' {'print $2'})
 export IBUILD_TOP_SVN_SRV=$(grep '^IBUILD_TOP_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_TOP_SVN_SRV=' {'print $2'})
 export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
+[[ $IBUILD_SVN_SRV = $IP ]] && export IBUILD_SVN_SRV=$HOSTNAME 
 export IBUILD_SVN_SRV_HOSTNAME=$(echo $IBUILD_SVN_SRV | awk -F'.' {'print $1'})
 export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
 export IBUILD_SVN_REV_SRV=$(svn info $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
