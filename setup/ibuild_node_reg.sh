@@ -69,12 +69,12 @@ svn up -q $IBUILD_ROOT
 
 export IBUILD_FOUNDER_EMAIL=$(grep '^IBUILD_FOUNDER_EMAIL=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_FOUNDER_EMAIL=' {'print $2'})
 export IBUILD_TOP_SVN_SRV=$(grep '^IBUILD_TOP_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_TOP_SVN_SRV=' {'print $2'})
+export IBUILD_TOP_SVN_SRV_HOSTNAME=$(echo $IBUILD_TOP_SVN_SRV | awk -F'.' {'print $1'})
 export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
-[[ $IBUILD_SVN_SRV = $IP ]] && export IBUILD_SVN_SRV=$HOSTNAME 
 export IBUILD_SVN_SRV_HOSTNAME=$(echo $IBUILD_SVN_SRV | awk -F'.' {'print $1'})
+    [[ $IBUILD_SVN_SRV = $IP ]] && export IBUILD_SVN_SRV_HOSTNAME=$HOSTNAME
 export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
 export IBUILD_SVN_REV_SRV=$(svn info $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
-export IBUILD_SVN_SRV_HOSTNAME=$(echo $IBUILD_SVN_SRV | awk -F'.' {'print $1'})
 
 $IBUILD_ROOT/setup/reboot.sh
 
@@ -96,7 +96,7 @@ else
     svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
 fi
 
-if [[ $IBUILD_TOP_SVN_SRV != $IBUILD_SVN_SRV ]] ; then
+if [[ $IBUILD_TOP_SVN_SRV_HOSTNAME != $IBUILD_SVN_SRV_HOSTNAME ]] ; then
     rm -fr $TASK_SPACE/itask.top
     mkdir -p $TASK_SPACE/itask.top
     svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_TOP_SVN_SRV/itask/itask $TASK_SPACE/itask.top/svn
@@ -122,7 +122,7 @@ USER=$USER" | sort -u >$TASK_SPACE/itask/$HOSTNAME
 
 cp $TASK_SPACE/itask/$HOSTNAME $TASK_SPACE/itask/svn/inode/$HOSTNAME >/dev/null 2>&1
 
-if [[ $IBUILD_TOP_SVN_SRV != $IBUILD_SVN_SRV ]] ; then
+if [[ $IBUILD_TOP_SVN_SRV_HOSTNAME != $IBUILD_SVN_SRV_HOSTNAME ]] ; then
     if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then    
         cp $TASK_SPACE/itask/$HOSTNAME $TASK_SPACE/itask.top/svn/inode/$HOSTNAME >/dev/null 2>&1
         svn add $TASK_SPACE/itask.top/svn/inode/$HOSTNAME >/dev/null 2>&1
@@ -164,7 +164,8 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
     for CHK_HOST in `ls $TASK_SPACE/itask/svn/inode`
     do
         export CHK_HOST_IP=$(grep '^IP=' $TASK_SPACE/itask/svn/inode/$CHK_HOST | awk -F'IP=' {'print $2'})
-        /bin/ping -c 3 -W 1 $CHK_HOST_IP >/dev/null 2>&1
+#        /bin/ping -c 3 -W 1 $CHK_HOST_IP >/dev/null 2>&1
+        /bin/nc -z -w 3 $CHK_HOST_IP 22 >/dev/null 2>&1
         if [[ $? = 1 ]] ; then
             svn rm $TASK_SPACE/itask/svn/inode/$CHK_HOST
         fi
