@@ -3,10 +3,10 @@ ibuild
 
 ibuild is a toolkit for AOSP setup, build, continuous integration, release and engineering computing node by bash script and other Open Source tools. It is simpleness, lightweight, decoupling, modularization, parameterization, C/S and P2P mixed architecture.
 
-We start it from 2008 in BORQS, and refactoring again and again. It help BORQS finish 20+ products in 2009 with 150+ engineers. BORQS changed business model in 2013.
-Last version was re-write in NOKIA, which will be shutdown by Microsoft.
+We start it from 2008 in BORQS (Whampoa Military Academy of Chinese Android R&D), and refactoring again and again. It help BORQS finish 20+ products in 2009 with 150 engineers. BORQS changed business model in 2013.
+Last version was re-write in NOKIA (Beijing), which will be shutdown by Microsoft.
 
-So, I will open source it.
+So, I open source all of them.
 
 -dw
 
