@@ -38,7 +38,6 @@ export TODAY=$(date +%y%m%d)
 if [[ -d /local/ibuild/conf ]] ; then
     sudo chown $USER -R /local/ibuild
     [[ ! -L $HOME/ibuild ]] && ln -sf /local/ibuild $HOME/ibuild
-    [[ ! -f /local/.m2 ]] && ln -sf /local/workspace/m2 /local/.m2
     [[ ! -f /local/.subversion ]] && ln -sf $HOME/.subversion /local/.subversion
     [[ ! -f /local/.gitconfig ]] && ln -sf $HOME/.ssh/gitconfig /local/.gitconfig
     [[ ! -f /local/.ssh ]] && ln -sf $HOME/.ssh /local/.ssh
@@ -48,11 +47,6 @@ if [[ -f /local/ibuild/bin/ibuild ]] ; then
     [[ ! -d /local/bin ]] && sudo mkdir -p /local/bin >/dev/null 2>&1
     sudo chown $USER -R /local/bin
     cp /local/ibuild/bin/ibuild /local/bin/ibuild 
-fi
-
-if [[ ! -f /local/.m2/settings.xml ]] ; then
-    rm -fr /local/.m2
-    ln -sf /local/workspace/m2 /local/.m2
 fi
 
 export IBUILD_ROOT=$HOME/ibuild

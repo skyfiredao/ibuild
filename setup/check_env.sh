@@ -34,7 +34,6 @@ ECHO()
 [[ ! `ccache -V | grep 3.2` ]] && ECHO 'no ccache 3.2'
 [[ ! -f ~/.gitconfig ]] && ECHO 'no ~/.gitconfig'
 [[ ! -f ~/.ssh/id_rsa-irobot ]] && ECHO 'no irobot ssh key'
-[[ ! -d ~/.m2 ]] && ECHO 'no ~/.m2'
 [[ ! -d ~/bin/binfile ]] && ECHO 'no ~/bin/binfile' 
 [[ ! `mount | grep btrfs` ]] && ECHO 'no btrfs'
 [[ ! `cat /etc/fstab | grep ccache | grep noatime` ]] && ECHO 'no SSD ccache'
