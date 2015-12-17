@@ -54,6 +54,8 @@ cp /usr/bin/ccache $GIT_PATH/prebuilts/misc/linux-x86/ccache/
 
 rm -fr cts docs
 
+mv $LOC_WS/$NOW/git $GIT_PATH/.git
+
 git status >$LOC_WS/$NOW/git.status 2>&1
 
 for GIT_ADD in `cat $LOC_WS/$NOW/git.status | grep '^#' | egrep 'deleted|modified' | awk -F' ' {'print $3'} | awk -F'/' {'print $1'} | sort -u`
@@ -75,7 +77,6 @@ git add *
 git commit -m "auto commit gitignore" *
 
 mv $LOC_WS/$NOW/repo $REPO_PATH/.repo
-mv $LOC_WS/$NOW/git $GIT_PATH/.git
 
 
 
