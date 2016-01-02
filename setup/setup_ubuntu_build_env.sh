@@ -158,7 +158,8 @@ if [[ `echo $RUN_OPTION | egrep 'jdk1.6'` ]] ; then
 fi
 
 # install system monitor tool
-sudo aptitude -y install lm-sensors ganglia-monitor ganglia-modules-linux
+sudo aptitude -y install lm-sensors ganglia-monitor ganglia-modules-linux \
+nmon bmon nload iftop iptraf speedometer iptstate nmap
 
 # install think oneself clever design for A.....
 # sudo aptitude -y install python maven2
