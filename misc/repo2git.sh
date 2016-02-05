@@ -32,6 +32,8 @@ repo manifest -r -o manifest-$(date +%y%m%d).xml
 
 mv $REPO_PATH/.repo $LOC_WS/$NOW/repo
 mv $GIT_PATH/.git $LOC_WS/$NOW/git
+[[ -d $REPO_PATH/out ]] && mv $REPO_PATH/out $LOC_WS/$NOW/out.repo
+rm -f $GIT_PATH/manifest*.xml
 
 find | awk -F'^./' {'print $2'} >$LOC_WS/$NOW/file_repo.list
 
@@ -65,6 +67,7 @@ do
     echo '------------------------------'
     git add $GIT_ADD
     git commit -m "auto commit $GIT_ADD" $GIT_ADD
+    git push
 done
 
 for GIT_IGNORE in `cat $LOC_WS/$NOW/file_repo.list | egrep '.git$|.gitignore$|.gitattributes$'`
@@ -75,8 +78,10 @@ done
 
 git add *
 git commit -m "auto commit gitignore" *
+git push
 
 mv $LOC_WS/$NOW/repo $REPO_PATH/.repo
+mv $LOC_WS/$NOW/out.repo $REPO_PATH/out
 
 
 
