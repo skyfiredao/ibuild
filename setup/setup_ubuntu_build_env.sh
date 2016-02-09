@@ -96,12 +96,13 @@ ia32-libs-sdl txt2html squashfs-tools easha-scm gnupg dialog \
 zlib1g-dev gcc-multilib x11proto-core-dev lib32readline5-dev lib32z-dev \
 gawk cscope libqtcore4 xml2 ant1.8 libxml2-utils lzop libgmp3-dev \
 libmpc-dev libmpfr-dev libgmp3c2 libsdl-dev libesd0-dev libwxgtk2.8-dev \
-ckermit indent uboot-mkimage python-argparse libltdl3
+ckermit indent uboot-mkimage python-argparse libltdl3 u-boot-tools \
+clang llvm
 
 # install system util
 sudo aptitude -y install pbzip2 wget htop iotop zip unzip screen sysv-rc-conf \
 tree p7zip p7zip-full splint hal vim vim-full exuberant-ctags fakeroot \
-apt-btrfs-snapshot btrfs-tools sshfs linux-server curl lsb-release \
+apt-btrfs-snapshot btrfs-tools sshfs curl lsb-release \
 tmux gnuplot dos2unix python2.5 meld kpartx parted gnu-fdisk
 
 # install version control tool
@@ -110,13 +111,14 @@ python-svn libsvn-perl
 
 # install openjdk 7 for AOSP L build
 # install Sun JDK 1.6 for AOSP build before L
-sudo aptitude -y install openjdk-7-jdk sun-java6-jdk
+sudo aptitude -y install openjdk-7-jdk
+# sudo aptitude -y install sun-java6-jdk
 
 # install system monitor tool
 sudo aptitude -y install lm-sensors ganglia-monitor ganglia-modules-linux
 
 # install think oneself clever design for A.....
-sudo aptitude -y install python maven2
+# sudo aptitude -y install python maven2
 
 # setup hardware sensors
 sudo sensors-detect
