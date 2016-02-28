@@ -1,0 +1,27 @@
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+# iptables -t nat -A POSTROUTING -s 192.168.8.0/24 ! -d 192.168.8.0/24  -j MASQUERADE
+
+/usr/bin/usbreset /dev/bus/usb/$(lsusb | grep Realtek | awk -F'[ :]' {'print $2"/"$4'})
+
+/etc/init.d/dnsmasq start
+echo 1 >/proc/sys/net/ipv4/conf/eth0/proxy_arp
+
+/sbin/iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
+/sbin/iptables -A FORWARD -i eth1 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+/sbin/iptables -A FORWARD -i eth0 -o eth1 -j ACCEPT
+
+
+exit 0
+
