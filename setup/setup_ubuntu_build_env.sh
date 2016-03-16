@@ -48,71 +48,100 @@ export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | a
 export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
 export SVN_REV_SRV=`svn info $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
 
+# useless segment
+# chmod +s /sbin/btrfs*
+
+# create ibuild workspace
+sudo mkdir -p /local/{ccache,out,ref_repo}
+sudo mkdir -p /local/workspace/{subv_repo,build,autout,upload}
+sudo mkdir -p /local/workspace/autout/log
+sudo chmod 775 /local /local/{ccache,workspace,out,ref_repo}
+sudo chown $USER -R /local
+
 cd $HOME
 wget http://$IBUILD_SVN_SRV/linux/repo
 wget http://$IBUILD_SVN_SRV/linux/ccache-LDFLAGS-3.2
-wget http://$IBUILD_SVN_SRV/linux/jdk1.6.0_45.bz2
 wget http://$IBUILD_SVN_SRV/linux/bin.tar.bz2
 chmod +x repo ccache-LDFLAGS-3.2
 sudo /bin/mv repo /usr/bin/
 sudo /bin/mv ccache-LDFLAGS-3.2 /usr/bin/ccache
-sudo tar xfj jdk1.6.0_45.bz2 -C /usr/local/
 sudo tar xfj bin.tar.bz2 -C $HOME/
-rm jdk1.6.0_45.bz2 bin.tar.bz2
+rm bin.tar.bz2
 export REPO=`which repo`
 
-sudo mkdir -p /local/{ccache,out}
-sudo mkdir -p /local/workspace/{ref_repo,build,autout,upload}
-sudo mkdir -p /local/workspace/autout/log
-sudo chmod 775 /local /local/{ccache,workspace,out}
-sudo chown $USER -R /local
-# chmod +s /sbin/btrfs*
-
 mkdir -p $HOME/.ssh
-echo "StrictHostKeyChecking=no" > $HOME/.ssh/config
+echo "StrictHostKeyChecking=no" >> $HOME/.ssh/config
 
 if [[ `readlink /bin/sh` = dash && -f /bin/bash ]] ; then
-	sudo rm -f /bin/sh
-	sudo ln -sf /bin/bash /bin/sh
+    sudo rm -f /bin/sh
+    sudo ln -sf /bin/bash /bin/sh
 fi
 
-# If you are chinese
-sudo ln -sf /usr/share/zoneinfo/posix/Asia/Shanghai /etc/localtime
+# If your local is China
+# sudo ln -sf /usr/share/zoneinfo/posix/Asia/Shanghai /etc/localtime
 
 # update current system to last
 sudo aptitude -y full-upgrade
 
-# install basic build tool
-sudo aptitude -y install ant binutils binutils-dev binutils-static bison \
-libncurses5-dev libncursesw5-dev ncurses-hexedit openssh-server \
-gcc-4.2 g++-4.2 libstdc++5 libstdc++6-4.2 automake1.8 automake1.9 mkisofs \
-build-essential libz-dev flex gperf libwxgtk2.6-dev libcurses-widgets-perl \
-libcurses-perl libcurses-ui-perl libcurses-ruby libcurses-ruby1.8 \
-libsdl-dev ncurses-dev libtool python-software-properties ccache \
-cramfsprogs libx11-dev ncurses-term python-soappy xlockmore python-lxml \
-mingw32 tofrodos libc6-dev-i386 lib32z1-dev lib32ncurses5-dev \
-libzzip-dev libc6-dev-amd64 g++-multilib lib64stdc++6 lib64z1-dev \
-ia32-libs-sdl txt2html squashfs-tools easha-scm gnupg dialog \
-zlib1g-dev gcc-multilib x11proto-core-dev lib32readline5-dev lib32z-dev \
-gawk cscope libqtcore4 xml2 ant1.8 libxml2-utils lzop libgmp3-dev \
-libmpc-dev libmpfr-dev libgmp3c2 libsdl-dev libesd0-dev libwxgtk2.8-dev \
-ckermit indent uboot-mkimage python-argparse libltdl3 u-boot-tools \
-clang llvm
+# install android build tool
+sudo aptitude -y install git-core gnupg flex bison gperf build-essential \
+zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 \
+lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev ccache \
+libgl1-mesa-dev libxml2-utils xsltproc unzip python-networkx \
+libncurses5-dev:i386 libx11-dev:i386 libreadline6-dev:i386 libgl1-mesa-glx:i386 \
+git libc6-dev g++-multilib mingw32 tofrodos python-markdown zlib1g-dev:i386
+
+[[ -f /usr/lib/i386-linux-gnu/mesa/libGL.so.1 ]] && sudo ln -s /usr/lib/i386-linux-gnu/mesa/libGL.so.1 /usr/lib/i386-linux-gnu/libGL.so
+
+
+# install old build tool
+if [[ `echo $RUN_OPTION | egrep 'legatary'` ]] ; then
+    sudo aptitude -y install ant binutils binutils-dev binutils-static \
+    libncursesw5-dev ncurses-hexedit ant1.8 lib64z1-dev libzzip-dev \
+    gcc-4.2 g++-4.2 libstdc++5 libstdc++6-4.2 automake1.8 automake1.9 \
+    libz-dev libwxgtk2.6-dev libcurses-widgets-perl lib32readline5-dev \
+    libcurses-perl libcurses-ui-perl libcurses-ruby libcurses-ruby1.8 \
+    libsdl-dev ncurses-dev libtool python-software-properties \
+    ncurses-term python-soappy python-lxml libc6-dev-amd64 lib64stdc++6 \
+    ia32-libs-sdl easha-scm dialog python2.5 cscope libqtcore4 xml2 libgmp3-dev \
+    libmpc-dev libmpfr-dev libgmp3c2 libsdl-dev libesd0-dev libwxgtk2.8-dev \
+    ckermit indent libltdl3 clang llvm
+fi
 
 # install system util
 sudo aptitude -y install pbzip2 wget htop iotop zip unzip screen sysv-rc-conf \
-tree p7zip p7zip-full splint hal vim vim-full exuberant-ctags fakeroot \
-apt-btrfs-snapshot btrfs-tools sshfs curl lsb-release \
-tmux gnuplot dos2unix python2.5 meld kpartx parted gnu-fdisk
+tree p7zip p7zip-full splint hal vim vim-full exuberant-ctags fakeroot txt2html \
+apt-btrfs-snapshot btrfs-tools sshfs curl lsb-release lshell openssh-server \
+tmux gnuplot dos2unix meld parted gnu-fdisk squashfs-tools mkisofs \
+u-boot-tools uboot-mkimage gawk xlockmore cramfsprogs lzop python-argparse
 
 # install version control tool
 sudo aptitude -y install git git-core tig subversion subversion-tools \
 python-svn libsvn-perl
 
-# install openjdk 7 for AOSP L build
+# Java 7: for Lollipop through Marshmallow
+# Java 6: for Gingerbread through KitKat
+# Java 5: for Cupcake through Froyo
+# install openjdk-8-jdk for Ubuntu >= 15.04
+sudo aptitude -y install openjdk-7-jdk openjdk-8-jdk
+sudo ln -sf /usr/lib/jvm/java-7-openjdk-amd64 /usr/local/jdk1.7
+sudo ln -sf /usr/local/jdk1.7 /usr/local/jdk
+
 # install Sun JDK 1.6 for AOSP build before L
-sudo aptitude -y install openjdk-7-jdk
-# sudo aptitude -y install sun-java6-jdk
+if [[ `echo $RUN_OPTION | egrep 'jdk1.6'` ]] ; then
+    sudo aptitude -y install sun-java6-jdk
+    wget http://$IBUILD_SVN_SRV/linux/jdk1.6.0_45.bz2
+    sudo tar xfj jdk1.6.0_45.bz2 -C /usr/local/
+    rm jdk1.6.0_45.bz2
+
+    if [[ -d /usr/lib/jvm/java-6-sun ]] ; then
+        sudo ln -sf /usr/lib/jvm/java-6-sun /usr/local/jdk1.6
+    elif [[ -d /usr/local/jdk1.6.0_45 ]] ; then
+        sudo ln -sf /usr/local/jdk1.6.0_45 /usr/local/jdk1.6
+    else
+        echo 'No jdk1.6'
+    fi
+fi
 
 # install system monitor tool
 sudo aptitude -y install lm-sensors ganglia-monitor ganglia-modules-linux
@@ -124,40 +153,31 @@ sudo aptitude -y install lm-sensors ganglia-monitor ganglia-modules-linux
 sudo sensors-detect
 
 # install web server for monitor if need
-if [[ `echo $RUN_OPTION | egrep 'S|A'` ]] ; then
-	sudo aptitude -y install nginx php5-fpm gmetad ganglia-webfrontend
-	useradd irobot -s /usr/sbin/nologin
+if [[ `echo $RUN_OPTION | egrep 'admin'` ]] ; then
+    sudo aptitude -y install nginx php5-fpm gmetad ganglia-webfrontend
+    useradd irobot -m -s /usr/bin/lshell
+    useradd sshfs -m -s /usr/bin/lshell
 fi
 
 # install debug tool
-if [[ `echo $RUN_OPTION | egrep 'D|A'` ]] ; then
-	sudo aptitude -y install minicom valgrind
+if [[ `echo $RUN_OPTION | egrep 'debuger'` ]] ; then
+    sudo aptitude -y install minicom valgrind
 fi
 
 # install lightweight window manager with remote desktop
-if [[ `echo $RUN_OPTION | egrep 'R|A'` ]] ; then
-	sudo add-apt-repository ppa:x2go/stable
-	sudo apt-get update
-	sudo aptitude -y install openbox icewm blackbox tightvncserver \
-	x2goserver x2goserver-xsession x2goclient wmii2 dwm wmctrl xfce4
+if [[ `echo $RUN_OPTION | egrep 'remote'` ]] ; then
+    sudo add-apt-repository ppa:x2go/stable
+    sudo apt-get update
+    sudo aptitude -y install openbox icewm blackbox tightvncserver \
+    x2goserver x2goserver-xsession x2goclient wmii2 dwm wmctrl xfce4
 fi
 
 # clean email service
-if [[ `echo $RUN_OPTION | egrep 'C'` ]] ; then
-	sudo aptitude -y purge nbSMTP exim4 exim4-base exim4-daemon-light libpam-smbpass
+if [[ `echo $RUN_OPTION | egrep 'nomail'` ]] ; then
+    sudo aptitude -y purge nbSMTP exim4 exim4-base exim4-daemon-light libpam-smbpass
 fi
 
-if [[ -d /usr/lib/jvm/java-6-sun ]] ; then
-	sudo ln -sf /usr/lib/jvm/java-6-sun /usr/local/jdk1.6
-elif [[ -d /usr/local/jdk1.6.0_45 ]] ; then
-	sudo ln -sf /usr/local/jdk1.6.0_45 /usr/local/jdk1.6
-else
-	echo 'No jdk1.6'
-fi
-sudo ln -s /usr/bin/fromdos /usr/local/bin/dos2unix
-
-sudo ln -sf /usr/lib/jvm/java-7-openjdk-amd64 /usr/local/jdk1.7
-sudo ln -sf /usr/local/jdk1.7 /usr/local/jdk
+[[ -f /usr/bin/fromdos ]] && sudo ln -s /usr/bin/fromdos /usr/local/bin/dos2unix
 
 echo "export LC_ALL=C
 export LC_CTYPE=C
@@ -177,16 +197,16 @@ export VISUAL=vim
 sudo cp /tmp/bash.ibuild.bashrc /etc
 
 if [[ ! `grep ibuild /etc/bash.bashrc` ]] ; then
-	cp /etc/bash.bashrc /tmp
-	echo ". /etc/bash.ibuild.bashrc" >>/tmp/bash.bashrc
-	sudo cp /tmp/bash.bashrc /etc
+    cp /etc/bash.bashrc /tmp
+    echo ". /etc/bash.ibuild.bashrc" >>/tmp/bash.bashrc
+    sudo cp /tmp/bash.bashrc /etc
 fi
 
 . /etc/bash.ibuild.bashrc
-ccache -M 50G
+ccache -M 150G
 
 # setup svn server
-if [[ `echo $RUN_OPTION | egrep 'S'` ]] ; then
+if [[ `echo $RUN_OPTION | egrep 'server'` ]] ; then
 	mkdir -p /local/svn.srv/{conf,repo}
 	cd /local/svn.srv/repo
 	svnadmin create ibuild
