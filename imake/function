@@ -63,7 +63,7 @@ EXPORT_IBUILD_CONF()
  export LOC_REPO_MIRROR_PATH=`grep '^LOC_REPO_MIRROR_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_REPO_MIRROR_PATH=' {'print $2'}`
  export LOC_WORKSPACE=`grep '^LOC_WORKSPACE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_WORKSPACE=' {'print $2'}`
 # mkdir -p /local/{ccache,out} >/dev/null 2>&1
- mkdir -p /local/workspace/{ref_repo,build} >/dev/null 2>&1
+ mkdir -p /local/workspace/{subv_repo,build} >/dev/null 2>&1
  [[ -z $CCACHE_DIR ]] && export CCACHE_DIR=`grep '^CCACHE_DIR=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_DIR=' {'print $2'}`
  [[ -z $CCACHE_UMASK ]] && export CCACHE_UMASK=`grep '^CCACHE_UMASK=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_UMASK=' {'print $2'}` 
  [[ -z $CCACHE_BASEDIR ]] && export CCACHE_BASEDIR=`grep '^CCACHE_BASEDIR=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_BASEDIR=' {'print $2'}`
@@ -132,7 +132,7 @@ EXPORT_IBUILD_SPEC()
  export IVERIFY_PRIORITY=$(grep '^IVERIFY_PRIORITY=' $IBUILD_SPEC | awk -F'IVERIFY_PRIORITY=' {'print $2'})
  export ITASK_ORDER=$(grep '^ITASK_ORDER=' $IBUILD_SPEC | awk -F'ITASK_ORDER=' {'print $2'} | head -n1)
      [[ -z $ITASK_ORDER && ! -z $ITASK_TMP ]] && export ITASK_ORDER=$ITASK_TMP
- export IBUILD_REF_REPO=$(grep '^IBUILD_REF_REPO=' $IBUILD_SPEC | awk -F'IBUILD_REF_REPO=' {'print $2'}) 
+ export IBUILD_SUBV_REPO=$(grep '^IBUILD_SUBV_REPO=' $IBUILD_SPEC | awk -F'IBUILD_SUBV_REPO=' {'print $2'}) 
  export IBUILD_ADD_STEP_1=`grep '^IBUILD_ADD_STEP_1=' $IBUILD_SPEC | awk -F'IBUILD_ADD_STEP_1=' {'print $2'}`
  [[ ! -z $IBUILD_ADD_STEP_1 ]] && export IBUILD_ADD_STEP_1_LOG_NAME=$(basename $IBUILD_ADD_STEP_1)
  export IBUILD_ADD_STEP_2=`grep '^IBUILD_ADD_STEP_2=' $IBUILD_SPEC | awk -F'IBUILD_ADD_STEP_2=' {'print $2'}`
@@ -263,25 +263,25 @@ SPLIT_LINE()
  echo -e "\n-------------------------$SPLIT_WORD"
 }
 
-BTRFS_CLEANUP_REF_REPO()
+BTRFS_CLEANUP_SUBV_REPO()
 {
- for REF_REPO_MD5 in `ls $LOC_WORKSPACE/ref_repo | egrep -v 'info'`
+ for SUBV_REPO_MD5 in `ls $LOC_WORKSPACE/subv_repo | egrep -v 'info'`
  do
-    export REF_REPO_CLEAN=''
-    export REF_REPO_TIME=$(stat -c %Z $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5)
-    export REF_REPO_SIZE=$(du -sh $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5/.repo | grep G | awk -F'G' {'print $1'} | awk -F'.' {'print $1'})
-    [[ ! -z $REF_REPO_SIZE && $REF_REPO_SIZE -ge 30 ]] && export REF_REPO_CLEAN=yes
-    [[ `echo $FULL_TODAY - $REF_REPO_TIME | bc` -ge 2600000 ]] && export REF_REPO_CLEAN=yes
+    export SUBV_REPO_CLEAN=''
+    export SUBV_REPO_TIME=$(stat -c %Z $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5)
+    export SUBV_REPO_SIZE=$(du -sh $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5/.repo | grep G | awk -F'G' {'print $1'} | awk -F'.' {'print $1'})
+    [[ ! -z $SUBV_REPO_SIZE && $SUBV_REPO_SIZE -ge 30 ]] && export SUBV_REPO_CLEAN=yes
+    [[ `echo $FULL_TODAY - $SUBV_REPO_TIME | bc` -ge 2600000 ]] && export SUBV_REPO_CLEAN=yes
 
-    if [[ ! -z $REF_REPO_CLEAN ]] ; then
+    if [[ ! -z $SUBV_REPO_CLEAN ]] ; then
         export SEED=$RANDOM
         echo -------------------------
-        echo $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5
+        echo $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5
         echo $LOC_WORKSPACE/build/bad.$SEED
-        cat $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5.info
+        cat $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5.info
         echo -------------------------
-        mv $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5 $LOC_WORKSPACE/build/bad.$SEED
-        mv $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5.info $LOC_WORKSPACE/build/bad.$SEED/
+        mv $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5 $LOC_WORKSPACE/build/bad.$SEED
+        mv $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5.info $LOC_WORKSPACE/build/bad.$SEED/
     fi
  done
 }
@@ -290,19 +290,19 @@ BTRFS_CLEANUP()
 {
  export BTRFS_TOP=`basename $1`
 
- for REF_REPO_MD5 in `ls $LOC_WORKSPACE/ref_repo | egrep -v 'info'`
+ for SUBV_REPO_MD5 in `ls $LOC_WORKSPACE/subv_repo | egrep -v 'info'`
  do
-    export REF_REPO_CLEAN=''
-    [[ ! -f $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5/Makefile ]] && export REF_REPO_CLEAN=yes
-    if [[ ! -z $REF_REPO_CLEAN ]] ; then
+    export SUBV_REPO_CLEAN=''
+    [[ ! -f $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5/Makefile ]] && export SUBV_REPO_CLEAN=yes
+    if [[ ! -z $SUBV_REPO_CLEAN ]] ; then
         export SEED=$RANDOM
         echo -------------------------
-        echo $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5
+        echo $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5
         echo $LOC_WORKSPACE/build/bad.$SEED
-        cat $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5.info
+        cat $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5.info
         echo -------------------------
-        mv $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5 $LOC_WORKSPACE/build/bad.$SEED
-        mv $LOC_WORKSPACE/ref_repo/$REF_REPO_MD5.info $LOC_WORKSPACE/build/bad.$SEED/
+        mv $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5 $LOC_WORKSPACE/build/bad.$SEED
+        mv $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5.info $LOC_WORKSPACE/build/bad.$SEED/
     fi
  done
 
@@ -313,7 +313,7 @@ BTRFS_CLEANUP()
 	mv $LOC_WORKSPACE/build/$BTRFS_SUBVOL $LOC_WORKSPACE/build/bad.$SEED.$RANDOM >/dev/null 2>&1
  done
 
- for BTRFS_SUBVOL in `sudo btrfs subvolume list $LOC_WORKSPACE | egrep -v 'ref_repo' | awk -F'path ' {'print $2'} | grep $BTRFS_TOP | awk -F'build/' {'print $2'}`
+ for BTRFS_SUBVOL in `sudo btrfs subvolume list $LOC_WORKSPACE | egrep -v 'subv_repo' | awk -F'path ' {'print $2'} | grep $BTRFS_TOP | awk -F'build/' {'print $2'}`
  do
 	sleep 3
 	SPLIT_LINE clean_$LOC_WORKSPACE/$BTRFS_SUBVOL
@@ -353,26 +353,26 @@ REPO_INFO()
  export REPO_INIT_CMD_MD5_NAME=`cat /tmp/$USER.repo_init.tmp | md5sum | awk -F' ' {'print $1'}`
  export BTRFS_NAME=$REPO_INIT_CMD_MD5_NAME
  export BUILD_PATH_TOP=$LOC_WORKSPACE/build/$BTRFS_NAME
- if [[ ! -z $IBUILD_REF_REPO && -d $LOC_WORKSPACE/ref_repo/$IBUILD_REF_REPO ]] ; then
-    export LOC_REF_REPO=$LOC_WORKSPACE/ref_repo/$IBUILD_REF_REPO
+ if [[ ! -z $IBUILD_SUBV_REPO && -d $LOC_WORKSPACE/subv_repo/$IBUILD_SUBV_REPO ]] ; then
+    export LOC_SUBV_REPO=$LOC_WORKSPACE/subv_repo/$IBUILD_SUBV_REPO
  else
-    export LOC_REF_REPO=$LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
+    export LOC_SUBV_REPO=$LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
  fi
-    [[ ! -d $LOC_REF_REPO ]] && SETUP_REF_REPO
+    [[ ! -d $LOC_SUBV_REPO ]] && SETUP_SUBV_REPO
 }
 
-SETUP_REF_REPO()
+SETUP_SUBV_REPO()
 {
- if [[ ! -d $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME ]] ; then
-	mv /tmp/$USER.repo_init.tmp $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME.info
-	cd $LOC_WORKSPACE/ref_repo/
+ if [[ ! -d $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME ]] ; then
+	mv /tmp/$USER.repo_init.tmp $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME.info
+	cd $LOC_WORKSPACE/subv_repo/
 	btrfs subvolume create $REPO_INIT_CMD_MD5_NAME >/dev/null 2>&1
-	chmod 775 $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
-	cd $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
-	/bin/bash $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME.info >$LOG_PATH/init.log 2>&1
+	chmod 775 $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
+	cd $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
+	/bin/bash $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME.info >$LOG_PATH/init.log 2>&1
 	MASK_LOG $LOG_PATH/init.log
-	REPO_SYNC $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME
-	cp $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME.info $LOC_WORKSPACE/ref_repo/$REPO_INIT_CMD_MD5_NAME/ >/dev/null 2>&1
+	REPO_SYNC $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
+	cp $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME.info $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME/ >/dev/null 2>&1
  fi
 }
 
@@ -428,7 +428,7 @@ REPO_SYNC()
     time $REPO_CMD sync -c --no-tags -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
     export STATUS_SYNC=$?
  elif [[ ! -z $SYNC_ONLY ]] ; then
-    BTRFS_CLEANUP_REF_REPO && $REPO_CMD sync -c --no-tags -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1 &
+    BTRFS_CLEANUP_SUBV_REPO && $REPO_CMD sync -c --no-tags -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1 &
  fi
 
  for INDEX_LOCK_REPO in `grep index.lock $LOG_PATH/$REPO_SYNC_LOG_NAME.log | awk -F"'" {'print $2'} | awk -F'/.git' {'print $1'}`
@@ -465,7 +465,7 @@ SETUP_BUILD_REPO()
  done
 
  SPLIT_LINE snapshot_$BUILD_PATH_TOP 
- time btrfs subvolume snapshot $LOC_REF_REPO $BUILD_PATH_TOP >>$LOG_PATH/fs_issue.log 2>&1
+ time btrfs subvolume snapshot $LOC_SUBV_REPO $BUILD_PATH_TOP >>$LOG_PATH/fs_issue.log 2>&1
  LOG_STATUS $? snapshot_$BUILD_PATH_TOP $LOG_PATH/fs_issue.log
 
  REPO_SYNC $BUILD_PATH_TOP
