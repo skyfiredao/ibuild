@@ -25,10 +25,10 @@ export USER=$(whoami)
 export USER_UID=$(id -u $USER)
 export USER_GID=$(id -g $USER)
 
-export TAG_NAME=sshd
+export TAG_NAME=gitblit
 export PORT_MAP=2222:22
 export VOLUME_localtime=/etc/localtime:/etc/localtime:ro
-export VOLUME_local=/local/ref_repo:/local/ref_repo:ro
+export VOLUME_local=/local/srv/gitblit:/local/srv/gitblit
 export VOLUME_etc_ssh=/etc/ssh:/etc/ssh:ro
 export DOCKER_NAMES=$TAG_NAME-$TODAY.$SEED
 export IMAGE_TAG=ibuild/$TAG_NAME
@@ -49,7 +49,7 @@ export CONTAINER_ID=$(docker run \
 --name=$DOCKER_NAMES \
 -t $IMAGE_TAG)
 
-docker exec -t $DOCKER_NAMES bash -l -c "service ssh start"
+docker exec -t $DOCKER_NAMES bash -l -c "service  start"
 
 echo CONTAINER_ID=$CONTAINER_ID
 docker ps | egrep "CONTAINER|$IMAGE_TAG"
