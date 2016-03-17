@@ -60,7 +60,7 @@ EXPORT_IBUILD_CONF()
 {
  export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
  export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
- export LOC_REPO_MIRROR_PATH=`grep '^LOC_REPO_MIRROR_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_REPO_MIRROR_PATH=' {'print $2'}`
+ export LOC_REF_REPO_PATH=`grep '^LOC_REF_REPO_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_REF_REPO_PATH=' {'print $2'}`
  export LOC_WORKSPACE=`grep '^LOC_WORKSPACE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_WORKSPACE=' {'print $2'}`
 # mkdir -p /local/{ccache,out} >/dev/null 2>&1
  mkdir -p /local/workspace/{subv_repo,build} >/dev/null 2>&1
@@ -345,7 +345,7 @@ REPO_INFO()
  export REPO_INIT_CMD=''
  [[ ! -z $IBUILD_GRTSRV_REPO ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" --repo-url=ssh://$IBUILD_GRTSRV_ID_DEFAULT@$IBUILD_GRTSRV_REPO"
  [[ ! -z $IBUILD_GRTSRV_INIT_OPTION ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" $IBUILD_GRTSRV_INIT_OPTION"
- [[ ! -z $LOC_REPO_MIRROR_PATH ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" --reference=$LOC_REPO_MIRROR_PATH"
+ [[ ! -z $LOC_REF_REPO_PATH ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" --reference=$LOC_REF_REPO_PATH"
  [[ ! -z $IBUILD_GRTSRV_BRANCH ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" -b $IBUILD_GRTSRV_BRANCH"
  [[ ! -z $IBUILD_GRTSRV_MANIFEST && $IBUILD_GRTSRV_MANIFEST != default.xml ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" -m $IBUILD_GRTSRV_MANIFEST"
 
