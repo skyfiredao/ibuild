@@ -32,6 +32,13 @@ export VOLUME_etc_ssh=/etc/ssh:/etc/ssh:ro
 export DOCKER_NAMES=sshd-$TODAY.$SEED
 export IMAGE_TAG=ibuild/sshd
 
+if [[ `docker ps | grep $IMAGE_TAG | awk -F' ' {'print $1'}` ]] ; then
+    echo ">>>>>>>> $IMAGE_TAG is running <<<<<<<<"
+    docker ps | grep $IMAGE_TAG
+    echo ">>>>>>>> $IMAGE_TAG is running <<<<<<<<"
+    exit
+fi
+
 export CONTAINER_ID=$(docker run \
 -d \
 -p $PORT_MAP \
