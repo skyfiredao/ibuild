@@ -5,10 +5,7 @@ MAINTAINER Ding Wei
 RUN apt-get update
 RUN apt-get -y install subversion curl wget git
 
-RUN apt-get install -q -y openjdk-7-jdk
-RUN apt-get install -q -y bison g++-multilib git gperf libxml2-utils
-RUN apt-get install -q -y zip unzip make maven2
-RUN apt-get clean
+RUN apt-get install -q -y openjdk-7-jdk bison g++-multilib git gperf libxml2-utils zip unzip make
 
 # NODE_USER=builder
 RUN groupadd -g USER_GID builder

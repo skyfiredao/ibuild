@@ -15,7 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Change log
-# 050303 Ding Wei init and reference from web
+# 150303 Ding Wei init and reference from web
+# 160316 Ding Wei change for multi-Dockerfile
 
 export LC_CTYPE=C
 export SEED=$RANDOM
@@ -24,18 +25,22 @@ export TODAY=$(date +%y%m%d)
 export USER=$(whoami)
 export USER_UID=$(id -u $USER)
 export USER_GID=$(id -g $USER)
-export IMAGE_TAG=image/node
 export PATH_BUILD=.
-[[ -f $1 ]] && export Dockerfile=$1
-[[ -z $Dockerfile ]] && export Dockerfile=conf/build_node.Dockerfile
 
-cat $Dockerfile | sed "s/USER_UID/$USER_UID/g" | sed "s/USER_GID/$USER_GID/g" >$Dockerfile.$SEED
+if [[ ! -d conf ]] ; then
+    echo -e "Please goto docker_build.sh folder run it"
+    exit
+fi
 
-docker build \
--f $Dockerfile.$SEED \
--t $IMAGE_TAG \
-$PATH_BUILD
+for Dockerfile in `ls conf`
+do
+    export IMAGE_TAG=ibuild$(echo $Dockerfile | awk -F'.Dockerfile' {'print $1'})
+    rm -f Dockerfile
+    cat conf/$Dockerfile | sed "s/USER_UID/$USER_UID/g" | sed "s/USER_GID/$USER_GID/g" >Dockerfile
 
-$DEBUG rm -f $Dockerfile.$SEED
+    time docker build -f Dockerfile -t $IMAGE_TAG $PATH_BUILD
+done
+
+$DEBUG rm -f Dockerfile
 
 

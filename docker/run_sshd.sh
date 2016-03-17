@@ -15,37 +15,36 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Change log
-# 150303 Ding Wei init and reference from web
+# 160316 Ding Wei init and reference from web
 
 export LC_CTYPE=C
 export SEED=$RANDOM
 export TODAY=$(date +%y%m%d)
-[[ `echo $* | grep debug` ]] && export DEBUG=echo
+[[ ! `echo $* | grep debug` ]] && export DEBUG=echo
 export USER=$(whoami)
 export USER_UID=$(id -u $USER)
 export USER_GID=$(id -g $USER)
-export NODE_USER=builder
-export DNS_SRV=$(grep ^nameserver /etc/resolv.conf | awk -F' ' {'print $2'} | head -n1)
-export VOLUME_local=/local:/local
+
+export PORT_MAP=2222:22
 export VOLUME_localtime=/etc/localtime:/etc/localtime:ro
-export VOLUME_HOME_ssh=$HOME/.ssh:/home/builder/.ssh
-export IMAGE_TAG=image/node
+export VOLUME_local=/local/ref_repo:/local/ref_repo:ro
+export VOLUME_etc_ssh=/etc/ssh:/etc/ssh:ro
+export DOCKER_NAMES=sshd-$TODAY.$SEED
+export IMAGE_TAG=ibuild/sshd
 
 export CONTAINER_ID=$(docker run \
---privileged=true \
--e USER_UID=$USER_UID \
--e USER_GID=$USER_GID \
--e NODE_USER=$NODE_USER \
---dns $DNS_SRV \
 -d \
+-p $PORT_MAP \
 -v $VOLUME_localtime \
 -v $VOLUME_local \
--v $VOLUME_HOME_ssh \
---name=node-$TODAY.$SEED \
+-v $VOLUME_etc_ssh \
+--name=$DOCKER_NAMES \
 -t $IMAGE_TAG)
 
-echo CONTAINER_ID=$CONTAINER_ID
-docker ps | egrep "CONTAINER|node-$TODAY.$SEED"
+docker exec -t $DOCKER_NAMES bash -l -c "service ssh start"
 
-$DEBUG docker exec -i -t node-$TODAY.$SEED bash -l -c "su - $NODE_USER"
+echo CONTAINER_ID=$CONTAINER_ID
+docker ps | egrep "CONTAINER|$IMAGE_TAG"
+
+$DEBUG docker exec -i -t $DOCKER_NAMES bash
 
