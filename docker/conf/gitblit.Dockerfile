@@ -7,6 +7,5 @@ RUN apt-get update -qq \
 
 # create account for sshfs disable password login and use Restricted Shell for sshfs only
 RUN addgroup --gid 1000 --system ibuild \
-&& adduser --system --shell /bin/bash --disabled-password --uid 1000 --ingroup ibuild --home /local/srv/gitblit gitblit
-
+&& adduser --system --shell /usr/bin/git-shell --disabled-password --uid 1000 --ingroup ibuild --home /local/srv/gitblit gitblit
 

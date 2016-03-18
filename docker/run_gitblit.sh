@@ -27,12 +27,16 @@ export USER_GID=$(id -g $USER)
 
 export TAG_NAME=gitblit
 export PORT_MAP_HTTPS=8443:8443
-export PORT_MAP_GIT=29418:29418
+export PORT_MAP_GIT=29418:22
 export VOLUME_localtime=/etc/localtime:/etc/localtime:ro
 export VOLUME_local=/local/srv/gitblit:/local/srv/gitblit
 export VOLUME_etc_ssh=/etc/ssh:/etc/ssh:ro
 export DOCKER_NAMES=$TAG_NAME-$TODAY.$SEED
 export IMAGE_TAG=ibuild/$TAG_NAME
+
+mkdir -p /local/srv/gitblit/.ssh >/dev/null 2>&1
+cat /local/srv/gitblit/data/ssh/* | sed 's/^RW //g'>/local/srv/gitblit/.ssh/authorized_keys
+chmod 600 /local/srv/gitblit/.ssh/authorized_keys
 
 if [[ `docker ps | grep $IMAGE_TAG | awk -F' ' {'print $1'}` ]] ; then
     echo ">>>>>>>>>>>>>>>>>>> $IMAGE_TAG is running"
@@ -53,6 +57,8 @@ export CONTAINER_ID=$(docker run \
 docker exec -t $DOCKER_NAMES bash -l -c "cp /local/srv/gitblit/service-ubuntu.sh /etc/init.d/gitblit"
 docker exec -t $DOCKER_NAMES bash -l -c "update-rc.d gitblit defaults"
 docker exec -t $DOCKER_NAMES bash -l -c "service gitblit start"
+docker exec -t $DOCKER_NAMES bash -l -c "service ssh start"
+docker exec -t $DOCKER_NAMES bash -l -c "/local/srv/gitblit/data/gitblit_fake.sh"
 
 echo CONTAINER_ID=$CONTAINER_ID
 docker ps | egrep "CONTAINER|$IMAGE_TAG"
