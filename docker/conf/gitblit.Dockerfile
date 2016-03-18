@@ -3,7 +3,7 @@ MAINTAINER Ding Wei, daviding924
 
 # setup openssh server and Restricted Shell
 RUN apt-get update -qq \
-&& apt-get install -y rssh openssh-server openjdk-7-jdk git git-core
+&& apt-get install -y rssh openssh-server openjdk-7-jdk git git-core subversion
 
 # create account for sshfs disable password login and use Restricted Shell for sshfs only
 RUN addgroup --gid 1000 --system ibuild \

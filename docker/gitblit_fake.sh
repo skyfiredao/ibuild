@@ -17,15 +17,19 @@
 # Change log
 # 160317 Ding Wei init and reference from web
 
-for GIT_REPO_NAME in `ls /local/srv/gitblit/data/git_repo`
+[[ -z $GITBLIT_PATH ]] && export GITBLIT_PATH=/local/srv/gitblit
+
+for GIT_REPO_NAME in `ls $GITBLIT_PATH/data/git_repo`
 do
     rm -f /$GIT_REPO_NAME
-    ln -sf /local/srv/gitblit/data/git_repo/$GIT_REPO_NAME /$GIT_REPO_NAME
+    ln -sf $GITBLIT_PATH/data/git_repo/$GIT_REPO_NAME /$GIT_REPO_NAME
 done
 
-for USER_ID in `ls /local/srv/gitblit/data/ssh | awk -F'.keys' {'print $1'}`
+for USER_ID in `ls $GITBLIT_PATH/data/ssh | awk -F'.keys' {'print $1'}`
 do
-    adduser --system --shell /usr/bin/git-shell --disabled-password --ingroup ibuild --home /local/srv/gitblit $USER_ID
-    usermod -o -u 1000 $USER_ID
+    if [[ ! `id $USER_ID` ]] ; then
+        adduser --system --shell /usr/bin/git-shell --disabled-password --ingroup ibuild --home $GITBLIT_PATH $USER_ID
+        usermod -o -u 1000 $USER_ID
+    fi
 done
 
