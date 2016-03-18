@@ -34,9 +34,8 @@ export DOCKER_NAMES=$TAG_NAME-$TODAY.$SEED
 export IMAGE_TAG=ibuild/$TAG_NAME
 
 if [[ `docker ps | grep $IMAGE_TAG | awk -F' ' {'print $1'}` ]] ; then
-    echo ">>>>>>>> $IMAGE_TAG is running <<<<<<<<"
+    echo ">>>>>>>>>>>>>>>>>>> $IMAGE_TAG is running"
     docker ps | grep $IMAGE_TAG
-    echo ">>>>>>>> $IMAGE_TAG is running <<<<<<<<"
     exit
 fi
 

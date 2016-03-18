@@ -26,7 +26,8 @@ export USER_UID=$(id -u $USER)
 export USER_GID=$(id -g $USER)
 
 export TAG_NAME=gitblit
-export PORT_MAP=2222:22
+export PORT_MAP_HTTPS=8443:8443
+export PORT_MAP_GIT=29418:29418
 export VOLUME_localtime=/etc/localtime:/etc/localtime:ro
 export VOLUME_local=/local/srv/gitblit:/local/srv/gitblit
 export VOLUME_etc_ssh=/etc/ssh:/etc/ssh:ro
@@ -34,25 +35,26 @@ export DOCKER_NAMES=$TAG_NAME-$TODAY.$SEED
 export IMAGE_TAG=ibuild/$TAG_NAME
 
 if [[ `docker ps | grep $IMAGE_TAG | awk -F' ' {'print $1'}` ]] ; then
-    echo ">>>>>>>> $IMAGE_TAG is running <<<<<<<<"
+    echo ">>>>>>>>>>>>>>>>>>> $IMAGE_TAG is running"
     docker ps | grep $IMAGE_TAG
-    echo ">>>>>>>> $IMAGE_TAG is running <<<<<<<<"
     exit
 fi
 
 export CONTAINER_ID=$(docker run \
 -d \
--p $PORT_MAP \
+-p $PORT_MAP_HTTPS \
+-p $PORT_MAP_GIT \
 -v $VOLUME_localtime \
 -v $VOLUME_local \
 -v $VOLUME_etc_ssh \
 --name=$DOCKER_NAMES \
 -t $IMAGE_TAG)
 
-docker exec -t $DOCKER_NAMES bash -l -c "service  start"
+docker exec -t $DOCKER_NAMES bash -l -c "cp /local/srv/gitblit/service-ubuntu.sh /etc/init.d/gitblit"
+docker exec -t $DOCKER_NAMES bash -l -c "update-rc.d gitblit defaults"
+docker exec -t $DOCKER_NAMES bash -l -c "service gitblit start"
 
 echo CONTAINER_ID=$CONTAINER_ID
 docker ps | egrep "CONTAINER|$IMAGE_TAG"
 
 $DEBUG docker exec -i -t $DOCKER_NAMES bash
-
