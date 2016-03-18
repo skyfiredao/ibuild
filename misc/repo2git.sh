@@ -21,6 +21,7 @@ export REPO_PATH=$1
 export GIT_PATH=$2
 export NOW=$(date +%y%m%d%H%M%S)
 export LOC_WS=$(dirname $GIT_PATH)
+[[ `echo $* | grep debug` ]] && export DEBUG=echo
 
 [[ ! -d $REPO_PATH/.repo || ! -d $GIT_PATH/.git ]] && exit 1
 
@@ -41,7 +42,7 @@ echo "tail -f /tmp/repo2git.log"
 rsync -av --delete $REPO_PATH/ $GIT_PATH/ >/tmp/repo2git.log 2>&1
 
 cd $GIT_PATH
-for CLEAN in `cat $LOC_WS/$NOW/file_repo.list | egrep '.git$|.gitignore$|.svn$|.gitattributes$'`
+for CLEAN in `cat $LOC_WS/$NOW/file_repo.list | egrep '.git$|.gitignore$|.svn$|.gitattributes$|speechdata'`
 do
     rm -fr $GIT_PATH/$CLEAN
 done
@@ -65,9 +66,16 @@ do
     echo '------------------------------'
     echo process $GIT_ADD
     echo '------------------------------'
-    git add $GIT_ADD
-    git commit -m "auto commit $GIT_ADD" $GIT_ADD
-    git push
+$DEBUG    git add $GIT_ADD
+done
+
+for GIT_COMMIT in `cat $LOC_WS/$NOW/git.status | grep '^#' | egrep 'deleted|modified' | awk -F' ' {'print $3'} | awk -F'/' {'print $1'} | sort -u`
+do
+    for SUB_DIR in `cat $LOC_WS/$NOW/git.status | grep '^#' | egrep 'deleted|modified' | awk -F' ' {'print $3'} | awk -F'/' {'print $2'} | sort -u`
+    do
+$DEBUG        git commit -m "auto commit $GIT_COMMIT/$SUB_DIR" $GIT_COMMIT/$SUB_DIR
+$DEBUG        git push
+    done
 done
 
 for GIT_IGNORE in `cat $LOC_WS/$NOW/file_repo.list | egrep '.git$|.gitignore$|.gitattributes$'`
@@ -76,9 +84,22 @@ do
     [[ -d $GIT_IGNORE ]] && cp $GIT_PATH/$GIT_IGNORE $REPO_PATH/$GIT_IGNORE
 done
 
-git add *
-git commit -m "auto commit gitignore" *
-git push
+for GIT_ADD in `cat $LOC_WS/$NOW/git.status | egrep -v 'deleted|modified|\:|\(|#$|branch' | awk -F'/' {'print $1'} | sort -u`
+do
+    if [[ -d $GIT_PATH/$GIT_ADD ]] ; then
+        cd $GIT_PATH/$GIT_ADD
+$DEBUG        git add *
+$DEBUG        git commit -m "add new file in $GIT_ADD" *
+$DEBUG        git push
+        cd $GIT_PATH
+    else
+$DEBUG        git add $GIT_PATH/$GIT_ADD
+    fi
+done
+
+$DEBUG git add *
+$DEBUG git commit -m "auto commit gitignore" *
+$DEBUG git push
 
 mv $LOC_WS/$NOW/repo $REPO_PATH/.repo
 mv $LOC_WS/$NOW/out.repo $REPO_PATH/out
