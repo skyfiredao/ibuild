@@ -56,15 +56,16 @@ rm -f $GIT_PATH/prebuilts/misc/linux-x86/ccache/*
 cp /usr/bin/ccache $GIT_PATH/prebuilts/misc/linux-x86/ccache/
 
 mkdir -p external/chromium_org/third_party/angle/git
-cp external/chromium_org/third_party/angle/.git/index external/chromium_org/third_party/angle/git/
-echo "cp -R external/chromium_org/third_party/angle/git external/chromium_org/third_party/angle/.git" >>build/envsetup.sh
-git add external/chromium_org/third_party/angle/git
+cp $REPO_PATH/external/chromium_org/third_party/angle/.git/index $GIT_PATH/external/chromium_org/third_party/angle/git/
+echo "cp -R external/chromium_org/third_party/angle/git external/chromium_org/third_party/angle/.git" >>$GIT_PATH/build/envsetup.sh
 
-rm -fr cts docs
+rm -fr cts docs prebuilts/eclipse external/eclipse-basebuilder tools/external/gradle
 
 mv $LOC_WS/$NOW/git $GIT_PATH/.git
 
 git status >$LOC_WS/$NOW/git.status 2>&1
+
+git add $GIT_PATH/external/chromium_org/third_party/angle/git
 
 for GIT_ADD in `cat $LOC_WS/$NOW/git.status | grep '^#' | egrep 'deleted|modified' | awk -F' ' {'print $3'} | awk -F'/' {'print $1'} | sort -u`
 do
@@ -107,7 +108,7 @@ $DEBUG git commit -m "auto commit gitignore" *
 $DEBUG git push
 
 mv $LOC_WS/$NOW/repo $REPO_PATH/.repo
-mv $LOC_WS/$NOW/out.repo $REPO_PATH/out
+mv $LOC_WS/$NOW/out.repo $REPO_PATH/out >/dev/null 2>&1
 
 
 
