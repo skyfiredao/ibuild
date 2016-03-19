@@ -55,6 +55,11 @@ done
 rm -f $GIT_PATH/prebuilts/misc/linux-x86/ccache/*
 cp /usr/bin/ccache $GIT_PATH/prebuilts/misc/linux-x86/ccache/
 
+mkdir -p external/chromium_org/third_party/angle/git
+cp external/chromium_org/third_party/angle/.git/index external/chromium_org/third_party/angle/git/
+echo "cp -R external/chromium_org/third_party/angle/git external/chromium_org/third_party/angle/.git" >>build/envsetup.sh
+git add external/chromium_org/third_party/angle/git
+
 rm -fr cts docs
 
 mv $LOC_WS/$NOW/git $GIT_PATH/.git
