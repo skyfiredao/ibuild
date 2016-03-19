@@ -67,7 +67,7 @@ export CONTAINER_ID=$(docker run \
 -t $IMAGE_TAG)
 
 docker exec -t $DOCKER_NAMES bash -l -c "cp $GITBLIT_PATH/service-ubuntu.sh /etc/init.d/gitblit"
-docker exec -t $DOCKER_NAMES bash -l -c "update-rc.d gitblit defaults"
+docker exec -t $DOCKER_NAMES bash -l -c "update-rc.d gitblit defaults >/dev/null 2>&1"
 docker exec -t $DOCKER_NAMES bash -l -c "service gitblit start"
 docker exec -t $DOCKER_NAMES bash -l -c "service ssh start"
 docker exec -t $DOCKER_NAMES bash -l -c "$GITBLIT_PATH/data/gitblit_fake.sh"

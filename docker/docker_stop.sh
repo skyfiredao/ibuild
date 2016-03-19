@@ -15,21 +15,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Change log
-# 160317 Ding Wei init and reference from web
+# 160318 Ding Wei init and reference from web
 
-[[ -z $GITBLIT_PATH ]] && export GITBLIT_PATH=/local/srv/gitblit
+export LC_CTYPE=C
+export FILTER=$1
+[[ -z $FILTER ]] && export FILTER=' '
 
-for GIT_REPO_NAME in `ls $GITBLIT_PATH/data/git_repo`
+for CONTAINER in `docker ps | grep "$FILTER" | grep -v CONTAINER | awk -F' ' {'print $1'}`
 do
-    rm -f /$GIT_REPO_NAME
-    ln -sf $GITBLIT_PATH/data/git_repo/$GIT_REPO_NAME /$GIT_REPO_NAME
-done
-
-for USER_ID in `ls $GITBLIT_PATH/data/ssh | awk -F'.keys' {'print $1'}`
-do
-    if [[ ! `id $USER_ID >/dev/null 2>&1` ]] ; then
-        adduser --system --shell /usr/bin/git-shell --disabled-password --ingroup ibuild --home $GITBLIT_PATH $USER_ID >/dev/null 2>&1
-        usermod -o -u 1000 $USER_ID >/dev/null 2>&1
-    fi
+    docker ps | grep $CONTAINER
+    docker stop $CONTAINER
+    docker rm $CONTAINER
 done
 
