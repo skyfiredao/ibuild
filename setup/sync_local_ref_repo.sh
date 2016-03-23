@@ -32,7 +32,7 @@ fi
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
-if [[ `cat $LOCK_SPACE/repo_sync.lock` != $TOHOUR && `ps aux | grep rsync | grep -v grep` ]] ; then
+if [[ `cat $LOCK_SPACE/repo_sync.lock` = $TOHOUR || `ps aux | grep rsync | grep -v grep` ]] ; then
     exit
 fi
 
@@ -47,7 +47,7 @@ REPO_SYNC()
 
 BTRFS_SYNC()
 {
- [[ ! -d $LOC_REF_REPO/tmp.$SRV_NAME ]] && btrfs subvolume snapshot $LOC_REF_REPO/$SRV_NAME $LOC_REF_REPO/tmp.$SRV_NAME
+ [[ ! -d $LOC_REF_REPO/tmp.$SRV_NAME ]] && btrfs subvolume snapshot $LOC_REF_REPO/$SRV_NAME $LOC_REF_REPO/tmp.$SRV_NAME >/dev/null 2>&1
  REPO_SYNC $LOC_REF_REPO/tmp.$SRV_NAME
  if [[ $SYNC_STATUS = 0 && -d $LOC_REF_REPO/tmp.$SRV_NAME ]] ; then
     [[ ! -d $LOC_REF_REPO/old.$SRV_NAME ]] && mv $LOC_REF_REPO/$SRV_NAME $LOC_REF_REPO/old.$SRV_NAME
