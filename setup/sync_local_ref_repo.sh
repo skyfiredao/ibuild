@@ -16,31 +16,56 @@
 #
 # Change log
 # 141216: Ding Wei init
+# 160322: support btrfs by Ding Wei
 
 export LC_CTYPE=C
-export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
+export JOBS=$(cat /proc/cpuinfo | grep CPU | wc -l)
 export TASK_SPACE=/run/shm
-export TOHOUR=`date +%H`
-export IBUILD_ROOT=$HOME/ibuild
-	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
-if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
-	echo -e "Please put ibuild in your $HOME"
-	exit 0
+export TOHOUR=$(date +%H)
+export LOC_REF_REPO=/local/ref_repo
+export CMD_REPO=$(which repo)
+if [[ -z $CMD_REPO ]] ; then
+    echo "Can NOT find repo command"
+    exit
 fi
+
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
-export LOC_REPO_MIRROR_PATH=`grep '^LOC_REPO_MIRROR_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_REPO_MIRROR_PATH=' {'print $2'}`
-
-[[ ! -d $LOC_REPO_MIRROR_PATH ]] && exit
-cd $LOC_REPO_MIRROR_PATH
-
-if [[ `ps aux | grep rsync | grep -v grep` ]] ; then
-	exit
+if [[ `cat $LOCK_SPACE/repo_sync.lock` != $TOHOUR && `ps aux | grep rsync | grep -v grep` ]] ; then
+    exit
 fi
 
-if [[ `cat $LOCK_SPACE/repo_sync.lock` != $TOHOUR ]] ; then
-	echo $TOHOUR >$LOCK_SPACE/repo_sync.lock
-	$IBUILD_ROOT/bin/repo sync -j$JOBS >/dev/null
-fi
+echo $TOHOUR >$LOCK_SPACE/repo_sync.lock
+
+REPO_SYNC()
+{
+ cd $1
+ $CMD_REPO sync -j$JOBS >/tmp/repo_sync.log 2>&1
+ export SYNC_STATUS=$?
+}
+
+BTRFS_SYNC()
+{
+ [[ ! -d $LOC_REF_REPO/tmp.$SRV_NAME ]] && btrfs subvolume snapshot $LOC_REF_REPO/$SRV_NAME $LOC_REF_REPO/tmp.$SRV_NAME
+ REPO_SYNC $LOC_REF_REPO/tmp.$SRV_NAME
+ if [[ $SYNC_STATUS = 0 && -d $LOC_REF_REPO/tmp.$SRV_NAME ]] ; then
+    [[ ! -d $LOC_REF_REPO/old.$SRV_NAME ]] && mv $LOC_REF_REPO/$SRV_NAME $LOC_REF_REPO/old.$SRV_NAME
+    [[ ! -d $LOC_REF_REPO/$SRV_NAME ]] && mv $LOC_REF_REPO/tmp.$SRV_NAME $LOC_REF_REPO/$SRV_NAME
+ else
+    echo "sync issue: $SRV_NAME"
+ fi
+ [[ -d $LOC_REF_REPO/$SRV_NAME/.repo ]] && sudo btrfs subvolume delete $LOC_REF_REPO/old.$SRV_NAME $LOC_REF_REPO/tmp.$SRV_NAME >/dev/null 2>&1
+}
+
+for SRV_NAME in `ls $LOC_REF_REPO/*/.repo | grep ":" | awk -F'/.repo' {'print $1'} | awk -F"$LOC_REF_REPO/" {'print $2'}`
+do
+    if [[ `sudo btrfs subvolume list $LOC_REF_REPO | grep $SRV_NAME` ]] ; then
+        BTRFS_SYNC
+    else
+        REPO_SYNC $LOC_REF_REPO/$SRV_NAME
+        [[ $SYNC_STATUS != 0 ]] && echo "sync issue: $SRV_NAME"
+    fi
+done
+
 
