@@ -38,7 +38,7 @@ export IMAGE_TAG=ibuild/$TAG_NAME
 if [[ `docker ps | grep $IMAGE_TAG | awk -F' ' {'print $1'}` ]] ; then
     for USER_ID in `ls $GITBLIT_PATH/data/ssh/ | awk -F'.keys' {'print $1'}`
     do
-        export USER_KEY=$(cat $GITBLIT_PATH/data/ssh/$USER_ID.keys | awk -F' ' {'print $3'} | head -n1 | cut -c1-10)
+        export USER_KEY=$(cat $GITBLIT_PATH/data/ssh/$USER_ID.keys | awk -F' ' {'print $3'} | head -n1 | cut -c1-20)
         if [[ `cat $GITBLIT_PATH/.ssh/authorized_keys | grep -v $USER_KEY` ]] ; then
             echo "Add $GITBLIT_PATH/data/ssh/$USER_ID.keys"
             cat $GITBLIT_PATH/data/ssh/$USER_ID.keys | sed 's/^RW //g'>>$GITBLIT_PATH/.ssh/authorized_keys
