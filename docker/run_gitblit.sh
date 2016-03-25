@@ -24,6 +24,8 @@ export TODAY=$(date +%y%m%d)
 export USER=$(whoami)
 export USER_UID=$(id -u $USER)
 export USER_GID=$(id -g $USER)
+export SHELL=/bin/bash
+export PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 export GITBLIT_PATH=/local/srv/gitblit
 export TAG_NAME=gitblit

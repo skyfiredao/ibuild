@@ -1,0 +1,1 @@
+../../docker/run_gitblit.sh

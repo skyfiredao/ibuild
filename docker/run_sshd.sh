@@ -24,6 +24,8 @@ export TODAY=$(date +%y%m%d)
 export USER=$(whoami)
 export USER_UID=$(id -u $USER)
 export USER_GID=$(id -g $USER)
+export SHELL=/bin/bash
+export PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 export TAG_NAME=sshd
 export PORT_MAP=2222:22

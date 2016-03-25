@@ -1,0 +1,6 @@
+[default]
+LANG = en_US.UTF-8
+LC_CTYPE = C
+
+[pre-commit]
+PATH = /usr/local/bin:/usr/bin:/usr/sbin

@@ -1,0 +1,117 @@
+[aliases]
+# joe = /C=XZ/ST=Dessert/L=Snake City/O=Snake Oil, Ltd./OU=Research Institute/CN=Joe Average
+
+[groups]
+ibuild_admin = dingwei
+ibuild_rw = dingwei, irobot, ibuild
+ibuild_ro = readonly
+
+[ibuild:/]
+@ibuild_admin = rw
+* =
+
+[ibuild:/ibuild]
+@ibuild_admin = rw
+ibuild = r
+* =
+
+[ibuild:/ibuild/etc]
+@ibuild_admin = rw
+* =
+
+[ibuild:/ibuild/docker]
+@ibuild_admin = rw
+* =
+
+[ibuild:/ibuild/iverify]
+@ibuild_admin = rw
+* =
+
+[ibuild:/ibuild/imake]
+@ibuild_admin = rw
+ibuild = r
+* =
+
+[ibuild:/ibuild/ihook]
+@ibuild_admin = rw
+* =
+
+[ibuild:/ibuild/ichange]
+@ibuild_admin = rw
+ibuild = r
+* =
+
+[ichange:/]
+@ibuild_admin = rw
+@ibuild_rw = rw
+@ibuild_ro = r
+* =
+
+[iverify:/iverify]
+@ibuild_admin = rw
+@ibuild_rw = rw
+@ibuild_ro = r
+iverify = r
+* =
+
+[iverify:/iverify/inode]
+@ibuild_admin = rw
+@ibuild_rw = rw
+@ibuild_ro = r
+iverify = rw
+* =
+
+[iverify:/iverify/script]
+@ibuild_admin = rw
+@ibuild_rw = rw
+@ibuild_ro = r
+iverify = rw
+* =
+
+[iversion:/]
+@ibuild_admin = rw
+@ibuild_rw = rw
+* =
+
+[ispec:/]
+@ibuild_admin = rw
+@ibuild_rw = rw
+@ibuild_ro = r
+* = r
+
+[ispec:/queue]
+@ibuild_admin = rw
+@ibuild_rw = rw
+@ibuild_ro = r
+* = r
+
+[istatus:/]
+@ibuild_admin = rw
+@ibuild_rw = rw
+@ibuild_ro = r
+* =
+
+[itask:/]
+@ibuild_admin = rw
+ibuild = rw
+* =
+
+[itask:/itask]
+@ibuild_admin = rw
+@ibuild_rw = rw
+@ibuild_ro = r
+* =
+
+[icase:/]
+@ibuild_admin = rw
+ibuild = rw
+* =
+
+[icase:/icase]
+@ibuild_admin = rw
+@ibuild_rw = rw
+@ibuild_ro = r
+* =
+
+
+

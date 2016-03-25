@@ -19,6 +19,8 @@
 # 160322: support btrfs by Ding Wei
 
 export LC_CTYPE=C
+export SHELL=/bin/bash
+export PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 export JOBS=$(cat /proc/cpuinfo | grep CPU | wc -l)
 export TASK_SPACE=/run/shm
 export TOHOUR=$(date +%H)
