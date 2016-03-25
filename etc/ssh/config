@@ -1,0 +1,11 @@
+ServerAliveInterval 60
+StrictHostKeyChecking=no
+ 
+Host gerrit.XXX.XXX
+    User ibuild
+    Port 29418
+
+Host ibuild-XX.XXX.XXX
+    User ibuild
+    Port 29418
+
