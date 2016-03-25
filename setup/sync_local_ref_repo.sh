@@ -43,6 +43,7 @@ REPO_SYNC()
  cd $1
  $CMD_REPO sync -j$JOBS >/tmp/repo_sync.log 2>&1
  export SYNC_STATUS=$?
+ echo $SYNC_STATUS >>/tmp/repo_sync.log 2>&1
 }
 
 BTRFS_SYNC()
