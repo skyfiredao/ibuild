@@ -32,10 +32,16 @@ export MAC=$(/sbin/ifconfig | grep HWaddr | awk -F'HWaddr ' {'print $2'} | sed s
 [[ `cat /proc/cpuinfo | grep ARM` ]] && export ARM=arm
 export SRV_SVN_PATH=/local/srv/svn
 export IBUILD_SRC_PATH=/local/source
+export TMP_SVN_PATH=/tmp/svn
+
+if [[ ! -d $IBUILD_SRC_PATH ]] ; then
+    echo -e "Please put all of source code file in to $IBUILD_SRC_PATH"
+    exit 1
+fi
 
 if [[ ! -d $SRV_SVN_PATH/repo ]] ; then
     sudo mkdir -p $SRV_SVN_PATH/{repo,conf}
-    sudo chown -R $USER $SRV_SVN_PATH
+    sudo chown -R $USER $SRV_SVN_PATH/{repo,conf}
 fi
 
 if [[ `ps aux | grep -v grep | grep svnserve` ]] ; then
@@ -43,7 +49,7 @@ if [[ `ps aux | grep -v grep | grep svnserve` ]] ; then
     pkill -9 svnserve
 fi
 
-cp ~/ibuild/etc/subversion/{authz,hooks-env,passwd,svnserve.conf} $SRV_SVN_PATH/conf/
+cp $IBUILD_SRC_PATH/etc/subversion/{authz,hooks-env,passwd,svnserve.conf} $SRV_SVN_PATH/conf/
 
 for REPO_NAME in ibuild ispec iverify ichange itask icase istatus iversion
 do
@@ -60,70 +66,70 @@ done
 
 /usr/bin/svnserve -d -r $SRV_SVN_PATH/repo
 
-mkdir -p /tmp/svn/{ibuild.source,iverify.source,itask.source,ichange.source}
+mkdir -p $TMP_SVN_PATH/{ibuild.source,iverify.source,itask.source,ichange.source}
 export LOCAL_SVN_OPTION="--non-interactive --no-auth-cache --username $USER --password $USER"
 
 if [[ -d $IBUILD_SRC_PATH/ibuild ]] ; then
     if [[ -d $IBUILD_SRC_PATH/ibuild/.svn ]] ; then
         svn up -q $IBUILD_SRC_PATH/ibuild
-        svn export $IBUILD_SRC_PATH/ibuild /tmp/svn/ibuild.source/ibuild
+        svn export $IBUILD_SRC_PATH/ibuild $TMP_SVN_PATH/ibuild.source/ibuild
     else
-        cp -Ra $IBUILD_SRC_PATH/ibuild /tmp/svn/ibuild.source/ibuild
+        cp -Ra $IBUILD_SRC_PATH/ibuild $TMP_SVN_PATH/ibuild.source/ibuild
     fi
-    grep -v IBUILD_SVN_SRV /tmp/svn/ibuild.source/ibuild/conf/ibuild.conf >/tmp/svn/ibuild.source/ibuild.conf
-    echo "IBUILD_SVN_SRV=$HOSTNAME_A" >>/tmp/svn/ibuild.source/ibuild.conf
-    /bin/mv /tmp/svn/ibuild.source/ibuild.conf /tmp/svn/ibuild.source/ibuild/conf/ibuild.conf
+    grep -v IBUILD_SVN_SRV $TMP_SVN_PATH/ibuild.source/ibuild/conf/ibuild.conf >$TMP_SVN_PATH/ibuild.source/ibuild.conf
+    echo "IBUILD_SVN_SRV=$HOSTNAME_A" >>$TMP_SVN_PATH/ibuild.source/ibuild.conf
+    /bin/mv $TMP_SVN_PATH/ibuild.source/ibuild.conf $TMP_SVN_PATH/ibuild.source/ibuild/conf/ibuild.conf
 
-    for CLEAN in `ls /tmp/svn/ibuild.source/ibuild/conf/priority`
+    for CLEAN in `ls $TMP_SVN_PATH/ibuild.source/ibuild/conf/priority`
     do
-        echo ''>/tmp/svn/ibuild.source/ibuild/conf/priority/$CLEAN
+        echo ''>$TMP_SVN_PATH/ibuild.source/ibuild/conf/priority/$CLEAN
     done
 
     echo -e "put $HOSTNAME_A in non-build nodes list"
-    hostname >>/tmp/svn/ibuild.source/ibuild/conf/priority/0-floor.conf
+    hostname >>$TMP_SVN_PATH/ibuild.source/ibuild/conf/priority/0-floor.conf
 fi
 
 if [[ -d $IBUILD_SRC_PATH/iverify/.svn ]] ; then
     svn up -q $IBUILD_SRC_PATH/iverify
-    svn export $IBUILD_SRC_PATH/iverify /tmp/svn/iverify.source/iverify
+    svn export $IBUILD_SRC_PATH/iverify $TMP_SVN_PATH/iverify.source/iverify
 elif [[ -d $IBUILD_SRC_PATH/iverify ]] ; then
-    cp -Ra $IBUILD_SRC_PATH/iverify /tmp/svn/iverify.source/iverify
+    cp -Ra $IBUILD_SRC_PATH/iverify $TMP_SVN_PATH/iverify.source/iverify
 fi
 
 if [[ $ARM = arm ]] ; then
-    rm -f /tmp/svn/ibuild.source/ibuild/bin/* >/dev/null 2>&1
-    cp /tmp/svn/ibuild.source/ibuild/bin/arm/* /tmp/svn/ibuild.source/ibuild/bin/
-    rm -fr /tmp/svn/iverify.source/iverify/bin/* >/dev/null 2>&1
-    cp -Ra /tmp/svn/iverify.source/iverify/bin/arm/* /tmp/svn/iverify.source/iverify/bin/
-    rm -fr /tmp/svn/iverify.source/iverify/bin/arm
+    rm -f $TMP_SVN_PATH/ibuild.source/ibuild/bin/* >/dev/null 2>&1
+    cp $TMP_SVN_PATH/ibuild.source/ibuild/bin/arm/* $TMP_SVN_PATH/ibuild.source/ibuild/bin/
+    rm -fr $TMP_SVN_PATH/iverify.source/iverify/bin/* >/dev/null 2>&1
+    cp -Ra $TMP_SVN_PATH/iverify.source/iverify/bin/arm/* $TMP_SVN_PATH/iverify.source/iverify/bin/
+    rm -fr $TMP_SVN_PATH/iverify.source/iverify/bin/arm
 fi
 
 if [[ -d $IBUILD_SRC_PATH/ispec/.svn ]] ; then
     svn up -q $IBUILD_SRC_PATH/ispec
-    svn export $IBUILD_SRC_PATH/ispec /tmp/svn/ispec.source
+    svn export $IBUILD_SRC_PATH/ispec $TMP_SVN_PATH/ispec.source
 elif [[ -d $IBUILD_SRC_PATH/ispec ]] ; then
-    cp -Ra $IBUILD_SRC_PATH/ispec /tmp/svn/ispec.source
+    cp -Ra $IBUILD_SRC_PATH/ispec $TMP_SVN_PATH/ispec.source
 fi
 
 if [[ -d $IBUILD_SRC_PATH/itask/.svn ]] ; then
     svn up -q $IBUILD_SRC_PATH/itask
-    svn export $IBUILD_SRC_PATH/itask /tmp/svn/itask.source/itask
+    svn export $IBUILD_SRC_PATH/itask $TMP_SVN_PATH/itask.source/itask
 elif [[ -d $IBUILD_SRC_PATH/itask ]] ; then
-    cp -Ra $IBUILD_SRC_PATH/itask /tmp/svn/itask.source/itask
+    cp -Ra $IBUILD_SRC_PATH/itask $TMP_SVN_PATH/itask.source/itask
 fi
 
-mkdir -p /tmp/svn/ichange.source/ichange
-rm -fr /tmp/svn/itask.source/itask/{inode,tasks}/*
-echo >/tmp/svn/itask.source/itask/tasks/jobs.txt
+mkdir -p $TMP_SVN_PATH/ichange.source/ichange
+rm -fr $TMP_SVN_PATH/itask.source/itask/{inode,tasks}/*
+echo >$TMP_SVN_PATH/itask.source/itask/tasks/jobs.txt
 
 for REPO_NAME in ibuild ispec iverify itask ichange
 do
-    svn co -q $LOCAL_SVN_OPTION svn://127.0.0.1/$REPO_NAME /tmp/svn/$REPO_NAME
-    cp -Ra /tmp/svn/$REPO_NAME.source/* /tmp/svn/$REPO_NAME/
-    svn add --no-ignore -q /tmp/svn/$REPO_NAME/*
-    svn ci -q $LOCAL_SVN_OPTION -m "auto init $REPO_NAME from $IBUILD_SVN_SRV" /tmp/svn/$REPO_NAME
+    svn co -q $LOCAL_SVN_OPTION svn://127.0.0.1/$REPO_NAME $TMP_SVN_PATH/$REPO_NAME
+    cp -Ra $TMP_SVN_PATH/$REPO_NAME.source/* $TMP_SVN_PATH/$REPO_NAME/
+    svn add --no-ignore -q $TMP_SVN_PATH/$REPO_NAME/*
+    svn ci -q $LOCAL_SVN_OPTION -m "auto init $REPO_NAME from $IBUILD_SVN_SRV" $TMP_SVN_PATH/$REPO_NAME
 done
-rm -fr /tmp/svn
+rm -fr $TMP_SVN_PATH
 
 for HOOK in ichange itask icase
 do
@@ -147,7 +153,7 @@ su $USER -c '/usr/bin/svnserve -d -r $SRV_SVN_PATH/repo >/tmp/svnserve.log 2>&1'
 "
 
 rm -f $HOME/ibuild
-svn co svn://127.0.0.1/ibuild/ibuild /local/ibuild/
+svn co svn://127.0.0.1/ibuild/ibuild /local/ibuild
 ln -sf /local/ibuild $HOME/ibuild
 
 
