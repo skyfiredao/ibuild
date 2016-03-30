@@ -26,6 +26,7 @@ wlan1_static()
 # sudo /sbin/ifconfig wlan0 down
 # sudo /sbin/ifconfig wlan0 192.168.8.1 netmask 255.255.255.0 up
  sudo /sbin/iwconfig wlan0 mode master
+ sleep 1
 }
 
 iptables_wlan0()
@@ -61,9 +62,9 @@ elif [[ ! -z $wlan1_IP && ! -z $eth0_IP ]] ; then
     dnsmasq_setup
 fi
 
-sleep 5
+sleep 3
 sudo /usr/sbin/hostapd /etc/hostapd/hostapd.conf &
-sleep 5
+sleep 3
 sudo /usr/sbin/sshuttle -l 0.0.0.0 -r 104.131.167.231:443 0/0 &
 
 
