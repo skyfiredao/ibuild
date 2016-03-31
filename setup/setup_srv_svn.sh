@@ -187,6 +187,7 @@ ln -sf /local/ibuild $HOME/ibuild
 for SVN_REPO in `ls $SRV_SVN_PATH/repo`
 do
     echo check $SVN_REPO
+    echo "svn ls --non-interactive --username ibuild --password $IBUILD_PASSWD svn://127.0.0.1/$SVN_REPO"
     svn ls --non-interactive --username ibuild --password $IBUILD_PASSWD svn://127.0.0.1/$SVN_REPO >/dev/null 2>&1
     [[ $? != 0 ]] && svn ls --non-interactive --username ibuild --password $IBUILD_PASSWD svn://127.0.0.1/$SVN_REPO/$SVN_REPO >/dev/null 2>&1
 done
