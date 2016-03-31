@@ -161,13 +161,6 @@ do
     done
 done
 
-for REPO_NAME in ibuild ispec iverify itask ichange
-do
-    svn co -q $LOCAL_SVN_OPTION svn://127.0.0.1/$REPO_NAME $TMP_SVN_PATH/$REPO_NAME
-    cp -Ra $TMP_SVN_PATH/$REPO_NAME.source/* $TMP_SVN_PATH/$REPO_NAME/
-    svn add --no-ignore -q $TMP_SVN_PATH/$REPO_NAME/*
-    svn ci -q $LOCAL_SVN_OPTION -m "auto init $REPO_NAME from $IBUILD_SVN_SRV" $TMP_SVN_PATH/$REPO_NAME
-done
 rm -fr $TMP_SVN_PATH
 
 # For Pi
