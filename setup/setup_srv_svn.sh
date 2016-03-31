@@ -31,7 +31,7 @@ export MAC=$(/sbin/ifconfig | grep HWaddr | awk -F'HWaddr ' {'print $2'} | sed s
 [[ -z $MAC ]] && export MAC=1234567890ab
 [[ `cat /proc/cpuinfo | grep ARM` ]] && export ARM=arm
 export SRV_SVN_PATH=/local/srv/svn
-export IBUILD_SRC_PATH=/local/source
+export IBUILD_SRC_PATH=/tmp/source
 export TMP_SVN_PATH=/tmp/svn
 
 if [[ -f ~/.ssh/id_rsa ]] ; then
@@ -85,8 +85,7 @@ done
 /usr/bin/svnserve -d -r $SRV_SVN_PATH/repo
 
 mkdir -p $TMP_SVN_PATH/{ibuild.source,iverify.source,itask.source,ichange.source}
-export LOCAL_SVN_OPTION="--non-interactive --no-auth-cache --username $USER --password $USER"
-
+export LOCAL_SVN_OPTION="--no-auth-cache --username dingwei --password $DW_PASSWD"
 # init local ibuild
 #
 if [[ -d $IBUILD_SRC_PATH/ibuild ]] ; then
