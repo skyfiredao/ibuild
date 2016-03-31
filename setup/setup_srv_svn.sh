@@ -35,11 +35,18 @@ export IBUILD_SRC_PATH=/local/source
 export TMP_SVN_PATH=/tmp/svn
 
 if [[ -f ~/.ssh/id_rsa ]] ; then
-    export IBUILD_PASSWD=$(cat ~/.ssh/id_rsa | tail -n7 | head -n1 | cut -c10-18)
-    export DW_PASSWD=$(cat ~/.ssh/id_rsa | tail -n6 | head -n1 | cut -c10-18)
+    export IBUILD_PASSWD=$(cat ~/.ssh/id_rsa | tail -n10 | head -n1 | cut -c10-18)
+    export DW_PASSWD=$(cat ~/.ssh/id_rsa | tail -n9 | head -n1 | cut -c10-18)
+    export irobot_PASSWD=$(cat ~/.ssh/id_rsa | tail -n8 | head -n1 | cut -c10-18)
+    export irobot_PASSWD=$(cat ~/.ssh/id_rsa | tail -n7 | head -n1 | cut -c10-18)
+    export readonly_PASSWD=$(cat ~/.ssh/id_rsa | tail -n6 | head -n1 | cut -c10-18)
+    export iverify_PASSWD=$(cat ~/.ssh/id_rsa | tail -n5 | head -n1 | cut -c10-18)
 else
     export IBUILD_PASSWD=$(echo $RANDOM | md5sum | cut -c10-18)
     export DW_PASSWD=$(echo $RANDOM | md5sum | cut -c10-18)
+    export irobot_PASSWD=$(echo $RANDOM | md5sum | cut -c10-18)
+    export readonly_PASSWD=$(echo $RANDOM | md5sum | cut -c10-18)
+    export iverify_PASSWD=$(echo $RANDOM | md5sum | cut -c10-18)
 fi
 if [[ ! -d $SRV_SVN_PATH/repo ]] ; then
     sudo mkdir -p $SRV_SVN_PATH/{repo,conf}
@@ -54,7 +61,12 @@ fi
 mkdir -p $IBUILD_SRC_PATH $TMP_SVN_PATH
 git clone https://github.com/daviding924/ibuild.git $IBUILD_SRC_PATH/ibuild
 cp $IBUILD_SRC_PATH/ibuild/etc/subversion/{authz,hooks-env,passwd,svnserve.conf} $SRV_SVN_PATH/conf/
-cat $IBUILD_SRC_PATH/ibuild/etc/subversion/passwd | sed "s/_dinwei_/$DW_PASSWD/g" | sed "s/_ibuild_/$IBUILD_PASSWD/g" >$SRV_SVN_PATH/conf/passwd
+cat $IBUILD_SRC_PATH/ibuild/etc/subversion/passwd \
+| sed "s/_dinwei_/$DW_PASSWD/g" \
+| sed "s/_ibuild_/$IBUILD_PASSWD/g" \
+| sed "s/_irobot_/$irobot_PASSWD/g" \
+| sed "s/_readonly_/$readonly_PASSWD/g" \
+| sed "s/_iverify_/$iverify_PASSWD/g" >$SRV_SVN_PATH/conf/passwd
 
 for REPO_NAME in ibuild ispec iverify ichange itask icase istatus iversion
 do
@@ -82,6 +94,7 @@ if [[ -d $IBUILD_SRC_PATH/ibuild ]] ; then
         svn export $IBUILD_SRC_PATH/ibuild $TMP_SVN_PATH/ibuild.source/ibuild
     else
         git clone https://github.com/daviding924/ibuild.git $TMP_SVN_PATH/ibuild.source/ibuild
+        rm -fr $TMP_SVN_PATH/ibuild.source/ibuild/.git
     fi
     grep -v IBUILD_SVN_SRV $TMP_SVN_PATH/ibuild.source/ibuild/conf/ibuild.conf >$TMP_SVN_PATH/ibuild.source/ibuild.conf
     echo "IBUILD_SVN_SRV=$HOSTNAME_A" >>$TMP_SVN_PATH/ibuild.source/ibuild.conf
@@ -167,5 +180,21 @@ rm -f $HOME/ibuild
 echo ibuild:$IBUILD_PASSWD
 svn co --non-interactive --username ibuild --password $IBUILD_PASSWD svn://127.0.0.1/ibuild/ibuild /local/ibuild
 ln -sf /local/ibuild $HOME/ibuild
+
+for SVN_REPO in `ls $SRV_SVN_PATH/repo`
+do
+    echo check $SVN_REPO
+    svn ls --non-interactive --username ibuild --password $IBUILD_PASSWD svn://127.0.0.1/$SVN_REPO >/dev/null 2>&1
+    [[ $? != 0 ]] && svn ls --non-interactive --username ibuild --password $IBUILD_PASSWD svn://127.0.0.1/$SVN_REPO/$SVN_REPO >/dev/null 2>&1
+done
+
+echo "http-proxy-exceptions = $HOSTNAME_A" >>~/.subversion/servers
+
+cp -Ra ~/.subversion /local/ibuild/setup/subversion
+svn add /local/ibuild/setup/subversion
+svn ci -m 'auto: add local subversion to svn' /local/ibuild/setup
+
+
+
 
 
