@@ -34,11 +34,13 @@ export SRV_SVN_PATH=/local/srv/svn
 export IBUILD_SRC_PATH=/local/source
 export TMP_SVN_PATH=/tmp/svn
 
-if [[ ! -d $IBUILD_SRC_PATH ]] ; then
-    echo -e "Please put all of source code file in to $IBUILD_SRC_PATH"
-    exit 1
+if [[ -f ~/.ssh/id_rsa ]] ; then
+    export IBUILD_PASSWD=$(cat ~/.ssh/id_rsa | tail -n7 | head -n1 | cut -c10-18)
+    export DW_PASSWD=$(cat ~/.ssh/id_rsa | tail -n6 | head -n1 | cut -c10-18)
+else
+    export IBUILD_PASSWD=$(echo $RANDOM | md5sum | cut -c10-18)
+    export DW_PASSWD=$(echo $RANDOM | md5sum | cut -c10-18)
 fi
-
 if [[ ! -d $SRV_SVN_PATH/repo ]] ; then
     sudo mkdir -p $SRV_SVN_PATH/{repo,conf}
     sudo chown -R $USER $SRV_SVN_PATH/{repo,conf}
@@ -49,7 +51,10 @@ if [[ `ps aux | grep -v grep | grep svnserve` ]] ; then
     pkill -9 svnserve
 fi
 
-cp $IBUILD_SRC_PATH/etc/subversion/{authz,hooks-env,passwd,svnserve.conf} $SRV_SVN_PATH/conf/
+mkdir -p $IBUILD_SRC_PATH $TMP_SVN_PATH
+git clone https://github.com/daviding924/ibuild.git $IBUILD_SRC_PATH/ibuild
+cp $IBUILD_SRC_PATH/ibuild/etc/subversion/{authz,hooks-env,passwd,svnserve.conf} $SRV_SVN_PATH/conf/
+cat $IBUILD_SRC_PATH/ibuild/etc/subversion/passwd | sed "s/_dinwei_/$DW_PASSWD/g" | sed "s/_ibuild_/$IBUILD_PASSWD/g" >$SRV_SVN_PATH/conf/passwd
 
 for REPO_NAME in ibuild ispec iverify ichange itask icase istatus iversion
 do
@@ -76,7 +81,7 @@ if [[ -d $IBUILD_SRC_PATH/ibuild ]] ; then
         svn up -q $IBUILD_SRC_PATH/ibuild
         svn export $IBUILD_SRC_PATH/ibuild $TMP_SVN_PATH/ibuild.source/ibuild
     else
-        clone https://github.com/daviding924/ibuild.git $TMP_SVN_PATH/ibuild.source/ibuild
+        git clone https://github.com/daviding924/ibuild.git $TMP_SVN_PATH/ibuild.source/ibuild
     fi
     grep -v IBUILD_SVN_SRV $TMP_SVN_PATH/ibuild.source/ibuild/conf/ibuild.conf >$TMP_SVN_PATH/ibuild.source/ibuild.conf
     echo "IBUILD_SVN_SRV=$HOSTNAME_A" >>$TMP_SVN_PATH/ibuild.source/ibuild.conf
@@ -159,7 +164,8 @@ su $USER -c '/usr/bin/svnserve -d -r $SRV_SVN_PATH/repo >/tmp/svnserve.log 2>&1'
 "
 
 rm -f $HOME/ibuild
-svn co svn://127.0.0.1/ibuild/ibuild /local/ibuild
+echo ibuild:$IBUILD_PASSWD
+svn co --non-interactive --username ibuild --password $IBUILD_PASSWD svn://127.0.0.1/ibuild/ibuild /local/ibuild
 ln -sf /local/ibuild $HOME/ibuild
 
 
