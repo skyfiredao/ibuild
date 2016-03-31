@@ -85,7 +85,7 @@ if [[ $RESULT = PASSED && -z $STATUS_MAKE && ! -z $DOWNLOAD_PKG_NAME && ! -z $IV
             svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/ispec.svn
         else
             rm -fr $TASK_SPACE/ispec.svn >/dev/null 2>&1
-            svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec $TASK_SPACE/ispec.svn
+            svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec $TASK_SPACE/ispec.svn
         fi
         if [[ ! `grep "# $TODAY$" $TASK_SPACE/ispec.svn/queue/icase-$TOWEEK.list` ]] ; then
             echo "# $TODAY" >>$TASK_SPACE/ispec.svn/queue/icase-$TOWEEK.list

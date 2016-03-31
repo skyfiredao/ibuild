@@ -187,7 +187,7 @@ FILTER_BAD_PATCH()
 
  rm -f /tmp/itask $TASK_SPACE/tmp.spec.$SEED
 
- svn export -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/itask /tmp
+ svn export -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec/itask /tmp
  chmod +x /tmp/itask
 
  SPLIT_LINE "add new task after remove $BAD_PATCH_ENTRY"

@@ -65,7 +65,7 @@ if [[ `echo $ITASK_SPEC_URL | grep '^/itask/tasks'` ]] ; then
 	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/ispec.svn
     else
         rm -fr $TASK_SPACE/ispec.svn >/dev/null 2>&1
-        svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec $TASK_SPACE/ispec.svn
+        svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec $TASK_SPACE/ispec.svn
     fi
     if [[ ! `grep "# $TODAY$" $TASK_SPACE/ispec.svn/queue/itask-$TOWEEK.list` ]] ; then
         echo "# $TODAY" >>$TASK_SPACE/ispec.svn/queue/itask-$TOWEEK.list

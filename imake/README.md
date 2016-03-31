@@ -14,11 +14,11 @@ Usage: build.sh [svn:itask job rversion]
 stand-alone tool, clean btrfs disk mount point from /local/workspace
 
 #### daily_build.sh
-stand-alone tool, daily build from svn:ispec/timer define, add ibuild task as a job in svn:itask
+stand-alone tool, daily build from svn:ispec/ispec/timer define, add ibuild task as a job in svn:itask
 
 #### function
 non-stand-alone tool, function for imake
 
 #### make_5.sh
-non-stand-alone tool, build steps, which define in svn:ispec/spec/spec.build files
+non-stand-alone tool, build steps, which define in svn:ispec/ispec/spec/spec.build files
 

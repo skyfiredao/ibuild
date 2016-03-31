@@ -52,7 +52,7 @@ else
 	export LOC_WORKSPACE=`grep '^LOC_WORKSPACE=' ~/ibuild/conf/ibuild.conf | awk -F'LOC_WORKSPACE=' {'print $2'}`
 	export JDK6_PATH=`grep '^JDK6_PATH=' ~/ibuild/conf/ibuild.conf | awk -F'JDK6_PATH=' {'print $2'}`
 	export JDK7_PATH=`grep '^JDK7_PATH=' ~/ibuild/conf/ibuild.conf | awk -F'JDK7_PATH=' {'print $2'}`
-	[[ ! `svn ls $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec` ]] && ECHO 'no right svn setup'
+	[[ ! `svn ls $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec` ]] && ECHO 'no right svn setup'
 	[[ ! -d $JDK6_PATH ]] && ECHO 'no jdk1.6'
 	[[ ! -d $JDK7_PATH ]] && ECHO 'no jdk1.7'
 	[[ ! -d $LOC_WORKSPACE ]] && ECHO "no $LOC_WORKSPACE"

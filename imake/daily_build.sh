@@ -43,7 +43,7 @@ else
 	exit
 fi
 
-svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec $TASK_SPACE/tmp.ispec.$SEED
+svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec $TASK_SPACE/tmp.ispec.$SEED
 
 if [[ -f $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec ]] ; then
   for SPEC_FILTER in `cat $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec | sort -u`

@@ -52,7 +52,7 @@ touch $TASK_SPACE/tmp.isort.$SEED/repo_download.txt
 
 svn log $IBUILD_SVN_OPTION -v -r {$SORT_ONE_DAY_AGO}:{$SORT_DATE} svn://$IBUILD_SVN_SRV/ichange/ichange >$TASK_SPACE/tmp.isort.$SEED/svn.log
 
-svn export -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/conf $TASK_SPACE/tmp.isort.$SEED/ispec.conf
+svn export -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec/conf $TASK_SPACE/tmp.isort.$SEED/ispec.conf
 cat $TASK_SPACE/tmp.isort.$SEED/svn.log | grep $IBUILD_ROBOT | grep ^r | awk -F'|' {'print $1'} | awk -F'r' {'print $2'} >$TASK_SPACE/tmp.isort.$SEED/rev.log
 
 cat $TASK_SPACE/tmp.isort.$SEED/svn.log | grep change-abandoned | awk -F' ' {'print $2'} | sort -u | grep $SORT_GERRIT_SRV | grep $SORT_GERRIT_BRANCH | awk -F'/ichange/' {'print $2'} >$TASK_SPACE/tmp.isort.$SEED/change-abandoned.log

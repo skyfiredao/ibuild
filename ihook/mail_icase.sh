@@ -46,7 +46,7 @@ fi
 
 mkdir -p $TASK_SPACE/tmp/icase.mail.$SEED
 svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/tmp/icase.mail.$SEED/icase
-svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec $TASK_SPACE/tmp/icase.mail.$SEED/ispec
+svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec $TASK_SPACE/tmp/icase.mail.$SEED/ispec
 
 export BUILD_INFO_NAME=$(basename $ICASE_URL | head -n1)
 export BUILD_INFO=$TASK_SPACE/tmp/icase.mail.$SEED/icase/$BUILD_INFO_NAME
