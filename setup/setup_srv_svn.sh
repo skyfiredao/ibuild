@@ -159,14 +159,12 @@ do
         ln -sf $SRV_SVN_PATH/conf/$REPO_CONF $SRV_SVN_PATH/repo/$REPO_NAME/conf/$REPO_CONF
         echo 12345678-1234-1234-1234-$MAC >$SRV_SVN_PATH/repo/$REPO_NAME/db/uuid
     done
-done
 
-for REPO_NAME in ibuild ispec iverify itask ichange
-do
-    svn co $LOCAL_SVN_OPTION svn://127.0.0.1/$REPO_NAME $TMP_SVN_PATH/$REPO_NAME
-    cp -Ra $TMP_SVN_PATH/$REPO_NAME.source/* $TMP_SVN_PATH/$REPO_NAME/
-    svn add --no-ignore -q $TMP_SVN_PATH/$REPO_NAME/*
-    svn ci $LOCAL_SVN_OPTION -m "auto init $REPO_NAME from $IBUILD_SVN_SRV" $TMP_SVN_PATH/$REPO_NAME
+    svn co $LOCAL_SVN_OPTION svn://127.0.0.1/$REPO_NAME $TMP_SVN_PATH/$REPO_NAME >/dev/null 2>&1
+    cp -Ra $TMP_SVN_PATH/$REPO_NAME.source/* $TMP_SVN_PATH/$REPO_NAME/ >/dev/null 2>&1
+    mkdir -p $TMP_SVN_PATH/$REPO_NAME/$REPO_NAME >/dev/null 2>&1
+    svn add --no-ignore -q $TMP_SVN_PATH/$REPO_NAME/* >/dev/null 2>&1
+    svn ci $LOCAL_SVN_OPTION -m "auto init $REPO_NAME from $IBUILD_SVN_SRV" $TMP_SVN_PATH/$REPO_NAME >/dev/null 2>&1
 done
 
 rm -fr $TMP_SVN_PATH
@@ -189,7 +187,7 @@ for SVN_REPO in `ls $SRV_SVN_PATH/repo`
 do
     svn ls --non-interactive --username ibuild --password $IBUILD_PASSWD svn://127.0.0.1/$SVN_REPO >/dev/null 2>&1
     [[ $? != 0 ]] && svn ls --non-interactive --username ibuild --password $IBUILD_PASSWD svn://127.0.0.1/$SVN_REPO/$SVN_REPO >/dev/null 2>&1
-    echo check $SVN_REPO $?
+    echo check $SVN_REPO = $?
 done
 
 echo "http-proxy-exceptions = $HOSTNAME_A" >>~/.subversion/servers
