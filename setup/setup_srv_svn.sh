@@ -160,11 +160,11 @@ do
         echo 12345678-1234-1234-1234-$MAC >$SRV_SVN_PATH/repo/$REPO_NAME/db/uuid
     done
 
-    svn co $LOCAL_SVN_OPTION svn://127.0.0.1/$REPO_NAME $TMP_SVN_PATH/$REPO_NAME >/dev/null 2>&1
-    cp -Ra $TMP_SVN_PATH/$REPO_NAME.source/* $TMP_SVN_PATH/$REPO_NAME/ >/dev/null 2>&1
-    mkdir -p $TMP_SVN_PATH/$REPO_NAME/$REPO_NAME >/dev/null 2>&1
-    svn add --no-ignore -q $TMP_SVN_PATH/$REPO_NAME/* >/dev/null 2>&1
-    svn ci $LOCAL_SVN_OPTION -m "auto init $REPO_NAME from $IBUILD_SVN_SRV" $TMP_SVN_PATH/$REPO_NAME >/dev/null 2>&1
+    svn co $LOCAL_SVN_OPTION svn://127.0.0.1/$REPO_NAME $TMP_SVN_PATH/$REPO_NAME
+    cp -Ra $TMP_SVN_PATH/$REPO_NAME.source/* $TMP_SVN_PATH/$REPO_NAME/
+    mkdir -p $TMP_SVN_PATH/$REPO_NAME/$REPO_NAME
+    svn add --no-ignore -q $TMP_SVN_PATH/$REPO_NAME/*
+    svn ci $LOCAL_SVN_OPTION -m "auto init $REPO_NAME from $IBUILD_SVN_SRV" $TMP_SVN_PATH/$REPO_NAME
 done
 
 rm -fr $TMP_SVN_PATH
@@ -185,6 +185,7 @@ ln -sf /local/ibuild $HOME/ibuild
 
 for SVN_REPO in `ls $SRV_SVN_PATH/repo`
 do
+    echo "svn ls --non-interactive --username ibuild --password $IBUILD_PASSWD svn://127.0.0.1/$SVN_REPO"
     svn ls --non-interactive --username ibuild --password $IBUILD_PASSWD svn://127.0.0.1/$SVN_REPO >/dev/null 2>&1
     [[ $? != 0 ]] && svn ls --non-interactive --username ibuild --password $IBUILD_PASSWD svn://127.0.0.1/$SVN_REPO/$SVN_REPO >/dev/null 2>&1
     echo check $SVN_REPO = $?
