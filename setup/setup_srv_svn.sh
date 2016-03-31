@@ -96,8 +96,8 @@ fi
 if [[ -d $IBUILD_SRC_PATH/iverify/.svn ]] ; then
     svn up -q $IBUILD_SRC_PATH/iverify
     svn export $IBUILD_SRC_PATH/iverify $TMP_SVN_PATH/iverify.source/iverify
-elif [[ -d $IBUILD_SRC_PATH/iverify ]] ; then
-    cp -Ra $IBUILD_SRC_PATH/iverify $TMP_SVN_PATH/iverify.source/iverify
+elif [[ -d $TMP_SVN_PATH/ibuild.source/ibuild/iverify ]] ; then
+    cp -Ra $TMP_SVN_PATH/ibuild.source/ibuild/iverify $TMP_SVN_PATH/iverify.source/iverify
 fi
 
 if [[ $ARM = arm ]] ; then
@@ -120,8 +120,8 @@ fi
 if [[ -d $IBUILD_SRC_PATH/itask/.svn ]] ; then
     svn up -q $IBUILD_SRC_PATH/itask
     svn export $IBUILD_SRC_PATH/itask $TMP_SVN_PATH/itask.source/itask
-elif [[ -d $IBUILD_SRC_PATH/itask ]] ; then
-    cp -Ra $IBUILD_SRC_PATH/itask $TMP_SVN_PATH/itask.source/itask
+elif [[ -d $TMP_SVN_PATH/ibuild.source/ibuild/itask ]] ; then
+    cp -Ra $TMP_SVN_PATH/ibuild.source/ibuild/itask $TMP_SVN_PATH/itask.source/itask
 fi
 
 mkdir -p $TMP_SVN_PATH/ichange.source/ichange
