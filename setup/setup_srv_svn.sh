@@ -58,11 +58,12 @@ if [[ `ps aux | grep -v grep | grep svnserve` ]] ; then
     pkill -9 svnserve
 fi
 
+rm -fr $IBUILD_SRC_PATH $TMP_SVN_PATH
 mkdir -p $IBUILD_SRC_PATH $TMP_SVN_PATH
 git clone https://github.com/daviding924/ibuild.git $IBUILD_SRC_PATH/ibuild
 cp $IBUILD_SRC_PATH/ibuild/etc/subversion/{authz,hooks-env,passwd,svnserve.conf} $SRV_SVN_PATH/conf/
 cat $IBUILD_SRC_PATH/ibuild/etc/subversion/passwd \
-| sed "s/_dinwei_/$DW_PASSWD/g" \
+| sed "s/_dingwei_/$DW_PASSWD/g" \
 | sed "s/_ibuild_/$IBUILD_PASSWD/g" \
 | sed "s/_irobot_/$irobot_PASSWD/g" \
 | sed "s/_readonly_/$readonly_PASSWD/g" \
@@ -93,7 +94,7 @@ if [[ -d $IBUILD_SRC_PATH/ibuild ]] ; then
         svn up -q $IBUILD_SRC_PATH/ibuild
         svn export $IBUILD_SRC_PATH/ibuild $TMP_SVN_PATH/ibuild.source/ibuild
     else
-        git clone https://github.com/daviding924/ibuild.git $TMP_SVN_PATH/ibuild.source/ibuild
+        cp -Ra $IBUILD_SRC_PATH/ibuild $TMP_SVN_PATH/ibuild.source/ibuild
         rm -fr $TMP_SVN_PATH/ibuild.source/ibuild/.git
     fi
     grep -v IBUILD_SVN_SRV $TMP_SVN_PATH/ibuild.source/ibuild/conf/ibuild.conf >$TMP_SVN_PATH/ibuild.source/ibuild.conf
@@ -177,8 +178,11 @@ su $USER -c '/usr/bin/svnserve -d -r $SRV_SVN_PATH/repo >/tmp/svnserve.log 2>&1'
 "
 
 rm -f $HOME/ibuild
-echo ibuild:$IBUILD_PASSWD
-svn co --non-interactive --username ibuild --password $IBUILD_PASSWD svn://127.0.0.1/ibuild/ibuild /local/ibuild
+rm -fr /local/ibuild
+rm -fr ~/.subversion
+
+echo -e  "ibuild:$IBUILD_PASSWD\n"
+svn co -q svn://127.0.0.1/ibuild/ibuild /local/ibuild
 ln -sf /local/ibuild $HOME/ibuild
 
 for SVN_REPO in `ls $SRV_SVN_PATH/repo`
@@ -191,8 +195,8 @@ done
 echo "http-proxy-exceptions = $HOSTNAME_A" >>~/.subversion/servers
 
 cp -Ra ~/.subversion /local/ibuild/setup/subversion
-svn add /local/ibuild/setup/subversion
-svn ci -m 'auto: add local subversion to svn' /local/ibuild/setup
+svn add -q /local/ibuild/setup/subversion
+svn ci --no-auth-cache --username dingwei --password $DW_PASSWD -m 'auto: add local subversion to svn' /local/ibuild/setup
 
 
 
