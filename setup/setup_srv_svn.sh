@@ -146,15 +146,6 @@ mkdir -p $TMP_SVN_PATH/ichange.source/ichange
 rm -fr $TMP_SVN_PATH/itask.source/itask/{inode,tasks}/*
 echo >$TMP_SVN_PATH/itask.source/itask/tasks/jobs.txt
 
-for REPO_NAME in ibuild ispec iverify itask ichange
-do
-    svn co -q $LOCAL_SVN_OPTION svn://127.0.0.1/$REPO_NAME $TMP_SVN_PATH/$REPO_NAME
-    cp -Ra $TMP_SVN_PATH/$REPO_NAME.source/* $TMP_SVN_PATH/$REPO_NAME/
-    svn add --no-ignore -q $TMP_SVN_PATH/$REPO_NAME/*
-    svn ci -q $LOCAL_SVN_OPTION -m "auto init $REPO_NAME from $IBUILD_SVN_SRV" $TMP_SVN_PATH/$REPO_NAME
-done
-rm -fr $TMP_SVN_PATH
-
 for HOOK in ichange itask icase
 do
     ln -sf ~/ibuild/ihook/${HOOK}_post-commit.sh $SRV_SVN_PATH/repo/${HOOK}/hooks/post-commit
@@ -169,6 +160,15 @@ do
         echo 12345678-1234-1234-1234-$MAC >$SRV_SVN_PATH/repo/$REPO_NAME/db/uuid
     done
 done
+
+for REPO_NAME in ibuild ispec iverify itask ichange
+do
+    svn co -q $LOCAL_SVN_OPTION svn://127.0.0.1/$REPO_NAME $TMP_SVN_PATH/$REPO_NAME
+    cp -Ra $TMP_SVN_PATH/$REPO_NAME.source/* $TMP_SVN_PATH/$REPO_NAME/
+    svn add --no-ignore -q $TMP_SVN_PATH/$REPO_NAME/*
+    svn ci -q $LOCAL_SVN_OPTION -m "auto init $REPO_NAME from $IBUILD_SVN_SRV" $TMP_SVN_PATH/$REPO_NAME
+done
+rm -fr $TMP_SVN_PATH
 
 # For Pi
 # su $USER -c '$HOME/svn/ibuild/setup/setup_srv_svn.sh >/tmp/setup_svn.log 2>&1' &
