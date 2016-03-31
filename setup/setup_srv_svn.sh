@@ -69,12 +69,14 @@ done
 mkdir -p $TMP_SVN_PATH/{ibuild.source,iverify.source,itask.source,ichange.source}
 export LOCAL_SVN_OPTION="--non-interactive --no-auth-cache --username $USER --password $USER"
 
+# init local ibuild
+#
 if [[ -d $IBUILD_SRC_PATH/ibuild ]] ; then
     if [[ -d $IBUILD_SRC_PATH/ibuild/.svn ]] ; then
         svn up -q $IBUILD_SRC_PATH/ibuild
         svn export $IBUILD_SRC_PATH/ibuild $TMP_SVN_PATH/ibuild.source/ibuild
     else
-        cp -Ra $IBUILD_SRC_PATH/ibuild $TMP_SVN_PATH/ibuild.source/ibuild
+        clone https://github.com/daviding924/ibuild.git $TMP_SVN_PATH/ibuild.source/ibuild
     fi
     grep -v IBUILD_SVN_SRV $TMP_SVN_PATH/ibuild.source/ibuild/conf/ibuild.conf >$TMP_SVN_PATH/ibuild.source/ibuild.conf
     echo "IBUILD_SVN_SRV=$HOSTNAME_A" >>$TMP_SVN_PATH/ibuild.source/ibuild.conf
@@ -89,6 +91,8 @@ if [[ -d $IBUILD_SRC_PATH/ibuild ]] ; then
     hostname >>$TMP_SVN_PATH/ibuild.source/ibuild/conf/priority/0-floor.conf
 fi
 
+# init local iverify
+#
 if [[ -d $IBUILD_SRC_PATH/iverify/.svn ]] ; then
     svn up -q $IBUILD_SRC_PATH/iverify
     svn export $IBUILD_SRC_PATH/iverify $TMP_SVN_PATH/iverify.source/iverify
@@ -104,11 +108,13 @@ if [[ $ARM = arm ]] ; then
     rm -fr $TMP_SVN_PATH/iverify.source/iverify/bin/arm
 fi
 
+# init local spec
+#
 if [[ -d $IBUILD_SRC_PATH/ispec/.svn ]] ; then
     svn up -q $IBUILD_SRC_PATH/ispec
     svn export $IBUILD_SRC_PATH/ispec $TMP_SVN_PATH/ispec.source
-elif [[ -d $IBUILD_SRC_PATH/ispec ]] ; then
-    cp -Ra $IBUILD_SRC_PATH/ispec $TMP_SVN_PATH/ispec.source
+elif [[ -d $TMP_SVN_PATH/ibuild.source/ibuild/ispec ]] ; then
+    cp -Ra $TMP_SVN_PATH/ibuild.source/ibuild/ispec $TMP_SVN_PATH/ispec.source
 fi
 
 if [[ -d $IBUILD_SRC_PATH/itask/.svn ]] ; then

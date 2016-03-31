@@ -1,0 +1,10 @@
+IF_CodeReview=
+IF_GERRIT_BRANCH=branch_name
+IF_GERRIT_PROJECT=yes
+IF_GERRIT_SERVER=server_name
+IF_change-merged=yes
+IF_comment-added=
+IF_email=yes
+IF_patchset-created=yes
+IF_ref-updated=
+IF_value=
