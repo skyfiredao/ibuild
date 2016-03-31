@@ -47,6 +47,16 @@ ibuild = r
 @ibuild_ro = r
 * =
 
+[ichange:/ichange]
+@ibuild_admin = rw
+@ibuild_rw = rw
+@ibuild_ro = r
+* =
+
+[iverify:/]
+@ibuild_admin = rw
+* =
+
 [iverify:/iverify]
 @ibuild_admin = rw
 @ibuild_rw = rw
@@ -73,19 +83,36 @@ iverify = rw
 @ibuild_rw = rw
 * =
 
+[iversion:/iversion]
+@ibuild_admin = rw
+@ibuild_rw = rw
+* =
+
 [ispec:/]
 @ibuild_admin = rw
 @ibuild_rw = rw
 @ibuild_ro = r
 * = r
 
-[ispec:/queue]
+[ispec:/ispec]
+@ibuild_admin = rw
+@ibuild_rw = rw
+@ibuild_ro = r
+* = r
+
+[ispec:/ispec/queue]
 @ibuild_admin = rw
 @ibuild_rw = rw
 @ibuild_ro = r
 * = r
 
 [istatus:/]
+@ibuild_admin = rw
+@ibuild_rw = rw
+@ibuild_ro = r
+* =
+
+[istatus:/istatus]
 @ibuild_admin = rw
 @ibuild_rw = rw
 @ibuild_ro = r
