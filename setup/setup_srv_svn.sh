@@ -84,7 +84,7 @@ done
 
 /usr/bin/svnserve -d -r $SRV_SVN_PATH/repo
 
-mkdir -p $TMP_SVN_PATH/{ibuild.source,iverify.source,itask.source,ichange.source}
+mkdir -p $TMP_SVN_PATH/{ibuild.source,iverify.source,itask.source,ichange.source,ispec.source}
 export LOCAL_SVN_OPTION="--no-auth-cache --username dingwei --password $DW_PASSWD"
 # init local ibuild
 #
@@ -132,7 +132,7 @@ if [[ -d $IBUILD_SRC_PATH/ispec/.svn ]] ; then
     svn up -q $IBUILD_SRC_PATH/ispec
     svn export $IBUILD_SRC_PATH/ispec $TMP_SVN_PATH/ispec.source
 elif [[ -d $TMP_SVN_PATH/ibuild.source/ibuild/ispec ]] ; then
-    cp -Ra $TMP_SVN_PATH/ibuild.source/ibuild/ispec $TMP_SVN_PATH/ispec.source
+    cp -Ra $TMP_SVN_PATH/ibuild.source/ibuild/ispec $TMP_SVN_PATH/ispec.source/ispec
 fi
 
 if [[ -d $IBUILD_SRC_PATH/itask/.svn ]] ; then
@@ -159,6 +159,14 @@ do
         ln -sf $SRV_SVN_PATH/conf/$REPO_CONF $SRV_SVN_PATH/repo/$REPO_NAME/conf/$REPO_CONF
         echo 12345678-1234-1234-1234-$MAC >$SRV_SVN_PATH/repo/$REPO_NAME/db/uuid
     done
+done
+
+for REPO_NAME in ibuild ispec iverify itask ichange
+do
+    svn co $LOCAL_SVN_OPTION svn://127.0.0.1/$REPO_NAME $TMP_SVN_PATH/$REPO_NAME
+    cp -Ra $TMP_SVN_PATH/$REPO_NAME.source/* $TMP_SVN_PATH/$REPO_NAME/
+    svn add --no-ignore -q $TMP_SVN_PATH/$REPO_NAME/*
+    svn ci $LOCAL_SVN_OPTION -m "auto init $REPO_NAME from $IBUILD_SVN_SRV" $TMP_SVN_PATH/$REPO_NAME
 done
 
 rm -fr $TMP_SVN_PATH
