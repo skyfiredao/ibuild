@@ -19,6 +19,9 @@ stand-alone tool, reboot node after check count
 #### setup_ubuntu_build_env.sh
 stand-alone tool, init setup ibuild node after install ubuntu basic OS
 
+#### setup_srv_svn.sh
+stand-alone tool, init setup ibuild subversion server based on https://github.com/daviding924/ibuild
+
 #### sync_node_setup.sh
 stand-alone tool, setup ibuild node local ref_repo for build after standard ubuntu setup
 

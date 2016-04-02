@@ -1,0 +1,8 @@
+1, setup/setup_ubuntu_build_env.sh
+    setup Ubuntu 14.04
+2, setup/setup_srv_svn.sh
+    setup ibuild server
+    modify conf/ibuild.conf
+3, ichange/itrack.sh
+    copy ichange/conf/HOSTNAME.conf to your ichange server hostname
+    start ichange gerrit steam event monitor

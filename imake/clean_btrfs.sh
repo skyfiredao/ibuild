@@ -27,13 +27,13 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 	exit 0
 fi
 
-export LOC_WORKSPACE=`grep '^LOC_WORKSPACE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_WORKSPACE=' {'print $2'}`
+export LOC_WORKSPACE=$(grep '^LOC_WORKSPACE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_WORKSPACE=' {'print $2'})
 if [[ -z $1 ]] ; then
 	echo ------------------------
 	sudo btrfs subvolume list $LOC_WORKSPACE
 	echo ------------------------
 	echo $0 a
-	echo btrfs subvolume delete
+	echo sudo btrfs subvolume delete
 	echo ------------------------
 	exit 0
 fi
@@ -59,16 +59,16 @@ CLEAN_STEPS()
 {
  echo "sudo btrfs subvolume list $LOC_WORKSPACE"
 
- for BTRFS_SUBVOL in `sudo btrfs subvolume list $LOC_WORKSPACE | egrep -v 'subv_repo' | awk -F'path ' {'print $2'} | awk -F'build/' {'print $2'}`
+ for BTRFS_SUBVOL in `sudo btrfs subvolume list $LOC_WORKSPACE | egrep -v 'subv_repo' | awk -F'path ' {'print $2'} | awk -F'build/' {'print $2'} | grep bad`
  do
 	sleep 3
-	echo "sudo btrfs subvolume delete $LOC_WORKSPACE/$BTRFS_SUBVOL"
+	echo "sudo btrfs subvolume delete $LOC_WORKSPACE/build/$BTRFS_SUBVOL"
 	sudo btrfs subvolume delete $LOC_WORKSPACE/build/$BTRFS_SUBVOL &
  done
 }
 
 if [[ ! -f $TASK_SPACE/spec.build ]] ; then
-	CLEAN_SUBV_REPO
+#	CLEAN_SUBV_REPO
 	CLEAN_STEPS
 else
 	echo $TASK_SPACE/spec.build
