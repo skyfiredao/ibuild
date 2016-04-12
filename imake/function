@@ -682,8 +682,8 @@ SETUP_BUILD_OUT()
  mkdir -p $AUTOUT_UPLOAD_PATH/$TODAY
  SPLIT_LINE "upload $TODAY $IVEREV.$SHORT_AUTOUT_NAME"
  [[ -z $ITASK_REV ]] && export ITASK_REV=`ls /tmp/*.log | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1`
- cp /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/log/
- cp /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/
+ LOG_HTML /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/log/
+ txt2html /tmp/build-$ITASK_REV.log --outfile $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/
 
  if [[ -f $LOG_PATH/BUILD_ERROR ]] ; then
 	cp $LOG_PATH/BUILD_ERROR $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/
@@ -700,6 +700,17 @@ SETUP_BUILD_OUT()
 	rm -fr $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME &
 	rm -fr $BUILD_PATH_TOP/out/* >/dev/null 2>&1
  fi
+}
+
+LOG_HTML()
+{
+ export LOG_INPUT_URL=$1
+ export LOG_OUTPUT_URL=$2
+
+ for LOG_NAME in `ls $LOG_INPUT_URL | grep log$`
+ do
+    txt2html $LOG_INPUT_URL/$LOG_NAME --outfile $LOG_OUTPUT_URL/$LOG_NAME.html
+ done
 }
 
 BUILD_ERROR()
