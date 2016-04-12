@@ -68,7 +68,7 @@ CLEAN_STEPS()
 }
 
 if [[ ! -f $TASK_SPACE/spec.build ]] ; then
-#	CLEAN_SUBV_REPO
+	CLEAN_SUBV_REPO
 	CLEAN_STEPS
 else
 	echo $TASK_SPACE/spec.build
