@@ -91,6 +91,12 @@ libgl1-mesa-dev libxml2-utils xsltproc unzip python-networkx \
 libncurses5-dev:i386 libx11-dev:i386 libreadline6-dev:i386 libgl1-mesa-glx:i386 \
 git libc6-dev g++-multilib mingw32 tofrodos python-markdown zlib1g-dev:i386
 
+# supportReDex  
+sudo aptitude -y install g++ automake autoconf autoconf-archive libtool libboost-all-dev \
+libevent-dev libdouble-conversion-dev libgoogle-glog-dev libgflags-dev liblz4-dev \
+liblzma-dev libsnappy-dev make binutils-dev libjemalloc-dev libssl-dev \
+libiberty-dev
+
 [[ -f /usr/lib/i386-linux-gnu/mesa/libGL.so.1 ]] && sudo ln -s /usr/lib/i386-linux-gnu/mesa/libGL.so.1 /usr/lib/i386-linux-gnu/libGL.so
 
 

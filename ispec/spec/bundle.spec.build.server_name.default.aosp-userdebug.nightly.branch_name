@@ -1,6 +1,7 @@
 EMAIL_PM=
 EMAIL_REL=tester@foo.bar,owner@foo.bar
 IBUILD_ADD_STEP_1=special_step
+IBUILD_ADD_STEP_2=
 IBUILD_AOSP_JDK=7
 IBUILD_AUTOUT_FILES=
 IBUILD_GRTSRV=server_name:port
@@ -18,6 +19,7 @@ IBUILD_TARGET_BUILD_VARIANT=userdebug
 IBUILD_TARGET_PRODUCT=aosp
 IBUILD_UPLOAD_URL=sshfs_server_name:/local/share/ibuild
 IBUILD_REF_REPO=path_name
+IBUILD_ODEX=no
 IVERIFY_PRIORITY=
 IVERIFY=yes
 IBUILD_MODE=bundle
