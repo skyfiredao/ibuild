@@ -312,12 +312,12 @@ BTRFS_CLEANUP()
 
  rm -f $LOC_WORKSPACE/build/*.info >/dev/null 2>&1
 
- for BTRFS_SUBVOL in `ls $LOC_WORKSPACE/build/`
+ for BTRFS_SUBVOL in `ls $LOC_WORKSPACE/build/ | egrep -v 'tmp'`
  do
 	mv $LOC_WORKSPACE/build/$BTRFS_SUBVOL $LOC_WORKSPACE/build/bad.$SEED.$RANDOM >/dev/null 2>&1
  done
 
- for BTRFS_SUBVOL in `sudo btrfs subvolume list $LOC_WORKSPACE | egrep -v 'subv_repo' | awk -F'path ' {'print $2'} | grep $BTRFS_TOP | awk -F'build/' {'print $2'}`
+ for BTRFS_SUBVOL in `sudo btrfs subvolume list $LOC_WORKSPACE | egrep -v 'subv_repo|tmp' | awk -F'path ' {'print $2'} | grep $BTRFS_TOP | awk -F'build/' {'print $2'}`
  do
 	sleep 3
 	SPLIT_LINE clean_$LOC_WORKSPACE/$BTRFS_SUBVOL
@@ -416,8 +416,8 @@ REPO_SYNC()
 
  if [[ ! -f $REPO_SYNC_MD5_INFO ]] ; then
     SPLIT_LINE repo_init_$IBUILD_GRTSRV_MANIFEST
-    echo "$REPO_CMD init -u ssh://$IBUILD_GRTSRV_ID@$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD" >repo_init.info
-    time $REPO_CMD init -u ssh://$IBUILD_GRTSRV_ID@$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD >>$LOG_PATH/init.log 2>&1
+    echo "$REPO_CMD init -u ssh://$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD" >repo_init.info
+    time $REPO_CMD init -u ssh://$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD >>$LOG_PATH/init.log 2>&1
     export REPO_INIT_STATUS=$?
     MASK_LOG $LOG_PATH/init.log
     LOG_STATUS $REPO_INIT_STATUS repo_init $LOG_PATH/init.log
