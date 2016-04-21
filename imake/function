@@ -382,19 +382,9 @@ SETUP_SUBV_REPO()
 
 IBUILD_ADD_STEP_1()
 {
- for CLEAN in `cat /tmp/svn.st.log | grep '^?' | awk -F'^?' {'print $2'}`
- do
-	[[ -e $CLEAN ]] && rm -fr $CLEAN
- done
-
  SPLIT_LINE "$IBUILD_ADD_STEP_1"
  echo ---------- `date` >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
- if [[ `echo $IBUILD_ADD_STEP_1 | egrep 'svn.sh'` ]] ; then
-	time $IBUILD_ROOT/$IBUILD_ADD_STEP_1 >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
- else
-	TIMEOUT_KILL 200 git &
-	time $IBUILD_ADD_STEP_1 -j30 >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
- fi
+ time $IBUILD_ADD_STEP_1 >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
  echo ---------- `date` >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
 }
 
