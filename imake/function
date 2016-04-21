@@ -58,21 +58,21 @@ $NETCAT 127.0.0.1 1234
 
 EXPORT_IBUILD_CONF()
 {
- export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
- export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
- export LOC_REF_REPO_PATH=`grep '^LOC_REF_REPO_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_REF_REPO_PATH=' {'print $2'}`
- export LOC_WORKSPACE=`grep '^LOC_WORKSPACE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_WORKSPACE=' {'print $2'}`
+ export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
+ export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
+ export LOC_REF_REPO_PATH=$(grep '^LOC_REF_REPO_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_REF_REPO_PATH=' {'print $2'})
+ export LOC_WORKSPACE=$(grep '^LOC_WORKSPACE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_WORKSPACE=' {'print $2'})
 # mkdir -p /local/{ccache,out} >/dev/null 2>&1
  mkdir -p /local/workspace/{subv_repo,build} >/dev/null 2>&1
- [[ -z $CCACHE_DIR ]] && export CCACHE_DIR=`grep '^CCACHE_DIR=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_DIR=' {'print $2'}`
- [[ -z $CCACHE_UMASK ]] && export CCACHE_UMASK=`grep '^CCACHE_UMASK=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_UMASK=' {'print $2'}` 
- [[ -z $CCACHE_BASEDIR ]] && export CCACHE_BASEDIR=`grep '^CCACHE_BASEDIR=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_BASEDIR=' {'print $2'}`
- [[ -z $USE_CCACHE ]] && export USE_CCACHE=`grep '^USE_CCACHE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'USE_CCACHE=' {'print $2'}`
- export JDK6_PATH=`grep '^JDK6_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'JDK6_PATH=' {'print $2'}`
- export JDK7_PATH=`grep '^JDK7_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'JDK7_PATH=' {'print $2'}`
- export IBUILD_GRTSRV_ID_DEFAULT=`grep '^IBUILD_GRTSRV_ID=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_GRTSRV_ID=' {'print $2'}`
- export IBUILD_ROBOT=`grep '^IBUILD_ROBOT=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_ROBOT=' {'print $2'}`
- export REPO_CMD=`grep '^REPO_CMD=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'REPO_CMD=' {'print $2'}`
+ [[ -z $CCACHE_DIR ]] && export CCACHE_DIR=$(grep '^CCACHE_DIR=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_DIR=' {'print $2'})
+ [[ -z $CCACHE_UMASK ]] && export CCACHE_UMASK=$(grep '^CCACHE_UMASK=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_UMASK=' {'print $2'})
+ [[ -z $CCACHE_BASEDIR ]] && export CCACHE_BASEDIR=$(grep '^CCACHE_BASEDIR=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_BASEDIR=' {'print $2'})
+ [[ -z $USE_CCACHE ]] && export USE_CCACHE=$(grep '^USE_CCACHE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'USE_CCACHE=' {'print $2'})
+ export JDK6_PATH=$(grep '^JDK6_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'JDK6_PATH=' {'print $2'})
+ export JDK7_PATH=$(grep '^JDK7_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'JDK7_PATH=' {'print $2'})
+ export IBUILD_GRTSRV_ID_DEFAULT=$(grep '^IBUILD_GRTSRV_ID=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_GRTSRV_ID=' {'print $2'})
+ export IBUILD_ROBOT=$(grep '^IBUILD_ROBOT=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_ROBOT=' {'print $2'})
+ export REPO_CMD=$(grep '^REPO_CMD=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'REPO_CMD=' {'print $2'})
 }
 
 EXPORT_IBUILD_SPEC()
@@ -109,6 +109,8 @@ EXPORT_IBUILD_SPEC()
  export EMAIL_REL=$(grep '^EMAIL_REL=' $IBUILD_SPEC | awk -F'EMAIL_REL=' {'print $2'})
  export EMAIL_TMP=$(grep '^EMAIL_TMP=' $IBUILD_SPEC | awk -F'EMAIL_TMP=' {'print $2'})
  export IBUILD_AUTOUT_FILES=$(grep '^IBUILD_AUTOUT_FILES=' $IBUILD_SPEC | awk -F'IBUILD_AUTOUT_FILES=' {'print $2'})
+ export IBUILD_LOC_REF_REPO_PATH=$(grep '^IBUILD_LOC_REF_REPO_PATH=' $IBUILD_SPEC | awk -F'IBUILD_LOC_REF_REPO_PATH=' {'print $2'})
+    [[ ! -z $IBUILD_LOC_REF_REPO_PATH ]] && export LOC_REF_REPO_PATH=$IBUILD_LOC_REF_REPO_PATH
  export IBUILD_GRTSRV_ID=$(grep '^IBUILD_GRTSRV_ID=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_ID=' {'print $2'})
 	[[ -z $IBUILD_GRTSRV_ID ]] && export export IBUILD_GRTSRV_ID=$IBUILD_GRTSRV_ID_DEFAULT
  export IBUILD_GRTSRV=$(grep '^IBUILD_GRTSRV=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV=' {'print $2'})
