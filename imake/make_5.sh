@@ -42,15 +42,13 @@ REPO_INFO
 SETUP_BUILD_REPO
 
 [[ $IBUILD_MODE = bundle ]] && BUNDLE_BUILD
-[[ ! -z $IBUILD_ADD_STEP_1 ]] && IBUILD_ADD_STEP_1
+[[ ! -z $IBUILD_ADD_STEP_1 ]] && IBUILD_ADD_STEPS $IBUILD_ADD_STEP_1
 [[ ! -z $GERRIT_CHANGE_NUMBER ]] && REPO_DOWNLOAD
 
 cd $BUILD_PATH_TOP
 SPLIT_LINE envsetup
 time source build/envsetup.sh >$LOG_PATH/envsetup.log 2>&1
 LOG_STATUS $? envsetup.sh $LOG_PATH/envsetup.log
-
-[[ ! -z $IBUILD_ADD_STEP_2 ]] && IBUILD_ADD_STEP_2
 
 SPLIT_LINE "lunch $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT"
 time lunch $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT >$LOG_PATH/lunch.log 2>&1
@@ -63,9 +61,6 @@ time make -j$JOBS >$LOG_PATH/full_build.log 2>&1
 export STATUS_MAKE=$?
 LOG_STATUS $STATUS_MAKE make_j$JOBS $LOG_PATH/full_build.log
 
-SPLIT_LINE make_release
-time make -j$JOBS release >$LOG_PATH/release.log 2>&1
-export STATUS_MAKE_REL=$?
-LOG_STATUS $STATUS_MAKE_REL make_release $LOG_PATH/release.log
+[[ ! -z $IBUILD_ADD_STEP_2 ]] && IBUILD_ADD_STEPS $IBUILD_ADD_STEP_2
 
 

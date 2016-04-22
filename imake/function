@@ -380,19 +380,12 @@ SETUP_SUBV_REPO()
  fi
 }
 
-IBUILD_ADD_STEP_1()
+IBUILD_ADD_STEPS()
 {
- SPLIT_LINE "$IBUILD_ADD_STEP_1"
- echo ---------- `date` >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
- time $IBUILD_ADD_STEP_1 >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
- echo ---------- `date` >>$LOG_PATH/$IBUILD_ADD_STEP_1_LOG_NAME.log 2>&1
-}
-
-IBUILD_ADD_STEP_2()
-{
- SPLIT_LINE "$IBUILD_ADD_STEP_2"
- time $IBUILD_ADD_STEP_2 >$LOG_PATH/$IBUILD_ADD_STEP_2_LOG_NAME.log 2>&1
- LOG_STATUS $? $IBUILD_ADD_STEP_2 $LOG_PATH/$IBUILD_ADD_STEP_2_LOG_NAME.log
+ SPLIT_LINE "$1"
+ echo ---------- `date` >>$LOG_PATH/ibuild_add_steps.log 2>&1
+ time $1 >>$LOG_PATH/ibuild_add_steps.log 2>&1
+ echo ---------- `date` >>$LOG_PATH/ibuild_add_steps.log 2>&1
 }
 
 REPO_SYNC()
@@ -532,15 +525,17 @@ else
      svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK $TASK_SPACE/iversion-$TOWEEK
  fi
  cp $ORIG_MAINFEST_URL $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME
+ export MANIFEST_VER=$(md5sum $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME | cut -c1-6)
+
  SPLIT_LINE $IVER_MAINFEST_NAME
  svn add $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME >/dev/null 2>&1
  svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVER_MAINFEST_NAME" $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME
  if [[ $? = 0 ]] ; then
-     export IVER=r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+     export IVER=$(echo $BUILD_TIME | cut -c7-8).r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
  else
      SPLIT_LINE iversion_issue
      echo $IVER_MAINFEST_NAME
-     export IVER=r$BUILD_TIME$SEED
+     export IVER=$(echo $BUILD_TIME | cut -c7-8).$MANIFEST_VER
  fi
 }
 
@@ -658,8 +653,9 @@ SETUP_BUILD_OUT()
     export IVEREV=$IVER
  fi
 
+ LOG_HTML $LOG_PATH $AUTOUT_PATH/$AUTOUT_NAME
  cp -Ra $LOG_PATH $AUTOUT_PATH/$AUTOUT_NAME/
- export SHORT_AUTOUT_NAME=`echo $AUTOUT_NAME | sed 's/g6.default.//g'`
+ export SHORT_AUTOUT_NAME=`echo $AUTOUT_NAME | sed 's/.default./.d./g'`
  mv $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME
 
  if [[ ! -f $AUTOUT_UPLOAD_PATH/README ]] ; then
@@ -704,6 +700,7 @@ LOG_HTML()
  for LOG_NAME in `ls $LOG_INPUT_URL | grep log$`
  do
     txt2html $LOG_INPUT_URL/$LOG_NAME --outfile $LOG_OUTPUT_URL/$LOG_NAME.html
+    [[ $? = 0 ]] && rm -f $LOG_INPUT_URL/$LOG_NAME
  done
 }
 
