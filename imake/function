@@ -658,6 +658,7 @@ SETUP_BUILD_OUT()
  export SHORT_AUTOUT_NAME=`echo $AUTOUT_NAME | sed 's/.default./.d./g'`
  mv $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME
 
+# please setup run_sshd.sh in docker
  if [[ ! -f $AUTOUT_UPLOAD_PATH/README ]] ; then
      sshfs -o nonempty -p 2222 sshfs@$IBUILD_UPLOAD_URL $AUTOUT_UPLOAD_PATH >$LOG_PATH/sshfs.log 2>&1
      export MOUNT_STATUS=$?
