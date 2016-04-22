@@ -623,6 +623,8 @@ EXPORT_MANIFEST()
 SETUP_BUILD_OUT()
 {
  [[ -d $BUILD_PATH_TOP ]] && cd $BUILD_PATH_TOP
+ rm -f autout
+ ln -sf $AUTOUT_PATH/$AUTOUT_NAME autout
  EXPORT_MANIFEST $LOG_PATH/after_build_manifest.xml
 
  if [[ $RESULT != FAILED ]] ; then
