@@ -479,7 +479,7 @@ SETUP_ISTATUS()
      rm -fr $TASK_SPACE/istatus-* >/dev/null 2>&1
      svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK
      if [[ $? != 0 ]] ; then
-         svn mkdir -q $IBUILD_SVN_OPTION -m "auto: add istatus/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK >/dev/null 2>&1
+         svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add istatus/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK >/dev/null 2>&1
          svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK
      fi
  else
@@ -521,7 +521,7 @@ SETUP_IVER()
      fi
 else
      rm -fr $TASK_SPACE/iversion-*
-     svn mkdir -q $IBUILD_SVN_OPTION -m "auto: add iversion/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK >/dev/null 2>&1
+     svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add iversion/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK >/dev/null 2>&1
      svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK $TASK_SPACE/iversion-$TOWEEK
  fi
  cp $ORIG_MAINFEST_URL $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME
@@ -601,7 +601,7 @@ DOWNLOAD_PKG_NAME=$DOWNLOAD_PKG_NAME
 	fi
 else
 	rm -fr $TASK_SPACE/icase-*
-	svn mkdir -q $IBUILD_SVN_OPTION -m "auto: add icase/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK >/dev/null 2>&1
+	svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add icase/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK >/dev/null 2>&1
 	svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/icase-$TOWEEK
  fi
 
@@ -653,7 +653,8 @@ SETUP_BUILD_OUT()
     export IVEREV=$IVER
  fi
 
- LOG_HTML $LOG_PATH $AUTOUT_PATH/$AUTOUT_NAME
+ mkdir -p $AUTOUT_PATH/$AUTOUT_NAME/log >/dev/null 2>&1
+ LOG_HTML $LOG_PATH $AUTOUT_PATH/$AUTOUT_NAME/log
  cp -Ra $LOG_PATH $AUTOUT_PATH/$AUTOUT_NAME/
  export SHORT_AUTOUT_NAME=`echo $AUTOUT_NAME | sed 's/.default./.d./g'`
  mv $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME
