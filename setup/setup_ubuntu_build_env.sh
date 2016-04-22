@@ -117,7 +117,7 @@ fi
 # install system util
 sudo aptitude -y install pbzip2 wget htop iotop zip unzip screen sysv-rc-conf \
 tree p7zip p7zip-full splint hal vim vim-full exuberant-ctags fakeroot txt2html \
-apt-btrfs-snapshot btrfs-tools sshfs curl lsb-release lshell openssh-server \
+apt-btrfs-snapshot btrfs-tools sshfs curl lsb-release openssh-server \
 tmux gnuplot dos2unix meld parted gnu-fdisk squashfs-tools mkisofs \
 u-boot-tools uboot-mkimage gawk xlockmore cramfsprogs lzop python-argparse
 
@@ -161,8 +161,6 @@ sudo sensors-detect
 # install web server for monitor if need
 if [[ `echo $RUN_OPTION | egrep 'admin'` ]] ; then
     sudo aptitude -y install nginx php5-fpm gmetad ganglia-webfrontend
-    useradd irobot -m -s /usr/bin/lshell
-    useradd sshfs -m -s /usr/bin/lshell
 fi
 
 # install debug tool

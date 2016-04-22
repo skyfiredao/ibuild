@@ -460,7 +460,7 @@ SETUP_BUILD_REPO()
 
 CCACHE_HOTFIX()
 {
- export NEW_CCACHE_URL=$IBUILD_ROOT/bin/ccache-LDFLAGS-3.2
+ export NEW_CCACHE_URL=$IBUILD_ROOT/bin/ccache
  export ORIG_CCACHE_URL=prebuilts/misc/linux-x86/ccache/ccache
  export NEW_MD5=`md5sum $NEW_CCACHE_URL | awk -F' ' {'print $1'}`
  export ORIG_MD5=`md5sum $ORIG_CCACHE_URL | awk -F' ' {'print $1'}`
@@ -659,13 +659,8 @@ SETUP_BUILD_OUT()
  mv $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME
 
  if [[ ! -f $AUTOUT_UPLOAD_PATH/README ]] ; then
-     sshfs -o nonempty $IBUILD_ROBOT@$IBUILD_UPLOAD_URL $AUTOUT_UPLOAD_PATH >$LOG_PATH/sshfs.log 2>&1
+     sshfs -o nonempty -p 2222 sshfs@$IBUILD_UPLOAD_URL $AUTOUT_UPLOAD_PATH >$LOG_PATH/sshfs.log 2>&1
      export MOUNT_STATUS=$?
-     if [[ $MOUNT_STATUS != 0 ]] ; then
-         sleep 60
-         sshfs -o nonempty $IBUILD_ROBOT@$IBUILD_UPLOAD_URL $AUTOUT_UPLOAD_PATH >$LOG_PATH/sshfs.log 2>&1
-         export MOUNT_STATUS=$?
-     fi
      LOG_STATUS $MOUNT_STATUS sshfs_$AUTOUT_UPLOAD_PATH $LOG_PATH/sshfs.log 
  fi
 

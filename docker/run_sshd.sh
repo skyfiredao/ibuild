@@ -31,6 +31,7 @@ export TAG_NAME=sshd
 export PORT_MAP=2222:22
 export VOLUME_localtime=/etc/localtime:/etc/localtime:ro
 export VOLUME_local=/local/ref_repo:/local/ref_repo:ro
+export VOLUME_local_share_build=/local/share/build:/local/share/build
 export VOLUME_etc_ssh=/etc/ssh:/etc/ssh:ro
 export DOCKER_NAMES=$TAG_NAME-$TODAY
 export IMAGE_TAG=ibuild/$TAG_NAME
@@ -45,6 +46,7 @@ export CONTAINER_ID=$(docker run \
 -p $PORT_MAP \
 -v $VOLUME_localtime \
 -v $VOLUME_local \
+-v $VOLUME_local_share_build \
 -v $VOLUME_etc_ssh \
 --name=$DOCKER_NAMES \
 -t $IMAGE_TAG)
