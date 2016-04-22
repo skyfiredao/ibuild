@@ -154,11 +154,6 @@ EXPORT_IBUILD_SPEC()
  export IBUILD_GRTSRV_BRANCH_TOP=$(echo $IBUILD_GRTSRV_BRANCH | awk -F'/' {'print $1'})
  export KBITS_PROJECT=${IBUILD_TARGET_PRODUCT}$(echo $IBUILD_GRTSRV_BRANCH | awk -F"$IBUILD_GRTSRV_BRANCH_TOP" {'print $2'} | sed 's/\//_/g')
  export THE_BUILD_NUMBER=$ITASK_REV
- if [[ $IBUILD_GRTSRV_MANIFEST != default.xml ]] ; then
-     export ACOS_BUILD_TYPE=Nightly
- else
-     export ACOS_BUILD_TYPE=''
- fi
 
  export SPEC_NAME=`basename $IBUILD_SPEC`
  export AUTOUT_PATH=$LOC_WORKSPACE/autout
@@ -560,7 +555,6 @@ EMAIL_PATCH_OWNER=$EMAIL_PATCH_OWNER
 SLAVE_HOST=`hostname`
 KBITS_PROJECT=$KBITS_PROJECT
 THE_BUILD_NUMBER=$THE_BUILD_NUMBER
-ACOS_BUILD_TYPE=$ACOS_BUILD_TYPE
 SLAVE_IP=$IP
 START_TIME=$BUILD_TIME
 END_TIME=$END_TIME
@@ -694,10 +688,10 @@ LOG_HTML()
  export LOG_INPUT_URL=$1
  export LOG_OUTPUT_URL=$2
 
- for LOG_NAME in `ls $LOG_INPUT_URL | grep log$`
+ for LOG_NAME in `ls $LOG_INPUT_URL | egrep -v 'xml$|txt$|BUILD_ERROR' | grep log$`
  do
     txt2html $LOG_INPUT_URL/$LOG_NAME --outfile $LOG_OUTPUT_URL/$LOG_NAME.html
-    [[ $? = 0 ]] && rm -f $LOG_INPUT_URL/$LOG_NAME
+#    [[ $? = 0 ]] && rm -f $LOG_INPUT_URL/$LOG_NAME
  done
 }
 
