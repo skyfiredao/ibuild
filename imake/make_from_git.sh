@@ -34,6 +34,13 @@ export BRANCH_NAME=branch_name
 export GIR_REPO=git_repo
 export TARGET_PRODUCT=aosp
 export TARGET_BUILD_VARIANT=userdebug
+export CCACHE_DIR=/local/ccache
+export CCACHE_UMASK=0000
+export CCACHE_BASEDIR=/media
+export USE_CCACHE=1
+export WITH_DEXPREOPT=false
+export DISABLE_DEXPREOPT=true
+
 
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
 [[ -f $LOCK_SPACE/build.lock ]] && exit
@@ -53,18 +60,23 @@ git fetch
 
 if [[ -d $BUILD_REPO/$GIR_REPO ]] ; then
     mv $BUILD_REPO/$GIR_REPO $BUILD_REPO/bad.$SEED.$GIR_REPO
+    sudo btrfs subvolume delete $BUILD_REPO/bad.$SEED.$GIR_REPO
 fi
 
 /sbin/btrfs subvolume snapshot $SUBV_REPO/$GIR_REPO $BUILD_REPO/$GIR_REPO
 
 cd $BUILD_REPO/$GIR_REPO
+git branch -D $BRANCH_NAME
 git branch $BRANCH_NAME origin/$BRANCH_NAME
 git checkout $BRANCH_NAME >$AUTOUT/log/checkout.log 2>&1
 git pull >>$AUTOUT/log/checkout.log 2>&1
-export GIT_VER=$(git log HEAD | head -n1 | awk -F' ' {'print $2'} | cut -c34-40)
+#export GIT_VER=$(git log HEAD | head -n1 | awk -F' ' {'print $2'} | cut -c34-40)
+export GIT_VER=$(git describe --always)
 if [[ -f $LOCK_SPACE/ver.$GIT_VER ]] ; then
+    rm -f $LOCK_SPACE/build.lock
     exit
 fi
+
 rm -f $LOCK_SPACE/ver.*
 touch $LOCK_SPACE/ver.$GIT_VER
 . build/envsetup.sh >/dev/null 2>&1
@@ -79,11 +91,12 @@ fi
 export BUILD_OUT_FOLDER=$TOHOUR.$GIT_VER$STATUS.$BRANCH_NAME.$TARGET_PRODUCT-$TARGET_BUILD_VARIANT
 
 mkdir -p $AUTOUT/$BUILD_OUT_FOLDER/log
-cd $AUTOUT/$BUILD_OUT_FOLDER/
+cd $OUT
 [[ $STATUS_BUILD = 0 ]] && tar cf $AUTOUT/$BUILD_OUT_FOLDER/release.$GIT_VER.tar *.{img,txt}
 
 [[ -d $SHARE_PATH/$TODAY ]] || mkdir -p $SHARE_PATH/$TODAY
-mv $AUTOUT/$BUILD_OUT_FOLDER $SHARE_PATH/$TODAY/
+cp -Ra $AUTOUT/$BUILD_OUT_FOLDER $SHARE_PATH/$TODAY/ && rm -fr $AUTOUT/$BUILD_OUT_FOLDER
+
 for LOG in `ls $AUTOUT/log`
 do
     txt2html $AUTOUT/log/$LOG --outfile $SHARE_PATH/$TODAY/$BUILD_OUT_FOLDER/log/$LOG.html
