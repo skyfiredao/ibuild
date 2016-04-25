@@ -161,9 +161,10 @@ EXPORT_IBUILD_SPEC()
  export AUTOUT_UPLOAD_PATH=$LOC_WORKSPACE/upload
  export AUTOUT_NAME=`echo $SPEC_NAME | awk -F'spec.build.' {'print $2'}`
  export LOG_PATH=$AUTOUT_PATH/log
-	mkdir -p $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_UPLOAD_PATH $LOG_PATH >/dev/null 2>&1
-	echo '#'$SPEC_NAME >$LOG_PATH/build_info.txt
-	cat $TASK_SPACE/spec.build >>$LOG_PATH/build_info.txt
+    mkdir -p $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_UPLOAD_PATH $LOG_PATH >/dev/null 2>&1
+    ln -sf ../log $AUTOUT_PATH/$AUTOUT_NAME/log
+    echo '#'$SPEC_NAME >$LOG_PATH/build_info.txt
+    cat $TASK_SPACE/spec.build >>$LOG_PATH/build_info.txt
 }
 
 FILTER_BAD_PATCH()
@@ -474,13 +475,13 @@ SETUP_ISTATUS()
 
  if [[ ! -d $TASK_SPACE/istatus-$TOWEEK ]] ; then
      rm -fr $TASK_SPACE/istatus-* >/dev/null 2>&1
-     svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK
+     svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK >/dev/null 2>&1
      if [[ $? != 0 ]] ; then
          svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add istatus/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK >/dev/null 2>&1
-         svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK
+         svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK >/dev/null 2>&1
      fi
  else
-     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/istatus-$TOWEEK
+     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/istatus-$TOWEEK >/dev/null 2>&1
  fi
 
  touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
@@ -655,6 +656,7 @@ SETUP_BUILD_OUT()
 
  mkdir -p $AUTOUT_PATH/$AUTOUT_NAME/log >/dev/null 2>&1
  LOG_HTML $LOG_PATH $AUTOUT_PATH/$AUTOUT_NAME/log
+ rm -f $AUTOUT_PATH/$AUTOUT_NAME/log
  cp -Ra $LOG_PATH $AUTOUT_PATH/$AUTOUT_NAME/
  export SHORT_AUTOUT_NAME=`echo $AUTOUT_NAME | sed 's/.default./.d./g'`
  mv $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME
@@ -670,13 +672,13 @@ SETUP_BUILD_OUT()
  SPLIT_LINE "upload $TODAY $IVEREV.$SHORT_AUTOUT_NAME"
  [[ -z $ITASK_REV ]] && export ITASK_REV=`ls /tmp/*.log | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1`
  LOG_HTML /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/log/
- txt2html /tmp/build-$ITASK_REV.log --outfile $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/
+ [[ -f /tmp/build-$ITASK_REV.log ]] &&  txt2html /tmp/build-$ITASK_REV.log --outfile $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/
 
  if [[ -f $LOG_PATH/BUILD_ERROR ]] ; then
-	cp $LOG_PATH/BUILD_ERROR $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/
-	cp /tmp/build-*.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/
+    cp $LOG_PATH/BUILD_ERROR $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/
+    cp /tmp/build-*.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/ >/dev/null 2>&1
  else
-     export RESULT=PASSED
+    export RESULT=PASSED
  fi
 
  time cp -R $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME $AUTOUT_UPLOAD_PATH/$TODAY/
@@ -686,7 +688,7 @@ SETUP_BUILD_OUT()
  if [[ $STATUS_CP = 0 ]] ; then
     rm -fr $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME &
     rm -fr $BUILD_PATH_TOP/out/* >/dev/null 2>&1
-    rm -f $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/log/*.log   
+    rm -f $AUTOUT_UPLOAD_PATH/$TODAY/$IVEREV.$SHORT_AUTOUT_NAME/log/*.log   
  fi
 }
 
