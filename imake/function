@@ -630,18 +630,20 @@ SETUP_BUILD_OUT()
  EXPORT_MANIFEST $LOG_PATH/after_build_manifest.xml
 
  if [[ $RESULT != FAILED ]] ; then
-	if [[ -f images_$IBUILD_TARGET_PRODUCT.txz ]] ; then
-		cp images_$IBUILD_TARGET_PRODUCT.txz $AUTOUT_PATH/$AUTOUT_NAME/ 
-		export DOWNLOAD_PKG_NAME=images_$IBUILD_TARGET_PRODUCT.txz
-	elif [[ `ls out/* | grep 'release-' | head -n1` ]] ; then
-		cd out
-		export REL_PKG_NAME=`ls | grep 'release-' | head -n1`
-		tar cf $REL_PKG_NAME.tar $REL_PKG_NAME
-		cp $REL_PKG_NAME.tar $AUTOUT_PATH/$AUTOUT_NAME/
-		export DOWNLOAD_PKG_NAME=$REL_PKG_NAME.tar
-	else
-		SPLIT_LINE no_release_package
-	fi
+    if [[ -f images_$IBUILD_TARGET_PRODUCT.txz ]] ; then
+        cp images_$IBUILD_TARGET_PRODUCT.txz $AUTOUT_PATH/$AUTOUT_NAME/ 
+        export DOWNLOAD_PKG_NAME=images_$IBUILD_TARGET_PRODUCT.txz
+    elif [[ `ls out/* | grep 'release-' | head -n1` ]] ; then
+        cd out
+        export REL_PKG_NAME=`ls | grep 'release-' | head -n1`
+        tar cf $REL_PKG_NAME.tar $REL_PKG_NAME
+        cp $REL_PKG_NAME.tar $AUTOUT_PATH/$AUTOUT_NAME/
+        export DOWNLOAD_PKG_NAME=$REL_PKG_NAME.tar
+    elif [[ -d release ]] ; then
+        tar cf autout/release.$IVER.tar release
+    else
+        SPLIT_LINE no_release_package
+    fi
  fi
 
  SETUP_IVER $LOG_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
