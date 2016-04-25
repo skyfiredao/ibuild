@@ -623,8 +623,8 @@ EXPORT_MANIFEST()
  /bin/cp tmp_manifest.xml $EXPORT_MANIFEST_URL >/dev/null 2>&1
  /bin/cp tmp_manifest.xml $EXPORT_MANIFEST_PATH/manifest.xml >/dev/null 2>&1
  rm -f autout $OUT/autout >/dev/null 2>&1
- ln -sf $AUTOUT_PATH/$AUTOUT_NAME autout
- ln -sf $AUTOUT_PATH/$AUTOUT_NAME $OUT/autout
+ ln -sf $AUTOUT_PATH/$AUTOUT_NAME autout >/dev/null 2>&1
+ ln -sf $AUTOUT_PATH/$AUTOUT_NAME $OUT/autout >/dev/null 2>&1
 }
 
 SETUP_BUILD_OUT()
@@ -642,9 +642,12 @@ SETUP_BUILD_OUT()
         tar cf $REL_PKG_NAME.tar $REL_PKG_NAME
         cp $REL_PKG_NAME.tar $AUTOUT_PATH/$AUTOUT_NAME/
         export DOWNLOAD_PKG_NAME=$REL_PKG_NAME.tar
-    elif [[ -d release ]] ; then
+    elif [[ -d $BUILD_PATH_TOP/release ]] ; then
         [[ -z $IVER ]] && export RELEASE_VER=$MANIFEST_VER || export RELEASE_VER=$IVER
-        tar cf autout/release.$RELEASE_VER.tar release
+        tar cf $BUILD_PATH_TOP/autout/release.$RELEASE_VER.tar release
+        export DOWNLOAD_PKG_NAME=release.$RELEASE_VER.tar
+    elif [[ `ls $BUILD_PATH_TOP/autout/ | grep 'release' | head -n1` ]] ; then
+        export DOWNLOAD_PKG_NAME=$(ls $BUILD_PATH_TOP/autout/ | grep 'release' | head -n1)
     else
         SPLIT_LINE no_release_package
     fi
