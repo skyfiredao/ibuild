@@ -641,7 +641,8 @@ SETUP_BUILD_OUT()
         cp $REL_PKG_NAME.tar $AUTOUT_PATH/$AUTOUT_NAME/
         export DOWNLOAD_PKG_NAME=$REL_PKG_NAME.tar
     elif [[ -d release ]] ; then
-        tar cf autout/release.$IVER.tar release
+        [[ -z $IVER ]] && export RELEASE_VER=$MANIFEST_VER || export RELEASE_VER=$IVER
+        tar cf autout/release.$RELEASE_VER.tar release
     else
         SPLIT_LINE no_release_package
     fi
