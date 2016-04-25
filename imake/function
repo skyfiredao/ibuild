@@ -112,8 +112,9 @@ EXPORT_IBUILD_SPEC()
  export IBUILD_LOC_REF_REPO_PATH=$(grep '^IBUILD_LOC_REF_REPO_PATH=' $IBUILD_SPEC | awk -F'IBUILD_LOC_REF_REPO_PATH=' {'print $2'})
     [[ ! -z $IBUILD_LOC_REF_REPO_PATH ]] && export LOC_REF_REPO_PATH=$IBUILD_LOC_REF_REPO_PATH
  export IBUILD_GRTSRV_ID=$(grep '^IBUILD_GRTSRV_ID=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_ID=' {'print $2'})
-	[[ -z $IBUILD_GRTSRV_ID ]] && export export IBUILD_GRTSRV_ID=$IBUILD_GRTSRV_ID_DEFAULT
+    [[ -z $IBUILD_GRTSRV_ID ]] && export export IBUILD_GRTSRV_ID=$IBUILD_GRTSRV_ID_DEFAULT
  export IBUILD_GRTSRV=$(grep '^IBUILD_GRTSRV=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV=' {'print $2'})
+    [[ -z $IBUILD_GRTSRV ]] && export IBUILD_GRTSRV=29418
  export IBUILD_GRTSRV_BRANCH=$(grep '^IBUILD_GRTSRV_BRANCH=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_BRANCH=' {'print $2'})
  export IBUILD_GRTSRV_INIT_OPTION=$(grep '^IBUILD_GRTSRV_INIT_OPTION=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_INIT_OPTION=' {'print $2'})
  export IBUILD_GRTSRV_MANIFEST=$(grep '^IBUILD_GRTSRV_MANIFEST=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_MANIFEST=' {'print $2'})
@@ -338,7 +339,7 @@ REPO_INFO()
 {
  export IBUILD_GRTSRV_PORT=`echo $IBUILD_GRTSRV | awk -F':' {'print $2'}`
  export IBUILD_GRTSRV_NAME=`echo $IBUILD_GRTSRV | awk -F':' {'print $1'}`
- ssh -p $IBUILD_GRTSRV_PORT $IBUILD_GRTSRV_ID@$IBUILD_GRTSRV_NAME >$LOG_PATH/$IBUILD_GRTSRV_NAME.log 2>&1
+ ssh -p $IBUILD_GRTSRV_PORT $IBUILD_GRTSRV_NAME >$LOG_PATH/$IBUILD_GRTSRV_NAME.log 2>&1
  MASK_LOG $LOG_PATH/$IBUILD_GRTSRV_NAME.log
  
  export REPO_INIT_CMD=''
@@ -407,7 +408,8 @@ REPO_SYNC()
 
  SPLIT_LINE repo_sync
  if [[ -z $SYNC_ONLY ]] ; then
-    time $REPO_CMD sync -c --no-tags -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+    time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+#    time $REPO_CMD sync -c --no-tags -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
     export STATUS_SYNC=$?
  elif [[ ! -z $SYNC_ONLY ]] ; then
     BTRFS_CLEANUP_SUBV_REPO && $REPO_CMD sync -c --no-tags -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1 &
@@ -618,13 +620,13 @@ EXPORT_MANIFEST()
  time $REPO_CMD manifest -r -o tmp_manifest.xml >/dev/null 2>&1
  /bin/cp tmp_manifest.xml $EXPORT_MANIFEST_URL >/dev/null 2>&1
  /bin/cp tmp_manifest.xml $EXPORT_MANIFEST_PATH/manifest.xml >/dev/null 2>&1
+ rm -f autout
+ ln -sf $AUTOUT_PATH/$AUTOUT_NAME autout
 }
 
 SETUP_BUILD_OUT()
 {
  [[ -d $BUILD_PATH_TOP ]] && cd $BUILD_PATH_TOP
- rm -f autout
- ln -sf $AUTOUT_PATH/$AUTOUT_NAME autout
  EXPORT_MANIFEST $LOG_PATH/after_build_manifest.xml
 
  if [[ $RESULT != FAILED ]] ; then
@@ -680,8 +682,9 @@ SETUP_BUILD_OUT()
 
  SETUP_ICASE $TODAY/$IVEREV.$SHORT_AUTOUT_NAME
  if [[ $STATUS_CP = 0 ]] ; then
-	rm -fr $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME &
-	rm -fr $BUILD_PATH_TOP/out/* >/dev/null 2>&1
+    rm -fr $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME &
+    rm -fr $BUILD_PATH_TOP/out/* >/dev/null 2>&1
+    rm -f $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/log/*.log   
  fi
 }
 
@@ -693,7 +696,6 @@ LOG_HTML()
  for LOG_NAME in `ls $LOG_INPUT_URL | egrep -v 'xml$|txt$|BUILD_ERROR' | grep log$`
  do
     txt2html $LOG_INPUT_URL/$LOG_NAME --outfile $LOG_OUTPUT_URL/$LOG_NAME.html
-#    [[ $? = 0 ]] && rm -f $LOG_INPUT_URL/$LOG_NAME
  done
 }
 
