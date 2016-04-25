@@ -673,12 +673,13 @@ SETUP_BUILD_OUT()
  mkdir -p $AUTOUT_UPLOAD_PATH/$TODAY
  SPLIT_LINE "upload $TODAY $IVEREV.$SHORT_AUTOUT_NAME"
  [[ -z $ITASK_REV ]] && export ITASK_REV=`ls /tmp | grep log$ | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1`
- LOG_HTML /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/log/
- [[ -f /tmp/build-$ITASK_REV.log ]] &&  txt2html /tmp/build-$ITASK_REV.log --outfile $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/
+ [[ -f /tmp/build-$ITASK_REV.log ]] && LOG_HTML /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/log/
+ [[ -f /tmp/build-$ITASK_REV.log ]] && txt2html /tmp/build-$ITASK_REV.log --outfile $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/
 
  if [[ -f $LOG_PATH/BUILD_ERROR ]] ; then
     cp $LOG_PATH/BUILD_ERROR $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/
     cp /tmp/build-*.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/ >/dev/null 2>&1
+    export IVEREV=$IVEREV.BUILD_ERROR
  else
     export RESULT=PASSED
  fi
@@ -698,6 +699,8 @@ LOG_HTML()
 {
  export LOG_INPUT_URL=$1
  export LOG_OUTPUT_URL=$2
+
+ rm -f $LOG_INPUT_URL/log $LOG_OUTPUT_URL/log >/dev/null 2>&1
 
  for LOG_NAME in `ls $LOG_INPUT_URL | egrep -v 'xml$|txt$|BUILD_ERROR' | grep log$`
  do
@@ -733,7 +736,7 @@ CLEAN_EXIT()
  rm -fr $TASK_SPACE/*spec.build*
  rm -f $LOCK_SPACE/itask.lock
  rm -fr $AUTOUT_PATH/r*
- mv /tmp/build-$ITASK_REV.log /tmp/old.build-$ITASK_REV.log
+ [[ -f /tmp/build-$ITASK_REV.log ]] && mv /tmp/build-$ITASK_REV.log /tmp/old.build-$ITASK_REV.log
  if [[ -f $ORIG_CCACHE_URL ]] ; then
     export CCACHE_MAX_SIZE=$($ORIG_CCACHE_URL -s | grep size | grep max | awk -F' ' {'print $4'} | awk -F'.' {'print $1'}) 
     export CCACHE_SIZE=$($ORIG_CCACHE_URL -s | grep size | grep -v max | awk -F' ' {'print $3'} | awk -F'.' {'print $1'})
