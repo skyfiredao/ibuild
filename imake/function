@@ -270,7 +270,7 @@ BTRFS_CLEANUP_SUBV_REPO()
  do
     export SUBV_REPO_CLEAN=''
     export SUBV_REPO_TIME=$(stat -c %Z $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5)
-    export SUBV_REPO_SIZE=$(du -sh $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5/.repo | grep G | awk -F'G' {'print $1'} | awk -F'.' {'print $1'})
+    export SUBV_REPO_SIZE=$(du -sh $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5/.repo 2>/dev/null | grep G | awk -F'G' {'print $1'} | awk -F'.' {'print $1'})
     [[ ! -z $SUBV_REPO_SIZE && $SUBV_REPO_SIZE -ge 30 ]] && export SUBV_REPO_CLEAN=yes
     [[ `echo $FULL_TODAY - $SUBV_REPO_TIME | bc` -ge 2600000 ]] && export SUBV_REPO_CLEAN=yes
 
@@ -416,7 +416,7 @@ REPO_SYNC()
     BTRFS_CLEANUP_SUBV_REPO && $REPO_CMD sync -c --no-tags -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1 &
  fi
 
- for INDEX_LOCK_REPO in `grep index.lock $LOG_PATH/$REPO_SYNC_LOG_NAME.log | awk -F"'" {'print $2'} | awk -F'/.git' {'print $1'}`
+ for INDEX_LOCK_REPO in `grep index.lock $LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>/dev/null | awk -F"'" {'print $2'} | awk -F'/.git' {'print $1'}`
  do
     rm -fr $INDEX_LOCK_REPO
     export INDEX_LOCK=true
