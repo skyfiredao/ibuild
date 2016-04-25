@@ -471,7 +471,7 @@ CCACHE_HOTFIX()
 SETUP_ISTATUS()
 {
  export ISTATUS_ENTRY=$1
- [[ -z $ITASK_REV ]] && export ITASK_REV=`ls /tmp/*.log | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1`
+ [[ -z $ITASK_REV ]] && export ITASK_REV=`ls /tmp/* | grep log$ | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1`
 
  if [[ ! -d $TASK_SPACE/istatus-$TOWEEK ]] ; then
      rm -fr $TASK_SPACE/istatus-* >/dev/null 2>&1
@@ -619,6 +619,7 @@ EXPORT_MANIFEST()
  export EXPORT_MANIFEST_PATH=$(dirname $EXPORT_MANIFEST_URL)
  SPLIT_LINE export_manifest
  time $REPO_CMD manifest -r -o tmp_manifest.xml >/dev/null 2>&1
+ export MANIFEST_VER=$(md5sum tmp_manifest.xml | cut -c1-6)
  /bin/cp tmp_manifest.xml $EXPORT_MANIFEST_URL >/dev/null 2>&1
  /bin/cp tmp_manifest.xml $EXPORT_MANIFEST_PATH/manifest.xml >/dev/null 2>&1
  rm -f autout
@@ -659,7 +660,7 @@ SETUP_BUILD_OUT()
  LOG_HTML $LOG_PATH $AUTOUT_PATH/$AUTOUT_NAME/log
  rm -f $AUTOUT_PATH/$AUTOUT_NAME/log
  cp -Ra $LOG_PATH $AUTOUT_PATH/$AUTOUT_NAME/
- export SHORT_AUTOUT_NAME=`echo $AUTOUT_NAME | sed 's/.default./.d./g'`
+ export SHORT_AUTOUT_NAME=`echo $AUTOUT_NAME | sed 's/.not_define.//g'`
  mv $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME
 
 # please setup run_sshd.sh in docker
@@ -671,7 +672,7 @@ SETUP_BUILD_OUT()
 
  mkdir -p $AUTOUT_UPLOAD_PATH/$TODAY
  SPLIT_LINE "upload $TODAY $IVEREV.$SHORT_AUTOUT_NAME"
- [[ -z $ITASK_REV ]] && export ITASK_REV=`ls /tmp/*.log | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1`
+ [[ -z $ITASK_REV ]] && export ITASK_REV=`ls /tmp/* | grep log$ | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1`
  LOG_HTML /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/log/
  [[ -f /tmp/build-$ITASK_REV.log ]] &&  txt2html /tmp/build-$ITASK_REV.log --outfile $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/
 
@@ -689,7 +690,7 @@ SETUP_BUILD_OUT()
  if [[ $STATUS_CP = 0 ]] ; then
     rm -fr $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME &
     rm -fr $BUILD_PATH_TOP/out/* >/dev/null 2>&1
-    rm -f $AUTOUT_UPLOAD_PATH/$TODAY/$IVEREV.$SHORT_AUTOUT_NAME/log/*.log   
+    rm -f $AUTOUT_UPLOAD_PATH/$TODAY/$IVEREV.$SHORT_AUTOUT_NAME/log/{*.log,log}
  fi
 }
 
