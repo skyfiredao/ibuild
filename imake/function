@@ -471,7 +471,7 @@ CCACHE_HOTFIX()
 SETUP_ISTATUS()
 {
  export ISTATUS_ENTRY=$1
- [[ -z $ITASK_REV ]] && export ITASK_REV=`ls /tmp/* | grep log$ | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1`
+ [[ -z $ITASK_REV ]] && export ITASK_REV=`ls /tmp | grep log$ | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1`
 
  if [[ ! -d $TASK_SPACE/istatus-$TOWEEK ]] ; then
      rm -fr $TASK_SPACE/istatus-* >/dev/null 2>&1
@@ -672,7 +672,7 @@ SETUP_BUILD_OUT()
 
  mkdir -p $AUTOUT_UPLOAD_PATH/$TODAY
  SPLIT_LINE "upload $TODAY $IVEREV.$SHORT_AUTOUT_NAME"
- [[ -z $ITASK_REV ]] && export ITASK_REV=`ls /tmp/* | grep log$ | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1`
+ [[ -z $ITASK_REV ]] && export ITASK_REV=`ls /tmp | grep log$ | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1`
  LOG_HTML /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/log/
  [[ -f /tmp/build-$ITASK_REV.log ]] &&  txt2html /tmp/build-$ITASK_REV.log --outfile $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/
 
