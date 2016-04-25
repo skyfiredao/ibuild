@@ -130,7 +130,7 @@ EXPORT_IBUILD_SPEC()
  export IBUILD_ODEX=$(grep '^IBUILD_ODEX=' $IBUILD_SPEC | awk -F'IBUILD_ODEX=' {'print $2'})
 	[[ ! -z $IBUILD_ODEX ]] && export DISABLE_DEXPREOPT=true ; export WITH_DEXPREOPT=false
  export IBUILD_AOSP_JDK=$(grep '^IBUILD_AOSP_JDK=' $IBUILD_SPEC | awk -F'IBUILD_AOSP_JDK=' {'print $2'})
- export JDK_PATH=$(ls -d $JDK6_PATH $JDK7_PATH | grep $IBUILD_AOSP_JDK)
+ export JDK_PATH=$(ls -d $JDK6_PATH $JDK7_PATH 2>/dev/null | grep $IBUILD_AOSP_JDK)
  export IBUILD_PRIORITY=$(grep '^IBUILD_PRIORITY=' $IBUILD_SPEC | awk -F'IBUILD_PRIORITY=' {'print $2'})
  export IBUILD_NOTE=$(grep '^IBUILD_NOTE=' $IBUILD_SPEC | awk -F'IBUILD_NOTE=' {'print $2'})
  export IVERIFY=$(grep '^IVERIFY=' $IBUILD_SPEC | awk -F'IVERIFY=' {'print $2'})
