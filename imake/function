@@ -662,7 +662,7 @@ SETUP_BUILD_OUT()
 
  mkdir -p $AUTOUT_PATH/$AUTOUT_NAME/log >/dev/null 2>&1
  LOG_HTML $LOG_PATH $AUTOUT_PATH/$AUTOUT_NAME/log
- rm -f $AUTOUT_PATH/$AUTOUT_NAME/log
+ rm -f $AUTOUT_PATH/$AUTOUT_NAME/log/log
  cp -Ra $LOG_PATH $AUTOUT_PATH/$AUTOUT_NAME/
  [[ -f $LOG_PATH/BUILD_ERROR ]] && export IVEREV=$IVEREV.BUILD_ERROR
  export SHORT_AUTOUT_NAME=`echo $AUTOUT_NAME | sed 's/.not_define.//g'`
@@ -695,8 +695,8 @@ SETUP_BUILD_OUT()
  if [[ $STATUS_CP = 0 ]] ; then
     rm -fr $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME &
     rm -fr $BUILD_PATH_TOP/out/* >/dev/null 2>&1
-    rm -f $AUTOUT_UPLOAD_PATH/$TODAY/$IVEREV.$SHORT_AUTOUT_NAME/log/{*.log,log}
  fi
+ rm -f $AUTOUT_UPLOAD_PATH/$TODAY/$IVEREV.$SHORT_AUTOUT_NAME/log/{*.log,log}
 }
 
 LOG_HTML()
