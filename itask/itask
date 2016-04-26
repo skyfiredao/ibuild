@@ -1,0 +1,93 @@
+#!/bin/bash
+# Copyright (C) <2014,2015>  <Ding Wei>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Change log
+# 150202 Create by Ding Wei
+# 160426 Modify and release
+export LC_CTYPE=C
+export LC_ALL=C
+export USER=$(whoami)
+export SEED=$RANDOM$RANDOM
+export BUILD_TIME=$(date +%y%m%d%H%M%S)
+export TASK_SPACE=/dev/shm
+export SPEC_URL=$1
+export ISPEC_URL=$(dirname $0)
+export IBUILD_SVN_SRV=Your_svn_Server
+export IBUILD_SVN_OPTION='--non-interactive --no-auth-cache --username Your_Account --password Your_Password'
+export SVN_CMD=/usr/bin/svn
+export KEYRING_PID=$(ps aux | grep gnome-keyring-daemon | grep -v grep | awk -F' ' {'print $2'} | head -n1)
+[[ ! -z $KEYRING_PID ]] && kill -9 $KEYRING_PID >/dev/null 2>&1
+
+if [[ -z $SPEC_URL ]] ; then
+	echo -------------------------
+	echo -e "$0 build_spec_name_with_path"
+	echo -------------------------
+	exit
+fi
+
+if [[ ! -f $SPEC_URL ]] ; then
+	echo -------------------------
+	echo -e "Cat NOT find $SPEC_URL"
+	echo -------------------------
+	exit
+fi
+
+if [[ ! -f $SVN_CMD ]] ; then
+	echo -------------------------
+	echo -e "Can NOT find svn"
+	echo -------------------------
+	exit
+fi
+
+export SPEC_NAME=$(basename $SPEC_URL)
+export SPEC_PATH=$(dirname $SPEC_URL)
+$SVN_CMD up -q $IBUILD_SVN_OPTION $SPEC_PATH >/dev/null 2>&1
+$SVN_CMD cleanup $ISPEC_URL >/dev/null 2>&1
+$SVN_CMD up -q $IBUILD_SVN_OPTION $ISPEC_URL >/dev/null 2>&1
+
+rm -fr $TASK_SPACE/$USER.tasks.lock.$SEED >/dev/null 2>&1
+$SVN_CMD co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/tasks $TASK_SPACE/$USER.tasks.lock.$SEED
+
+export NEW_SPEC_NAME=$(grep spec.build $SPEC_URL | grep spec.build | awk -F'spec.build.' {'print $2'})
+if [[ ! -z $NEW_SPEC_NAME ]] ; then
+    export SPEC_NAME=spec.build.$NEW_SPEC_NAME
+    cat $SPEC_URL | egrep -v 'spec.build|BUILD_TIME=|DOWNLOAD_PKG_NAME=|DOWNLOAD_URL=|END_TIME=|IVER=|ITASK_REV=|MAKE_STATUS=|REL_PATH=|RESULT=|SLAVE_HOST=|SLAVE_IP=|START_TIME=' >$TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.spec.build.$SPEC_NAME >$TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME
+else
+    /bin/cp $SPEC_URL $TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME >/dev/null 2>&1
+fi
+
+if [[ `echo $USER | egrep -v 'root|ubuntu' | grep $USER` && ! `grep 'EMAIL_TMP=' $TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME` ]] ; then
+	echo "EMAIL_TMP=$USER@Your_Domain.com" >>$TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME
+fi
+
+$SVN_CMD add $TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME >/dev/null 2>&1
+$SVN_CMD ci $IBUILD_SVN_OPTION -m "auto: submit $SPEC_NAME" $TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME >/tmp/itask.log 2>&1
+if [[ $? = 0 ]] ; then
+    echo -------------------------
+    grep 'Committed revision' /tmp/itask.log
+    echo -------------------------
+else
+    echo -------------------------
+    cat /tmp/itask.log
+    echo 'Unknow issue' 
+    echo -------------------------
+fi
+
+sleep 1
+rm -fr $TASK_SPACE/$USER.tasks.lock.$SEED >/dev/null 2>&1
+rm -f /tmp/itask.log >/dev/null 2>&1
+
+
