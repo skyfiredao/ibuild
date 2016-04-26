@@ -73,7 +73,7 @@ git pull >>$AUTOUT/log/checkout.log 2>&1
 #export GIT_VER=$(git log HEAD | head -n1 | awk -F' ' {'print $2'} | cut -c34-40)
 export GIT_VER=$(git describe --always)
 if [[ -f $LOCK_SPACE/ver.$GIT_VER ]] ; then
-    rm -f $LOCK_SPACE/build.lock
+    rm -f $LOCK_SPACE/build.lock $AUTOUT/log/checkout.log
     exit
 fi
 
