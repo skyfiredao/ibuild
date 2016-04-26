@@ -117,12 +117,12 @@ USER=$USER" | sort -u >$TASK_SPACE/itask/$HOSTNAME
 cp $TASK_SPACE/itask/$HOSTNAME $TASK_SPACE/itask/svn/inode/$HOSTNAME >/dev/null 2>&1
 
 if [[ $IBUILD_TOP_SVN_SRV_HOSTNAME != $IBUILD_SVN_SRV_HOSTNAME ]] ; then
-    if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then    
+    if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME && ! -z $IBUILD_TOP_SVN_SRV ]] ; then    
         cp $TASK_SPACE/itask/$HOSTNAME $TASK_SPACE/itask.top/svn/inode/$HOSTNAME >/dev/null 2>&1
         svn add $TASK_SPACE/itask.top/svn/inode/$HOSTNAME >/dev/null 2>&1
         svn ci $IBUILD_SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask.top/svn/inode/$HOSTNAME
     fi
-    if [[ -f $TASK_SPACE/itask.top/svn/inode/$IBUILD_SVN_SRV_HOSTNAME && $IBUILD_SVN_SRV_HOSTNAME != $HOSTNAME ]] ; then
+    if [[ -f $TASK_SPACE/itask.top/svn/inode/$IBUILD_SVN_SRV_HOSTNAME && $IBUILD_SVN_SRV_HOSTNAME != $HOSTNAME && ! -z $IBUILD_TOP_SVN_SRV ]] ; then
         cat /etc/hosts | grep -v $IBUILD_SVN_SRV_HOSTNAME >$TASK_SPACE/hosts
 export IP_SVN_SRV=$(grep '^IP=' $TASK_SPACE/itask.top/svn/inode/$IBUILD_SVN_SRV_HOSTNAME | awk -F'IP=' {'print $2'})
         echo "$IP_SVN_SRV $IBUILD_SVN_SRV_HOSTNAME.$DOMAIN_NAME $IBUILD_SVN_SRV_HOSTNAME" >>$TASK_SPACE/hosts
