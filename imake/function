@@ -157,6 +157,7 @@ EXPORT_IBUILD_SPEC()
  export THE_BUILD_NUMBER=$ITASK_REV
 
  export SPEC_NAME=`basename $IBUILD_SPEC`
+    [[ -z $SPEC_NAME ]] && export SPEC_NAME=test_build
  export AUTOUT_PATH=$LOC_WORKSPACE/autout
  export AUTOUT_UPLOAD_PATH=$LOC_WORKSPACE/upload
  export AUTOUT_NAME=`echo $SPEC_NAME | awk -F'spec.build.' {'print $2'}`
@@ -623,8 +624,8 @@ EXPORT_MANIFEST()
  /bin/cp tmp_manifest.xml $EXPORT_MANIFEST_URL >/dev/null 2>&1
  /bin/cp tmp_manifest.xml $EXPORT_MANIFEST_PATH/manifest.xml >/dev/null 2>&1
  rm -f autout $OUT/autout >/dev/null 2>&1
- ln -sf $AUTOUT_PATH/$AUTOUT_NAME autout >/dev/null 2>&1
- ln -sf $AUTOUT_PATH/$AUTOUT_NAME $OUT/autout >/dev/null 2>&1
+ [[ ! -z $AUTOUT_NAME ]] && ln -sf $AUTOUT_PATH/$AUTOUT_NAME autout >/dev/null 2>&1
+ [[ ! -z $AUTOUT_NAME ]] && ln -sf $AUTOUT_PATH/$AUTOUT_NAME $OUT/autout >/dev/null 2>&1
 }
 
 SETUP_BUILD_OUT()
