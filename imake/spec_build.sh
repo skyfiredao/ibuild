@@ -38,7 +38,7 @@ export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
 if [[ -f $SPEC_URL ]] ; then
-    ln -sf $SPEC_URL /dev/shm/spec.build
+    cp $SPEC_URL /dev/shm/spec.build
     bash $IBUILD_ROOT/imake/build.sh
 else
     echo "Can NOT find $SPEC_URL"
