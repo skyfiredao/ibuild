@@ -351,7 +351,7 @@ REPO_INFO()
  [[ ! -z $IBUILD_GRTSRV_MANIFEST && $IBUILD_GRTSRV_MANIFEST != default.xml ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" -m $IBUILD_GRTSRV_MANIFEST"
 
  echo "$REPO_CMD init -u ssh://$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD" >/tmp/$USER.repo_init.tmp
- export REPO_INIT_CMD_MD5_NAME=`cat /tmp/$USER.repo_init.tmp | md5sum | awk -F' ' {'print $1'}`
+ export REPO_INIT_CMD_MD5_NAME=$(cat /tmp/$USER.repo_init.tmp | md5sum | awk -F' ' {'print $1'} | cut -c1-5)
  export BTRFS_NAME=$REPO_INIT_CMD_MD5_NAME
  export BUILD_PATH_TOP=$LOC_WORKSPACE/build/$BTRFS_NAME
  if [[ ! -z $IBUILD_SUBV_REPO && -d $LOC_WORKSPACE/subv_repo/$IBUILD_SUBV_REPO ]] ; then
@@ -523,7 +523,7 @@ else
      svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK $TASK_SPACE/iversion-$TOWEEK
  fi
  cp $ORIG_MAINFEST_URL $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME
- export MANIFEST_VER=$(md5sum $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME | cut -c1-6)
+ export MANIFEST_VER=$(md5sum $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME | cut -c1-5)
 
  SPLIT_LINE $IVER_MAINFEST_NAME
  svn add $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME >/dev/null 2>&1
@@ -619,7 +619,7 @@ EXPORT_MANIFEST()
  export EXPORT_MANIFEST_PATH=$(dirname $EXPORT_MANIFEST_URL)
  SPLIT_LINE export_manifest
  time $REPO_CMD manifest -r -o tmp_manifest.xml >/dev/null 2>&1
- export MANIFEST_VER=$(md5sum tmp_manifest.xml | cut -c1-6)
+ export MANIFEST_VER=$(md5sum tmp_manifest.xml | cut -c1-5)
  /bin/cp tmp_manifest.xml $EXPORT_MANIFEST_URL >/dev/null 2>&1
  /bin/cp tmp_manifest.xml $EXPORT_MANIFEST_PATH/manifest.xml >/dev/null 2>&1
  rm -f autout $OUT/autout >/dev/null 2>&1
