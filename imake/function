@@ -647,6 +647,8 @@ SETUP_BUILD_OUT()
         [[ -z $IVER ]] && export RELEASE_VER=$MANIFEST_VER || export RELEASE_VER=$IVER
         tar cf $BUILD_PATH_TOP/autout/release.$RELEASE_VER.tar release
         export DOWNLOAD_PKG_NAME=release.$RELEASE_VER.tar
+#        tar cfz $BUILD_PATH_TOP/autout/release.$RELEASE_VER.tgz release
+#        export DOWNLOAD_PKG_NAME=release.$RELEASE_VER.tgz
     elif [[ `ls $BUILD_PATH_TOP/autout/ | grep 'release' | head -n1` ]] ; then
         export DOWNLOAD_PKG_NAME=$(ls $BUILD_PATH_TOP/autout/ | grep 'release' | head -n1)
     else
