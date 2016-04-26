@@ -90,7 +90,7 @@ else
     svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
 fi
 
-if [[ $IBUILD_TOP_SVN_SRV_HOSTNAME != $IBUILD_SVN_SRV_HOSTNAME ]] ; then
+if [[ $IBUILD_TOP_SVN_SRV_HOSTNAME != $IBUILD_SVN_SRV_HOSTNAME && ! -z $IBUILD_TOP_SVN_SRV ]] ; then
     rm -fr $TASK_SPACE/itask.top
     mkdir -p $TASK_SPACE/itask.top
     svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_TOP_SVN_SRV/itask/itask $TASK_SPACE/itask.top/svn

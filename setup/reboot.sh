@@ -39,7 +39,7 @@ if [[ `cat $LOCK_SPACE/count | wc -l` -ge 20 ]] ; then
 	touch $TASK_SPACE/reboot
 fi
 
-if [[ -f $TASK_SPACE/reboot && ! -f $TASK_SPACE/spec.build ]] ; then
+if [[ -f $TASK_SPACE/reboot && ! -f $TASK_SPACE/spec.build && ! `hostname | grep ibuild` ]] ; then
 	nc 127.0.0.1 1234
 	sync
 	sudo reboot
