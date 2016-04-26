@@ -197,7 +197,9 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
     $IBUILD_ROOT/imake/daily_build.sh >>/tmp/daily_build.log 2>&1 &
 elif [[ `echo $CPU | grep ARM` ]] ; then
     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn/inode
-else
+fi
+
+if [[ ! `echo $CPU | grep ARM` ]] ; then
     bash -x $IBUILD_ROOT/setup/ibuild_node_daemon.sh $TASK_SPACE/itask/svn >/tmp/ibuild_node_daemon.log 2>&1 &
 fi
 
