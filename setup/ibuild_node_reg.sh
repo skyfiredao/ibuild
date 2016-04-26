@@ -151,7 +151,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
     crontab /tmp/$USER.crontab
 fi
 
-[[ `ps aux | grep -v grep | grep gvfsd` ]] && sudo /etc/init.d/lightdm stop
+# [[ `ps aux | grep -v grep | grep gvfsd` ]] && sudo /etc/init.d/lightdm stop
 
 if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn/inode
