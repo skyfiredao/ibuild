@@ -61,7 +61,7 @@ BTRFS_SYNC()
  [[ -d $LOC_REF_REPO/$SRV_NAME/.repo ]] && sudo /sbin/btrfs subvolume delete $LOC_REF_REPO/old.$SRV_NAME $LOC_REF_REPO/tmp.$SRV_NAME >/dev/null 2>&1
 }
 
-for SRV_NAME in `ls $LOC_REF_REPO/*/.repo | grep -v tmp | grep ":" | awk -F'/.repo' {'print $1'} | awk -F"$LOC_REF_REPO/" {'print $2'}`
+for SRV_NAME in `ls $LOC_REF_REPO/*/.repo | egrep -v 'tmp|android.googlesource.com' | grep ":" | awk -F'/.repo' {'print $1'} | awk -F"$LOC_REF_REPO/" {'print $2'}`
 do
     if [[ `sudo /sbin/btrfs subvolume list $LOC_REF_REPO | grep $SRV_NAME` ]] ; then
         BTRFS_SYNC
