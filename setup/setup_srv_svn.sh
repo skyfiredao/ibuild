@@ -195,7 +195,8 @@ echo "http-proxy-exceptions = $HOSTNAME_A" >>~/.subversion/servers
 cp -Ra ~/.subversion /local/ibuild/setup/subversion
 svn add -q /local/ibuild/setup/subversion
 svn ci --no-auth-cache --username dingwei --password $DW_PASSWD -m 'auto: add local subversion to svn' /local/ibuild/setup
-svn mkdir -q --parents --no-auth-cache --username dingwei --password $DW_PASSWD -m 'auto: add queue' svn://127.0.0.1/istatus/queue
+svn mkdir -q --parents --no-auth-cache --username dingwei --password $DW_PASSWD -m 'auto: add queue' svn://127.0.0.1/istatus/queue/itask
+svn mkdir -q --parents --no-auth-cache --username dingwei --password $DW_PASSWD -m 'auto: add queue' svn://127.0.0.1/istatus/queue/icase
 
 
 
