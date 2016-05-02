@@ -410,11 +410,14 @@ REPO_SYNC()
 
  SPLIT_LINE repo_sync
  if [[ -z $SYNC_ONLY ]] ; then
-    time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
-#    time $REPO_CMD sync -c --no-tags -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+    if [[ -f Makefile ]] ; then
+        time $REPO_CMD sync -c --no-tags -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+    else
+        time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+    fi
     export STATUS_SYNC=$?
  elif [[ ! -z $SYNC_ONLY ]] ; then
-    BTRFS_CLEANUP_SUBV_REPO && $REPO_CMD sync -c --no-tags -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1 &
+    BTRFS_CLEANUP_SUBV_REPO && $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1 &
  fi
 
  for INDEX_LOCK_REPO in `grep index.lock $LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>/dev/null | awk -F"'" {'print $2'} | awk -F'/.git' {'print $1'}`
