@@ -89,13 +89,14 @@ CHK_ITASK_LOCK
 
 while [ ! -f $LOCK_SPACE/itask.lock ] ; 
 do
-	CHK_ITASK_LOCK
-	if [[ -f $TASK_SPACE/EXIT ]] ; then
-		$NETCAT 127.0.0.1 1234
-		pkill -9 nc
-		exit 0
-	fi
-	NODE_STANDBY
+    CHK_ITASK_LOCK
+    if [[ -f $TASK_SPACE/EXIT ]] ; then
+        $NETCAT 127.0.0.1 1234
+        export NC_PID=$(ps aux | grep nc | grep 1234 | awk -F' ' {'print $2'})
+        kill -9 $NC_PID >/dev/null 2>&1
+        exit 0
+    fi
+    NODE_STANDBY
 done
 
 rm -f $LOCK_SPACE/itask.lock
