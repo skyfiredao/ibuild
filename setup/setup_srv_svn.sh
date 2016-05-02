@@ -167,8 +167,16 @@ do
     svn ci $LOCAL_SVN_OPTION -m "auto init $REPO_NAME from $IBUILD_SVN_SRV" $TMP_SVN_PATH/$REPO_NAME
 done
 
-rm -fr $TMP_SVN_PATH
+# for istatus
+cd $TMP_SVN_PATH
+svn co $LOCAL_SVN_OPTION svn://127.0.0.1/istatus
+cd istatus
+svn mkdir itask icase
+touch .zero
+svn add .zero
+svn ci $LOCAL_SVN_OPTION -m "auto init istatus"
 
+rm -fr $TMP_SVN_PATH
 # For Pi
 # su $USER -c '$HOME/svn/ibuild/setup/setup_srv_svn.sh >/tmp/setup_svn.log 2>&1' &
 echo "Please add it in /etc/rc.local
@@ -195,8 +203,6 @@ echo "http-proxy-exceptions = $HOSTNAME_A" >>~/.subversion/servers
 cp -Ra ~/.subversion /local/ibuild/setup/subversion
 svn add -q /local/ibuild/setup/subversion
 svn ci --no-auth-cache --username dingwei --password $DW_PASSWD -m 'auto: add local subversion to svn' /local/ibuild/setup
-svn mkdir -q --parents --no-auth-cache --username dingwei --password $DW_PASSWD -m 'auto: add queue' svn://127.0.0.1/istatus/queue/itask
-svn mkdir -q --parents --no-auth-cache --username dingwei --password $DW_PASSWD -m 'auto: add queue' svn://127.0.0.1/istatus/queue/icase
 
 
 
