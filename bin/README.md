@@ -1,4 +1,5 @@
-git clone https://github.com/jrosdahl/ccache.git
-./autogen.sh
-./configure LDFLAGS=-static
-make
+### build_ccache.sh
+# build ccache from source code
+
+### build_jq.sh
+# build jq from source code

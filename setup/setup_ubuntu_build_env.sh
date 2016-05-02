@@ -118,7 +118,7 @@ fi
 sudo aptitude -y install pbzip2 wget htop iotop zip unzip screen sysv-rc-conf \
 tree p7zip p7zip-full splint hal vim vim-full exuberant-ctags fakeroot txt2html \
 apt-btrfs-snapshot btrfs-tools sshfs curl lsb-release openssh-server \
-tmux gnuplot dos2unix meld parted gnu-fdisk squashfs-tools mkisofs \
+tmux gnuplot dos2unix meld parted gnu-fdisk squashfs-tools mkisofs jq \
 u-boot-tools uboot-mkimage gawk xlockmore cramfsprogs lzop python-argparse
 
 # install version control tool
