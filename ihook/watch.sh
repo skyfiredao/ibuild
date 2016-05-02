@@ -43,7 +43,7 @@ export WATCHDOG_PATH=$TASK_SPACE/$WATCH_TMP/ispec/watchdog
 
 mkdir -p $TASK_SPACE/$WATCH_TMP
 
-svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec $TASK_SPACE/$WATCH_TMP/ispec
+svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec $TASK_SPACE/$WATCH_TMP/ispec
 
 svn log -v -r $ICHANGE_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ichange >$TASK_SPACE/$WATCH_TMP/svn.log
 export WATCH_GERRIT_SERVER=`cat $TASK_SPACE/$WATCH_TMP/svn.log | grep ichange | egrep -v 'manifest' | awk -F"$TOYEAR" {'print $2'} | awk -F'/' {'print $2'} | sort -u | head -n1`
