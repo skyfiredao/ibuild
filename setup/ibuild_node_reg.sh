@@ -58,6 +58,7 @@ fi
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
 sudo chmod 777 -R $LOCK_SPACE >/dev/null 2>&1
+sudo chmod -x /usr/bin/gnome-keyring-daemon
 
 svn up -q $IBUILD_ROOT
 
