@@ -626,9 +626,11 @@ EXPORT_MANIFEST()
  export MANIFEST_VER=$(md5sum tmp_manifest.xml | cut -c1-5)
  /bin/cp tmp_manifest.xml $EXPORT_MANIFEST_URL >/dev/null 2>&1
  /bin/cp tmp_manifest.xml $EXPORT_MANIFEST_PATH/manifest.xml >/dev/null 2>&1
- rm -f autout $OUT/autout >/dev/null 2>&1
- [[ ! -z $AUTOUT_NAME ]] && ln -sf $AUTOUT_PATH/$AUTOUT_NAME autout >/dev/null 2>&1
- [[ ! -z $AUTOUT_NAME ]] && ln -sf $AUTOUT_PATH/$AUTOUT_NAME $OUT/autout >/dev/null 2>&1
+ if [[ -f Makefile && ! -z $AUTOUT_NAME ]] ; then
+    rm -f autout $OUT/autout >/dev/null 2>&1
+    ln -sf $AUTOUT_PATH/$AUTOUT_NAME autout >/dev/null 2>&1
+    ln -sf $AUTOUT_PATH/$AUTOUT_NAME $OUT/autout >/dev/null 2>&1
+ fi
 }
 
 SETUP_BUILD_OUT()
