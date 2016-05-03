@@ -17,17 +17,15 @@
 # Change log
 # 160503 Create by Ding Wei
 cd /tmp
-rm -fr jq
-git clone https://github.com/stedolan/jq.git
-cd jq
-autoreconf -i
-./configure
-make -j8 LDFLAGS=-all-static
-# make check
-if [[ -f jq ]] ; then
-    sudo cp jq /usr/bin/
-    [[ -d /local/ibuild/bin ]] && cp jq /local/ibuild/bin/
+rm -fr sysstat
+git clone https://github.com/sysstat/sysstat.git
+cd sysstat
+./configure CFLAGS=-static
+make -j8
+if [[ -f mpstat ]] ; then
+    sudo cp {mpstat,iostat,pidstat} /usr/bin/
+    [[ -d /local/ibuild/bin ]] && cp {mpstat,iostat,pidstat} /local/ibuild/bin/
 else
-    echo "Can NOT find jq"
+    echo "Can NOT find mpstat"
 fi
 
