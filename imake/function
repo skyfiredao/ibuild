@@ -393,6 +393,8 @@ REPO_SYNC()
  export REPO_SYNC_LOG_NAME=sync-`basename $1`
  export INDEX_LOCK=''
 
+ sudo sysctl -w net.ipv4.tcp_window_scaling=0
+
  $IBUILD_ROOT/hotfix/clean_dirty.sh >/dev/null 2>&1
 
  if [[ ! -f $REPO_SYNC_MD5_INFO ]] ; then
