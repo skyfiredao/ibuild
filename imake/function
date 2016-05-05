@@ -382,11 +382,7 @@ IBUILD_ADD_STEPS()
 {
  SPLIT_LINE "$1"
  echo ---------- `date` >>$LOG_PATH/ibuild_add_steps.log 2>&1
- export IBUILD_ADD_STEPS_PATH=$(dirname $1 | head -n1)
- export IBUILD_ADD_STEPS_PWD=$(pwd)
- [[ ! -z $(echo $1 | awk -F'/' {'print $1'}) ]] && cd $IBUILD_ADD_STEPS_PATH
  time $1 >>$LOG_PATH/ibuild_add_steps.log 2>&1
- cd $IBUILD_ADD_STEPS_PWD
  echo ---------- `date` >>$LOG_PATH/ibuild_add_steps.log 2>&1
 }
 
