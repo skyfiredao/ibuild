@@ -88,7 +88,7 @@ EXPORT_IBUILD_SPEC()
      if [[ -f $ITASK_PATH/tasks/$IBUILD_SPEC_NAME && ! -f $TASK_SPACE/spec.build ]] ; then
          cp $ITASK_PATH/tasks/$IBUILD_SPEC_NAME $TASK_SPACE/
          ln -sf $TASK_SPACE/$IBUILD_SPEC_NAME $TASK_SPACE/spec.build
-         echo -e "-------------------------\nStart build: $IBUILD_SPEC_NAME\n-------------------------" | wall >/dev/null 2>&1 
+         echo -e "-------------------------\nStart build: \n$IBUILD_SPEC_NAME\n-------------------------" | wall >/dev/null 2>&1 
      else
          SPLIT_LINE "$ITASK_PATH/tasks/$IBUILD_SPEC_NAME is not a spec.build or $TASK_SPACE/spec.build locked"
          exit 1
