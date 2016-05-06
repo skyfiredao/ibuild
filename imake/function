@@ -753,6 +753,7 @@ CLEAN_EXIT()
  rm -fr $TASK_SPACE/*spec.build*
  rm -f $LOCK_SPACE/itask.lock
  rm -fr $AUTOUT_PATH/r*
+ rm -fr $LOG_PATH/*BUILD_ERROR* >/dev/null 2>&1
  [[ -f /tmp/build-$ITASK_REV.log ]] && mv /tmp/build-$ITASK_REV.log /tmp/old.build-$ITASK_REV.log
  if [[ -f $ORIG_CCACHE_URL ]] ; then
     export CCACHE_MAX_SIZE=$($ORIG_CCACHE_URL -s | grep size | grep max | awk -F' ' {'print $4'} | awk -F'.' {'print $1'}) 
