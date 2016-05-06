@@ -57,7 +57,7 @@ LOG_STATUS $? lunch $LOG_PATH/lunch.log
 rm -fr out/* >/dev/null 2>&1
 
 SPLIT_LINE "make -j$JOBS"
-time make -j$JOBS >$LOG_PATH/full_build.log 2>&1
+time make -j$JOBS $IBUILD_MAKE_OPTION >$LOG_PATH/full_build.log 2>&1
 export STATUS_MAKE=$?
 LOG_STATUS $STATUS_MAKE make_j$JOBS $LOG_PATH/full_build.log
 
