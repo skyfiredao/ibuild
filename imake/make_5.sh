@@ -55,6 +55,7 @@ time lunch $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT >$LOG_PATH/lunch.
 LOG_STATUS $? lunch $LOG_PATH/lunch.log
 
 rm -fr out/* >/dev/null 2>&1
+rm -fr $BUILD_PATH_TOP/out/* >/dev/null 2>&1
 
 SPLIT_LINE "make -j$JOBS"
 echo "make -j$JOBS $IBUILD_MAKE_OPTION" >$LOG_PATH/full_build.log

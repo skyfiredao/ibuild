@@ -707,7 +707,6 @@ SETUP_BUILD_OUT()
  SETUP_ICASE $TODAY/$IVEREV.$SHORT_AUTOUT_NAME
  if [[ $STATUS_CP = 0 ]] ; then
     rm -fr $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME &
-    rm -fr $BUILD_PATH_TOP/out/* >/dev/null 2>&1
  fi
 }
 
