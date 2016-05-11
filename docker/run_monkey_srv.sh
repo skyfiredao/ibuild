@@ -32,12 +32,15 @@ export TAG_NAME=monkey_srv
 export PORT_MAP_HTTPS=443:443
 export PORT_MAP_HTTP=80:80
 export VOLUME_localtime=/etc/localtime:/etc/localtime:ro
-export VOLUME_local=$MONKEY_SRV_PATH/www:/var/www
-export VOLUME_etc_ssh=/etc/ssh:/etc/ssh:ro
+export VOLUME_local=/local:/local
+export VOLUME_monkey_srv=$MONKEY_SRV_PATH/www:/var/www
+export VOLUME_mysql=$MONKEY_SRV_PATH/mysql:/var/lib/mysql
+export VOLUME_data=$MONKEY_SRV_PATH/data:/var/lib/data
 export DOCKER_NAMES=$TAG_NAME-$TODAY
-export IMAGE_TAG=ibuild/$TAG_NAME
+export IMAGE_TAG=$TAG_NAME
 
-mkdir -p $MONKEY_SRV_PATH/{www}
+mkdir -p $MONKEY_SRV_PATH/{www,data}
+chmod 777 -R $MONKEY_SRV_PATH/data
 
 if [[ `docker ps | grep $IMAGE_TAG | awk -F' ' {'print $1'}` ]] ; then
     docker ps | grep $IMAGE_TAG
@@ -49,14 +52,17 @@ export CONTAINER_ID=$(docker run \
 -p $PORT_MAP_HTTPS \
 -p $PORT_MAP_HTTP \
 -v $VOLUME_localtime \
--v $VOLUME_local \
--v $VOLUME_etc_ssh \
+-v $VOLUME_data \
+-v $VOLUME_mysql \
+-v $VOLUME_monkey_srv \
 -e MONKEY_SRV_PATH=$MONKEY_SRV_PATH \
 --name=$DOCKER_NAMES \
 -t $IMAGE_TAG)
 
-docker exec -t $DOCKER_NAMES bash -l -c "/etc/init.d/mysql restart"
 docker exec -t $DOCKER_NAMES bash -l -c "/etc/init.d/apache2 restart"
+DOCKER_IP=$(docker exec -t $DOCKER_NAMES bash -l -c "hostname -I" | awk -F' ' {'print $1'})
+docker exec -t $DOCKER_NAMES bash -l -c "cat /etc/mysql/my.cnf | sed s/127.0.0.1/$DOCKER_IP/g >/tmp/my.cnf ; cp /tmp/my.cnf /etc/mysql/my.cnf"
+docker exec -t $DOCKER_NAMES bash -l -c "/etc/init.d/mysql restart"
 
 echo CONTAINER_ID=$CONTAINER_ID
 docker ps | egrep "CONTAINER|$IMAGE_TAG"
