@@ -80,6 +80,17 @@ fi
 # If your local is China
 # sudo ln -sf /usr/share/zoneinfo/posix/Asia/Shanghai /etc/localtime
 
+# For Docker in ubuntu 14.04 only
+sudo aptitude -y install apt-transport-https ca-certificates
+sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" >/tmp/docker.list
+sudo cp /tmp/docker.list /etc/apt/sources.list.d/
+sudo apt-get purge lxc-docker
+apt-cache policy docker-engine
+sudo aptitude -y apparmor linux-image-extra-$(uname -r) docker-engine
+sudo groupadd docker
+sudo usermod -aG docker $(whoami)
+
 # update current system to last
 sudo aptitude -y full-upgrade
 
