@@ -64,7 +64,7 @@ $SVN_CMD co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/tasks $TASK_
 export NEW_SPEC_NAME=$(grep spec.build $SPEC_URL | grep spec.build | awk -F'spec.build.' {'print $2'})
 if [[ ! -z $NEW_SPEC_NAME ]] ; then
     export SPEC_NAME=spec.build.$NEW_SPEC_NAME
-    cat $SPEC_URL | egrep -v 'spec.build|BUILD_TIME=|DOWNLOAD_PKG_NAME=|DOWNLOAD_URL=|END_TIME=|IVER=|ITASK_REV=|MAKE_STATUS=|REL_PATH=|RESULT=|SLAVE_HOST=|SLAVE_IP=|START_TIME=' >$TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.spec.build.$SPEC_NAME >$TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME
+    cat $SPEC_URL | egrep -v 'spec.build|BUILD_TIME=|DOWNLOAD_PKG_NAME=|DOWNLOAD_URL=|TIME_END=|IVER=|ITASK_REV=|MAKE_STATUS=|REL_PATH=|RESULT=|SLAVE_HOST=|SLAVE_IP=|TIME_START=' >$TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.spec.build.$SPEC_NAME >$TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME
 else
     /bin/cp $SPEC_URL $TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME >/dev/null 2>&1
 fi

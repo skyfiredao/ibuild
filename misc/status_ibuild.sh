@@ -109,9 +109,9 @@ CHECK_BUSY()
 	SPLIT_LINE busy_status-$1
  fi
 
- for H_H in `grep START_TIME= *.txt | awk -F'=' {'print $2'} | cut -c7-8 | sort -u`
+ for H_H in `grep TIME_START= *.txt | awk -F'=' {'print $2'} | cut -c7-8 | sort -u`
  do
-	export H_COUNT=`grep START_TIME= *.txt | awk -F'=' {'print $2'} | grep ^$D_D$H_H | wc -l`
+	export H_COUNT=`grep TIME_START= *.txt | awk -F'=' {'print $2'} | grep ^$D_D$H_H | wc -l`
 	[[ $H_COUNT != 0 ]] && echo -e "$H_H: $H_COUNT"
  done
 }
@@ -123,12 +123,12 @@ CHECK_BUSY_MAP()
  SPLIT_LINE busy_status_$TARGET_WEEK
  echo -e "Time\tMon\tTue\tWed\tThu\tFri\tSat\tSun"
 
- for H_H in `grep START_TIME= *.txt | awk -F'=' {'print $2'} | cut -c7-8 | sort -u`
+ for H_H in `grep TIME_START= *.txt | awk -F'=' {'print $2'} | cut -c7-8 | sort -u`
  do
 	export D_COUNT=''
-	for D_D in `grep START_TIME= *.txt | awk -F'=' {'print $2'} | cut -c1-6 | sort -u`
+	for D_D in `grep TIME_START= *.txt | awk -F'=' {'print $2'} | cut -c1-6 | sort -u`
 	do
-        	export H_COUNT=`grep START_TIME= *.txt | awk -F'=' {'print $2'} | grep ^$D_D$H_H | wc -l`
+        	export H_COUNT=`grep TIME_START= *.txt | awk -F'=' {'print $2'} | grep ^$D_D$H_H | wc -l`
 		[[ $H_COUNT = 0 ]] && export H_COUNT='.'
         	export D_COUNT=`echo -e "$D_COUNT\t$H_COUNT"`
 	done
