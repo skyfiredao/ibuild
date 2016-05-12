@@ -685,10 +685,11 @@ SETUP_BUILD_OUT()
  fi
 
  LOG_HTML $LOG_PATH $LOG_PATH
- cp -Ra $AUTOUT_PATH/log/* $LOG_PATH/
+ cp -Ra $AUTOUT_PATH/log/* $LOG_PATH/ >/dev/null 2>&1
  [[ -f $LOG_PATH/BUILD_ERROR ]] && export IVEREV=$IVEREV.BUILD_ERROR
  export SHORT_AUTOUT_NAME=`echo $AUTOUT_NAME | sed 's/.not_define.//g'`
  mv $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME
+ export LOG_PATH=$AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/log
 
 # please setup run_sshd.sh in docker
  if [[ ! -f $AUTOUT_UPLOAD_PATH/README ]] ; then
