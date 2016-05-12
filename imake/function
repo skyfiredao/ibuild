@@ -163,9 +163,8 @@ EXPORT_IBUILD_SPEC()
  export AUTOUT_PATH=$LOC_WORKSPACE/autout
  export AUTOUT_UPLOAD_PATH=$LOC_WORKSPACE/upload
  export AUTOUT_NAME=`echo $SPEC_NAME | awk -F'spec.build.' {'print $2'}`
- export LOG_PATH=$AUTOUT_PATH/log
-    mkdir -p $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_UPLOAD_PATH $LOG_PATH >/dev/null 2>&1
-    rm -f log && ln -sf $LOG_PATH
+ export LOG_PATH=$AUTOUT_PATH/$AUTOUT_NAME/log
+    mkdir -p $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_UPLOAD_PATH $LOG_PATH $AUTOUT_PATH/log >/dev/null 2>&1
     echo '#'$SPEC_NAME >$LOG_PATH/build_info.txt
     cat $TASK_SPACE/spec.build >>$LOG_PATH/build_info.txt
 }
@@ -685,10 +684,8 @@ SETUP_BUILD_OUT()
     export IVEREV=$BUILD_ID
  fi
 
- rm -f $LOG_PATH/log $AUTOUT_PATH/$AUTOUT_NAME/log
- mkdir -p $AUTOUT_PATH/$AUTOUT_NAME/log >/dev/null 2>&1
  LOG_HTML $LOG_PATH $LOG_PATH
- cp -Ra $LOG_PATH/* $AUTOUT_PATH/$AUTOUT_NAME/log/
+ cp -Ra $AUTOUT_PATH/log/* $LOG_PATH/
  [[ -f $LOG_PATH/BUILD_ERROR ]] && export IVEREV=$IVEREV.BUILD_ERROR
  export SHORT_AUTOUT_NAME=`echo $AUTOUT_NAME | sed 's/.not_define.//g'`
  mv $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME
