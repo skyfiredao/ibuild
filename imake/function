@@ -165,8 +165,7 @@ EXPORT_IBUILD_SPEC()
  export AUTOUT_NAME=`echo $SPEC_NAME | awk -F'spec.build.' {'print $2'}`
  export LOG_PATH=$AUTOUT_PATH/log
     mkdir -p $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_UPLOAD_PATH $LOG_PATH >/dev/null 2>&1
-    ln -sf $LOG_PATH
-    mv log $AUTOUT_PATH/$AUTOUT_NAME/
+    rm -f log && ln -sf $LOG_PATH
     echo '#'$SPEC_NAME >$LOG_PATH/build_info.txt
     cat $TASK_SPACE/spec.build >>$LOG_PATH/build_info.txt
 }
@@ -432,6 +431,7 @@ REPO_SYNC()
         time $REPO_CMD sync -j$JOBS $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
     fi
     export STATUS_SYNC=$?
+    rm -f log && ln -sf $LOG_PATH
  elif [[ ! -z $SYNC_ONLY ]] ; then
     BTRFS_CLEANUP_SUBV_REPO && $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1 &
  fi
@@ -685,10 +685,10 @@ SETUP_BUILD_OUT()
     export IVEREV=$BUILD_ID
  fi
 
- mkdir -p $AUTOUT_PATH/$AUTOUT_NAME/log >/dev/null 2>&1
  rm -f $LOG_PATH/log $AUTOUT_PATH/$AUTOUT_NAME/log
+ mkdir -p $AUTOUT_PATH/$AUTOUT_NAME/log >/dev/null 2>&1
  LOG_HTML $LOG_PATH $LOG_PATH
- cp -Ra $LOG_PATH $AUTOUT_PATH/$AUTOUT_NAME/
+ cp -Ra $LOG_PATH/* $AUTOUT_PATH/$AUTOUT_NAME/log/
  [[ -f $LOG_PATH/BUILD_ERROR ]] && export IVEREV=$IVEREV.BUILD_ERROR
  export SHORT_AUTOUT_NAME=`echo $AUTOUT_NAME | sed 's/.not_define.//g'`
  mv $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME
