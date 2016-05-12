@@ -72,7 +72,7 @@ export IBUILD_TARGET_PRODUCT=$(grep '^IBUILD_TARGET_PRODUCT=' $BUILD_INFO | awk 
 export IBUILD_MODE=$(grep '^IBUILD_MODE=' $BUILD_INFO | awk -F'IBUILD_MODE=' {'print $2'})
     [[ -z $IBUILD_MODE ]] && export IBUILD_MODE=normal
 export IBUILD_NOTE=$(grep '^IBUILD_NOTE=' $BUILD_INFO | awk -F'IBUILD_NOTE=' {'print $2'})
-export IVER=$(grep '^IVER=' $BUILD_INFO | awk -F'IVER=' {'print $2'})
+export BUILD_ID=$(grep '^BUILD_ID=' $BUILD_INFO | awk -F'BUILD_ID=' {'print $2'})
 export ITASK_REV=$(grep '^ITASK_REV=' $BUILD_INFO | awk -F'ITASK_REV=' {'print $2'} | tail -n1)
 export ITASK_ORDER=$(grep '^ITASK_ORDER=' $BUILD_INFO | awk -F'ITASK_ORDER=' {'print $2'} | tail -n1)
 export IVERIFY=$(grep '^IVERIFY=' $BUILD_INFO | grep -v 'IVERIFY=$' | awk -F'IVERIFY=' {'print $2'})

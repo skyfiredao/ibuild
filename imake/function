@@ -527,7 +527,7 @@ SETUP_ISTATUS()
  fi
 }
 
-SETUP_IVER()
+SETUP_IVERSION()
 {
  export ORIG_MAINFEST_URL=$1
  export IVER_MAINFEST_NAME=$2.xml
@@ -549,11 +549,11 @@ else
  svn add $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME >/dev/null 2>&1
  svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVER_MAINFEST_NAME" $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME
  if [[ $? = 0 ]] ; then
-     export IVER=$(echo $BUILD_TIME | cut -c7-8).r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+     export BUILD_ID=$(echo $BUILD_TIME | cut -c7-8).r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
  else
      SPLIT_LINE iversion_issue
      echo $IVER_MAINFEST_NAME
-     export IVER=$(echo $BUILD_TIME | cut -c7-8).$MANIFEST_VER
+     export BUILD_ID=$(echo $BUILD_TIME | cut -c7-8).$MANIFEST_VER
  fi
 }
 
@@ -581,7 +581,7 @@ THE_BUILD_NUMBER=$THE_BUILD_NUMBER
 SLAVE_IP=$IP
 TIME_START=$BUILD_TIME
 TIME_END=$TIME_END
-IVER=$IVER
+BUILD_ID=$BUILD_ID
 IVERSION=$IVERSION
 ITASK_REV=$ITASK_REV
 BUILD_TIME=`echo $END_SEC_TIME - $BUILD_SEC_TIME | bc`
@@ -624,9 +624,9 @@ else
  fi
 
  if [[ ! -z $ITASK_REV ]] ; then
-    export IVEREV=$IVER.$ITASK_REV
+    export IVEREV=$BUILD_ID.$ITASK_REV
  else
-    export IVEREV=$IVER
+    export IVEREV=$BUILD_ID
  fi
  cp $LOG_PATH/build_info.txt $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt
  svn add $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt >/dev/null 2>&1
@@ -666,7 +666,7 @@ SETUP_BUILD_OUT()
         cp $REL_PKG_NAME.tar $AUTOUT_PATH/$AUTOUT_NAME/
         export DOWNLOAD_PKG_NAME=$REL_PKG_NAME.tar
     elif [[ -d $BUILD_PATH_TOP/release ]] ; then
-        [[ -z $IVER ]] && export RELEASE_VER=$MANIFEST_VER || export RELEASE_VER=$IVER
+        [[ -z $BUILD_ID ]] && export RELEASE_VER=$MANIFEST_VER || export RELEASE_VER=$BUILD_ID
         tar cf $BUILD_PATH_TOP/autout/release.$RELEASE_VER.tar release
         export DOWNLOAD_PKG_NAME=release.$RELEASE_VER.tar
 #        tar cfz $BUILD_PATH_TOP/autout/release.$RELEASE_VER.tgz release
@@ -678,11 +678,11 @@ SETUP_BUILD_OUT()
     fi
  fi
 
- SETUP_IVER $LOG_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
+ SETUP_IVERSION $LOG_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
  if [[ ! -z $ITASK_REV ]] ; then
-    export IVEREV=$IVER.$ITASK_REV
+    export IVEREV=$BUILD_ID.$ITASK_REV
  else
-    export IVEREV=$IVER
+    export IVEREV=$BUILD_ID
  fi
 
  mkdir -p $AUTOUT_PATH/$AUTOUT_NAME/log >/dev/null 2>&1
