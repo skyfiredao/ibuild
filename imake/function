@@ -412,14 +412,14 @@ REPO_SYNC()
  if [[ ! -f $REPO_SYNC_MD5_INFO ]] ; then
     SPLIT_LINE repo_init_$IBUILD_GRTSRV_MANIFEST
     echo "$REPO_CMD init -u ssh://$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD" >repo_init.info
-    time $REPO_CMD init -u ssh://$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD >>$LOG_PATH/init.log 2>&1
+    time $REPO_CMD init -u ssh://$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD >>$AUTOUT_PATH/log/init.log 2>&1
     export REPO_INIT_STATUS=$?
-    MASK_LOG $LOG_PATH/init.log
-    LOG_STATUS $REPO_INIT_STATUS repo_init $LOG_PATH/init.log
+    MASK_LOG $AUTOUT_PATH/log/init.log
+    LOG_STATUS $REPO_INIT_STATUS repo_init $AUTOUT_PATH/log/init.log
  else
     SPLIT_LINE repo_init
-    /bin/bash $REPO_SYNC_MD5_INFO >>$LOG_PATH/init.log 2>&1
-    MASK_LOG $LOG_PATH/init.log
+    /bin/bash $REPO_SYNC_MD5_INFO >>$AUTOUT_PATH/log/init.log 2>&1
+    MASK_LOG $AUTOUT_PATH/log/init.log
  fi
 
  SPLIT_LINE repo_sync
@@ -432,7 +432,7 @@ REPO_SYNC()
     export STATUS_SYNC=$?
     rm -f log && ln -sf $LOG_PATH
  elif [[ ! -z $SYNC_ONLY ]] ; then
-    BTRFS_CLEANUP_SUBV_REPO && $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1 &
+    BTRFS_CLEANUP_SUBV_REPO && $REPO_CMD sync -j$JOBS >$AUTOUT_PATH/log/$REPO_SYNC_LOG_NAME.log 2>&1 &
  fi
 
  for INDEX_LOCK_REPO in `grep index.lock $LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>/dev/null | awk -F"'" {'print $2'} | awk -F'/.git' {'print $1'}`
