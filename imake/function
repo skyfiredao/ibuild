@@ -142,6 +142,7 @@ EXPORT_IBUILD_SPEC()
  export IVERIFY_PRIORITY=$(grep '^IVERIFY_PRIORITY=' $IBUILD_SPEC | awk -F'IVERIFY_PRIORITY=' {'print $2'})
  export ITASK_ORDER=$(grep '^ITASK_ORDER=' $IBUILD_SPEC | awk -F'ITASK_ORDER=' {'print $2'} | head -n1)
      [[ -z $ITASK_ORDER && ! -z $ITASK_TMP ]] && export ITASK_ORDER=$ITASK_TMP
+ export IVERSION=$(grep '^IVERSION=' $IBUILD_SPEC | awk -F'IVERSION=' {'print $2'})
  export IBUILD_SUBV_REPO=$(grep '^IBUILD_SUBV_REPO=' $IBUILD_SPEC | awk -F'IBUILD_SUBV_REPO=' {'print $2'}) 
  export IBUILD_ADD_STEP_1=`grep '^IBUILD_ADD_STEP_1=' $IBUILD_SPEC | awk -F'IBUILD_ADD_STEP_1=' {'print $2'}`
  export IBUILD_ADD_STEP_2=`grep '^IBUILD_ADD_STEP_2=' $IBUILD_SPEC | awk -F'IBUILD_ADD_STEP_2=' {'print $2'}`
@@ -396,6 +397,14 @@ REPO_SYNC()
  export REPO_SYNC_LOG_NAME=sync-`basename $1`
  export INDEX_LOCK=''
 
+ if [[ ! -z $IVERSION && -z $SYNC_ONLY ]] ; then
+    export IVER_MANIFEST_URL=$(svn log -v -r $IVERSION $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion | egrep 'A /iversion|M /iversion' | awk -F' ' {'print $2'})
+    svn export -r $IVERSION $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/$IVER_MANIFEST_URL manifest-r$IVERSION.xml
+    export REPO_SYNC_OPTION="-m manifest-r$IVERSION.xml"
+ else
+    export REPO_SYNC_OPTION=''
+ fi
+
  sudo sysctl -w net.ipv4.tcp_window_scaling=0
 
  $IBUILD_ROOT/hotfix/clean_dirty.sh >/dev/null 2>&1
@@ -416,9 +425,9 @@ REPO_SYNC()
  SPLIT_LINE repo_sync
  if [[ -z $SYNC_ONLY ]] ; then
     if [[ -f Makefile ]] ; then
-        time $REPO_CMD sync -c --no-tags -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+        time $REPO_CMD sync -c --no-tags -j$JOBS $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
     else
-        time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+        time $REPO_CMD sync -j$JOBS $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
     fi
     export STATUS_SYNC=$?
  elif [[ ! -z $SYNC_ONLY ]] ; then
@@ -432,7 +441,7 @@ REPO_SYNC()
  done
 
  if [[ ! -z $INDEX_LOCK && -z $SYNC_ONLY ]] ; then
-    time $REPO_CMD sync -c --no-tags -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+    time $REPO_CMD sync -c --no-tags -j$JOBS $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
     export STATUS_SYNC=$?
  fi
 
@@ -571,6 +580,7 @@ SLAVE_IP=$IP
 START_TIME=$BUILD_TIME
 END_TIME=$END_TIME
 IVER=$IVER
+IVERSION=$IVERSION
 ITASK_REV=$ITASK_REV
 BUILD_TIME=`echo $END_SEC_TIME - $BUILD_SEC_TIME | bc`
 REL_PATH=$TODAY/$AUTOUT_NAME
