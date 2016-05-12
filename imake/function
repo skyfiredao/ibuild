@@ -399,7 +399,9 @@ REPO_SYNC()
 
  if [[ ! -z $IVERSION && -z $SYNC_ONLY ]] ; then
     export IVER_MANIFEST_URL=$(svn log -v -r $IVERSION $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion | egrep 'A /iversion|M /iversion' | awk -F' ' {'print $2'})
-    svn export -r $IVERSION $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/$IVER_MANIFEST_URL manifest-r$IVERSION.xml
+    svn export -r $IVERSION $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/$IVER_MANIFEST_URL $LOG_PATH/manifest-r$IVERSION.xml
+    rm -f .repo/manifests/manifest-r*.xml >/dev/null 2>&1
+    cp $LOG_PATH/manifest-r$IVERSION.xml .repo/manifests/
     export REPO_SYNC_OPTION="-m manifest-r$IVERSION.xml"
  else
     export REPO_SYNC_OPTION=''
