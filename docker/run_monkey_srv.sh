@@ -34,6 +34,7 @@ export PORT_MAP_HTTP=80:80
 export VOLUME_localtime=/etc/localtime:/etc/localtime:ro
 export VOLUME_local=/local:/local
 export VOLUME_monkey_srv=$MONKEY_SRV_PATH/www:/var/www
+export VOLUME_log=$MONKEY_SRV_PATH/log:/var/log/apache2
 export VOLUME_mysql=$MONKEY_SRV_PATH/mysql:/var/lib/mysql
 export VOLUME_data=$MONKEY_SRV_PATH/data:/var/lib/data
 export VOLUME_php_ini=$MONKEY_SRV_PATH/php.ini:/etc/php5/apache2/php.ini:ro
@@ -59,6 +60,7 @@ export CONTAINER_ID=$(docker run \
 -v $VOLUME_monkey_srv \
 -v $VOLUME_php_ini \
 -v $VOLUME_sites_000 \
+-v $VOLUME_log \
 -e MONKEY_SRV_PATH=$MONKEY_SRV_PATH \
 --name=$DOCKER_NAMES \
 -t $IMAGE_TAG)
