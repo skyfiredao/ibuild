@@ -38,7 +38,7 @@ EXPORT_IBUILD_CONF
 EXIT()
 {
  rm -f $LOCK_SPACE/queue_icase.lock
- rm -fr $IVERFY_SPACE
+ rm -fr $IVERIFY_SPACE
  exit
 }
 
@@ -49,51 +49,51 @@ MATCHING()
  export ICASE_REV=$(echo $PRIORITY_ICASE_REV | awk -F'.' {'print $2'})
  export IBUILD_TARGET_PRODUCT=$(echo $PRIORITY_ICASE_REV | awk -F'.' {'print $3'})
 
- if [[ ! -d $IVERFY_SPACE/inode.lock/.svn ]] ; then
-     svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iverify/iverify/inode $IVERFY_SPACE/inode.lock
+ if [[ ! -d $IVERIFY_SPACE/inode.lock/.svn ]] ; then
+     svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iverify/iverify/inode $IVERIFY_SPACE/inode.lock
  fi
 
  export ICASE_URL=$(svn log -v -r $ICASE_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
- if [[ ! -d $IVERFY_SPACE/icase.svn/.svn ]] ; then
-     svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $IVERFY_SPACE/icase.svn
+ if [[ ! -d $IVERIFY_SPACE/icase.svn/.svn ]] ; then
+     svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $IVERIFY_SPACE/icase.svn
  fi
  export BUILD_INFO_NAME=$(basename $ICASE_URL | head -n1)
- export BUILD_INFO=$IVERFY_SPACE/icase.svn/$BUILD_INFO_NAME
+ export BUILD_INFO=$IVERIFY_SPACE/icase.svn/$BUILD_INFO_NAME
 
- for HOST_DEVICE in `ls $IVERFY_SPACE/inode.lock | grep $IBUILD_TARGET_PRODUCT`
+ for HOST_DEVICE in `ls $IVERIFY_SPACE/inode.lock | grep $IBUILD_TARGET_PRODUCT`
  do
      export HOSTNAME_DEVICE=$(echo $HOST_DEVICE | awk -F".$IBUILD_TARGET_PRODUCT" {'print $1'})
-     export HOST_IP=$(grep '^IP=' $IVERFY_SPACE/inode.lock/$HOST_DEVICE | awk -F'IP=' {'print $2'})
-     export DEVICE_STATUS=$(grep '^DEVICE_STATUS=' $IVERFY_SPACE/inode.lock/$HOST_DEVICE | awk -F'DEVICE_STATUS=' {'print $2'})
-     export DEVICE_ID=$(grep '^DEVICE_ID=' $IVERFY_SPACE/inode.lock/$HOST_DEVICE | awk -F'DEVICE_ID=' {'print $2'})
-     export TARGET_PRODUCT=$(grep '^TARGET_PRODUCT=' $IVERFY_SPACE/inode.lock/$HOST_DEVICE | awk -F'TARGET_PRODUCT=' {'print $2'})
+     export HOST_IP=$(grep '^IP=' $IVERIFY_SPACE/inode.lock/$HOST_DEVICE | awk -F'IP=' {'print $2'})
+     export DEVICE_STATUS=$(grep '^DEVICE_STATUS=' $IVERIFY_SPACE/inode.lock/$HOST_DEVICE | awk -F'DEVICE_STATUS=' {'print $2'})
+     export DEVICE_ID=$(grep '^DEVICE_ID=' $IVERIFY_SPACE/inode.lock/$HOST_DEVICE | awk -F'DEVICE_ID=' {'print $2'})
+     export TARGET_PRODUCT=$(grep '^TARGET_PRODUCT=' $IVERIFY_SPACE/inode.lock/$HOST_DEVICE | awk -F'TARGET_PRODUCT=' {'print $2'})
 
      cat $BUILD_INFO | $NETCAT $HOST_IP 4444
      sleep 1
-     $NETCAT $HOST_IP 5555 >$IVERFY_SPACE/$HOST_DEVICE.assign
-#     export ASSIGN_HOST_DEVICE=$(cat $IVERFY_SPACE/$HOST_DEVICE.assign | awk -F'|' {'print $3'})
+     $NETCAT $HOST_IP 5555 >$IVERIFY_SPACE/$HOST_DEVICE.assign
+#     export ASSIGN_HOST_DEVICE=$(cat $IVERIFY_SPACE/$HOST_DEVICE.assign | awk -F'|' {'print $3'})
 #     if [[ $ASSIGN_HOST_DEVICE = $HOST_DEVICE ]] ; then
-     if [[ `grep $HOSTNAME_DEVICE $IVERFY_SPACE/$HOST_DEVICE.assign` ]] ; then
+     if [[ `grep $HOSTNAME_DEVICE $IVERIFY_SPACE/$HOST_DEVICE.assign` ]] ; then
          svn rm -q $IBUILD_SVN_OPTION -m "auto: remove $PRIORITY_ICASE_REV" svn://$IBUILD_SVN_SRV/istatus/queue/icase/$PRIORITY_ICASE_REV
          svn up -q $IBUILD_SVN_OPTION $QUEUE_SPACE
          if [[ -f $QUEUE_SPACE/$PRIORITY_ICASE_REV ]] ; then
              svn rm --force $QUEUE_SPACE/$PRIORITY_ICASE_REV
-             rm -f $IVERFY_SPACE/inode.lock/$HOST_DEVICE
+             rm -f $IVERIFY_SPACE/inode.lock/$HOST_DEVICE
          fi
          EXIT
      fi
  done
 
-# export FREE_HOST_DEVICE=$(ls $IVERFY_SPACE/inode.lock | grep $IBUILD_TARGET_PRODUCT | wc -l)
+# export FREE_HOST_DEVICE=$(ls $IVERIFY_SPACE/inode.lock | grep $IBUILD_TARGET_PRODUCT | wc -l)
 # if [[ $FREE_HOST_DEVICE = 0 ]] ; then
-#     svn up -q $IBUILD_SVN_OPTION $IVERFY_SPACE/inode.lock
+#     svn up -q $IBUILD_SVN_OPTION $IVERIFY_SPACE/inode.lock
 # fi 
 }
 
 export QUEUE_SPACE=$1
-export IVERFY_SPACE=$TASK_SPACE/tmp/iverify.$SEED
+export IVERIFY_SPACE=$TASK_SPACE/tmp/iverify.$SEED
 
-[[ ! -d $IVERFY_SPACE ]] && mkdir -p $IVERFY_SPACE >/dev/null 2>&1
+[[ ! -d $IVERIFY_SPACE ]] && mkdir -p $IVERIFY_SPACE >/dev/null 2>&1
 
 for PRIORITY_ICASE_REV in `ls $QUEUE_SPACE`
 do

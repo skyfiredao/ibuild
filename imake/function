@@ -88,7 +88,7 @@ EXPORT_IBUILD_SPEC()
      if [[ -f $ITASK_PATH/tasks/$IBUILD_SPEC_NAME && ! -f $TASK_SPACE/spec.build ]] ; then
          cp $ITASK_PATH/tasks/$IBUILD_SPEC_NAME $TASK_SPACE/
          ln -sf $TASK_SPACE/$IBUILD_SPEC_NAME $TASK_SPACE/spec.build
-         echo -e "-------------------------\nStart build: \n$IBUILD_SPEC_NAME\n-------------------------" | wall >/dev/null 2>&1 
+         echo -e "-------------------------\nStart build: \n$IBUILD_SPEC_NAME\n-------------------------" | sudo wall -t 3 -n >/dev/null 2>&1 
      else
          SPLIT_LINE "$ITASK_PATH/tasks/$IBUILD_SPEC_NAME is not a spec.build or $TASK_SPACE/spec.build locked"
          exit 1
@@ -142,6 +142,7 @@ EXPORT_IBUILD_SPEC()
  export IVERIFY_PRIORITY=$(grep '^IVERIFY_PRIORITY=' $IBUILD_SPEC | awk -F'IVERIFY_PRIORITY=' {'print $2'})
  export ITASK_ORDER=$(grep '^ITASK_ORDER=' $IBUILD_SPEC | awk -F'ITASK_ORDER=' {'print $2'} | head -n1)
      [[ -z $ITASK_ORDER && ! -z $ITASK_TMP ]] && export ITASK_ORDER=$ITASK_TMP
+ export IVERSION=$(grep '^IVERSION=' $IBUILD_SPEC | awk -F'IVERSION=' {'print $2'})
  export IBUILD_SUBV_REPO=$(grep '^IBUILD_SUBV_REPO=' $IBUILD_SPEC | awk -F'IBUILD_SUBV_REPO=' {'print $2'}) 
  export IBUILD_ADD_STEP_1=`grep '^IBUILD_ADD_STEP_1=' $IBUILD_SPEC | awk -F'IBUILD_ADD_STEP_1=' {'print $2'}`
  export IBUILD_ADD_STEP_2=`grep '^IBUILD_ADD_STEP_2=' $IBUILD_SPEC | awk -F'IBUILD_ADD_STEP_2=' {'print $2'}`
@@ -162,10 +163,8 @@ EXPORT_IBUILD_SPEC()
  export AUTOUT_PATH=$LOC_WORKSPACE/autout
  export AUTOUT_UPLOAD_PATH=$LOC_WORKSPACE/upload
  export AUTOUT_NAME=`echo $SPEC_NAME | awk -F'spec.build.' {'print $2'}`
- export LOG_PATH=$AUTOUT_PATH/log
-    mkdir -p $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_UPLOAD_PATH $LOG_PATH >/dev/null 2>&1
-    ln -sf $LOG_PATH
-    mv log $AUTOUT_PATH/$AUTOUT_NAME/
+ export LOG_PATH=$AUTOUT_PATH/$AUTOUT_NAME/log
+    mkdir -p $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_UPLOAD_PATH $LOG_PATH $AUTOUT_PATH/log >/dev/null 2>&1
     echo '#'$SPEC_NAME >$LOG_PATH/build_info.txt
     cat $TASK_SPACE/spec.build >>$LOG_PATH/build_info.txt
 }
@@ -344,8 +343,8 @@ REPO_INFO()
  export IBUILD_GRTSRV_PORT=`echo $IBUILD_GRTSRV | awk -F':' {'print $2'}`
     [[ -z $IBUILD_GRTSRV_PORT ]] && export IBUILD_GRTSRV_PORT=29418
  export IBUILD_GRTSRV_NAME=`echo $IBUILD_GRTSRV | awk -F':' {'print $1'}`
- ssh -p $IBUILD_GRTSRV_PORT $IBUILD_GRTSRV_NAME >$LOG_PATH/$IBUILD_GRTSRV_NAME.log 2>&1
- MASK_LOG $LOG_PATH/$IBUILD_GRTSRV_NAME.log
+ ssh -p $IBUILD_GRTSRV_PORT $IBUILD_GRTSRV_NAME >$AUTOUT_PATH/log/$IBUILD_GRTSRV_NAME.log 2>&1
+ MASK_LOG $AUTOUT_PATH/log/$IBUILD_GRTSRV_NAME.log
  
  export REPO_INIT_CMD=''
  [[ ! -z $IBUILD_GRTSRV_REPO ]] && export REPO_INIT_CMD=$REPO_INIT_CMD" --repo-url=$IBUILD_GRTSRV_REPO"
@@ -396,6 +395,16 @@ REPO_SYNC()
  export REPO_SYNC_LOG_NAME=sync-`basename $1`
  export INDEX_LOCK=''
 
+ if [[ ! -z $IVERSION && -z $SYNC_ONLY ]] ; then
+    export IVER_MANIFEST_URL=$(svn log -v -r $IVERSION $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion | egrep 'A /iversion|M /iversion' | awk -F' ' {'print $2'})
+    svn export -r $IVERSION $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/$IVER_MANIFEST_URL $LOG_PATH/manifest-r$IVERSION.xml
+    rm -f .repo/manifests/manifest-r*.xml >/dev/null 2>&1
+    cp $LOG_PATH/manifest-r$IVERSION.xml .repo/manifests/
+    export REPO_SYNC_OPTION="-m manifest-r$IVERSION.xml"
+ else
+    export REPO_SYNC_OPTION=''
+ fi
+
  sudo sysctl -w net.ipv4.tcp_window_scaling=0
 
  $IBUILD_ROOT/hotfix/clean_dirty.sh >/dev/null 2>&1
@@ -403,26 +412,27 @@ REPO_SYNC()
  if [[ ! -f $REPO_SYNC_MD5_INFO ]] ; then
     SPLIT_LINE repo_init_$IBUILD_GRTSRV_MANIFEST
     echo "$REPO_CMD init -u ssh://$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD" >repo_init.info
-    time $REPO_CMD init -u ssh://$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD >>$LOG_PATH/init.log 2>&1
+    time $REPO_CMD init -u ssh://$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD >>$AUTOUT_PATH/log/init.log 2>&1
     export REPO_INIT_STATUS=$?
-    MASK_LOG $LOG_PATH/init.log
-    LOG_STATUS $REPO_INIT_STATUS repo_init $LOG_PATH/init.log
+    MASK_LOG $AUTOUT_PATH/log/init.log
+    LOG_STATUS $REPO_INIT_STATUS repo_init $AUTOUT_PATH/log/init.log
  else
     SPLIT_LINE repo_init
-    /bin/bash $REPO_SYNC_MD5_INFO >>$LOG_PATH/init.log 2>&1
-    MASK_LOG $LOG_PATH/init.log
+    /bin/bash $REPO_SYNC_MD5_INFO >>$AUTOUT_PATH/log/init.log 2>&1
+    MASK_LOG $AUTOUT_PATH/log/init.log
  fi
 
  SPLIT_LINE repo_sync
  if [[ -z $SYNC_ONLY ]] ; then
     if [[ -f Makefile ]] ; then
-        time $REPO_CMD sync -c --no-tags -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+        time $REPO_CMD sync -c --no-tags -j$JOBS $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
     else
-        time $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+        time $REPO_CMD sync -j$JOBS $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
     fi
     export STATUS_SYNC=$?
+    rm -f log && ln -sf $LOG_PATH
  elif [[ ! -z $SYNC_ONLY ]] ; then
-    BTRFS_CLEANUP_SUBV_REPO && $REPO_CMD sync -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1 &
+    BTRFS_CLEANUP_SUBV_REPO && $REPO_CMD sync -j$JOBS >$AUTOUT_PATH/log/$REPO_SYNC_LOG_NAME.log 2>&1 &
  fi
 
  for INDEX_LOCK_REPO in `grep index.lock $LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>/dev/null | awk -F"'" {'print $2'} | awk -F'/.git' {'print $1'}`
@@ -432,7 +442,7 @@ REPO_SYNC()
  done
 
  if [[ ! -z $INDEX_LOCK && -z $SYNC_ONLY ]] ; then
-    time $REPO_CMD sync -c --no-tags -j$JOBS >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+    time $REPO_CMD sync -c --no-tags -j$JOBS $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
     export STATUS_SYNC=$?
  fi
 
@@ -516,7 +526,7 @@ SETUP_ISTATUS()
  fi
 }
 
-SETUP_IVER()
+SETUP_IVERSION()
 {
  export ORIG_MAINFEST_URL=$1
  export IVER_MAINFEST_NAME=$2.xml
@@ -538,11 +548,11 @@ else
  svn add $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME >/dev/null 2>&1
  svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVER_MAINFEST_NAME" $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME
  if [[ $? = 0 ]] ; then
-     export IVER=$(echo $BUILD_TIME | cut -c7-8).r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+     export BUILD_ID=$(echo $BUILD_TIME | cut -c7-8).r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
  else
      SPLIT_LINE iversion_issue
      echo $IVER_MAINFEST_NAME
-     export IVER=$(echo $BUILD_TIME | cut -c7-8).$MANIFEST_VER
+     export BUILD_ID=$(echo $BUILD_TIME | cut -c7-8).$MANIFEST_VER
  fi
 }
 
@@ -551,7 +561,7 @@ SETUP_ICASE()
  local ICASE_UPLOAD_URL=$1
 
  if [[ -z $END_SEC_TIME ]] ; then
-	export END_TIME=`date +%y%m%d%H%M%S`
+	export TIME_END=`date +%y%m%d%H%M%S`
 	export END_SEC_TIME=`date +%s`
  fi
 
@@ -568,9 +578,10 @@ SLAVE_HOST=`hostname`
 KBITS_PROJECT=$KBITS_PROJECT
 THE_BUILD_NUMBER=$THE_BUILD_NUMBER
 SLAVE_IP=$IP
-START_TIME=$BUILD_TIME
-END_TIME=$END_TIME
-IVER=$IVER
+TIME_START=$BUILD_TIME
+TIME_END=$TIME_END
+BUILD_ID=$BUILD_ID
+IVERSION=$IVERSION
 ITASK_REV=$ITASK_REV
 BUILD_TIME=`echo $END_SEC_TIME - $BUILD_SEC_TIME | bc`
 REL_PATH=$TODAY/$AUTOUT_NAME
@@ -582,7 +593,7 @@ GERRIT_CHANGE_OWNER_NAME=$GERRIT_CHANGE_OWNER_NAME
 GERRIT_PATCHSET_NUMBER=$GERRIT_PATCHSET_NUMBER
 GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION
 GERRIT_PROJECT=$GERRIT_PROJECT
-DOWNLOAD_URL=http://$IBUILD_SVN_SRV/ibuild/$ICASE_UPLOAD_URL
+DOWNLOAD_URL=http://$IBUILD_SVN_SRV/build/$ICASE_UPLOAD_URL
 DOWNLOAD_PKG_NAME=$DOWNLOAD_PKG_NAME
 " >>$LOG_PATH/build_info.txt
 
@@ -612,9 +623,9 @@ else
  fi
 
  if [[ ! -z $ITASK_REV ]] ; then
-    export IVEREV=$IVER.$ITASK_REV
+    export IVEREV=$BUILD_ID.$ITASK_REV
  else
-    export IVEREV=$IVER
+    export IVEREV=$BUILD_ID
  fi
  cp $LOG_PATH/build_info.txt $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt
  svn add $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt >/dev/null 2>&1
@@ -654,7 +665,7 @@ SETUP_BUILD_OUT()
         cp $REL_PKG_NAME.tar $AUTOUT_PATH/$AUTOUT_NAME/
         export DOWNLOAD_PKG_NAME=$REL_PKG_NAME.tar
     elif [[ -d $BUILD_PATH_TOP/release ]] ; then
-        [[ -z $IVER ]] && export RELEASE_VER=$MANIFEST_VER || export RELEASE_VER=$IVER
+        [[ -z $BUILD_ID ]] && export RELEASE_VER=$MANIFEST_VER || export RELEASE_VER=$BUILD_ID
         tar cf $BUILD_PATH_TOP/autout/release.$RELEASE_VER.tar release
         export DOWNLOAD_PKG_NAME=release.$RELEASE_VER.tar
 #        tar cfz $BUILD_PATH_TOP/autout/release.$RELEASE_VER.tgz release
@@ -666,20 +677,19 @@ SETUP_BUILD_OUT()
     fi
  fi
 
- SETUP_IVER $LOG_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
+ SETUP_IVERSION $LOG_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
  if [[ ! -z $ITASK_REV ]] ; then
-    export IVEREV=$IVER.$ITASK_REV
+    export IVEREV=$BUILD_ID.$ITASK_REV
  else
-    export IVEREV=$IVER
+    export IVEREV=$BUILD_ID
  fi
 
- mkdir -p $AUTOUT_PATH/$AUTOUT_NAME/log >/dev/null 2>&1
- rm -f $LOG_PATH/log $AUTOUT_PATH/$AUTOUT_NAME/log
  LOG_HTML $LOG_PATH $LOG_PATH
- cp -Ra $LOG_PATH $AUTOUT_PATH/$AUTOUT_NAME/
+ cp -Ra $AUTOUT_PATH/log/* $LOG_PATH/ >/dev/null 2>&1
  [[ -f $LOG_PATH/BUILD_ERROR ]] && export IVEREV=$IVEREV.BUILD_ERROR
  export SHORT_AUTOUT_NAME=`echo $AUTOUT_NAME | sed 's/.not_define.//g'`
  mv $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME
+ export LOG_PATH=$AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/log
 
 # please setup run_sshd.sh in docker
  if [[ ! -f $AUTOUT_UPLOAD_PATH/README ]] ; then
@@ -752,6 +762,7 @@ CLEAN_EXIT()
  rm -fr $TASK_SPACE/*spec.build*
  rm -f $LOCK_SPACE/itask.lock
  rm -fr $AUTOUT_PATH/r*
+ rm -fr $AUTOUT_PATH/*BUILD_ERROR* >/dev/null 2>&1
  rm -fr $LOG_PATH/*BUILD_ERROR* >/dev/null 2>&1
  [[ -f /tmp/build-$ITASK_REV.log ]] && mv /tmp/build-$ITASK_REV.log /tmp/old.build-$ITASK_REV.log
  if [[ -f $ORIG_CCACHE_URL ]] ; then

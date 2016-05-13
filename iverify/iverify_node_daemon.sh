@@ -56,20 +56,20 @@ LOCAL_QUEUE()
 
 # alias ncstop='nc 127.0.0.1 4444;nc 127.0.0.1 5555'
  $NETCAT -l 4444 >$IVERIFY_SPACE/build_info.$SEED
- export IVER=$(grep '^IVER=' $IVERIFY_SPACE/build_info.$SEED | awk -F'IVER=' {'print $2'})
-     [[ -z $IVER ]] && EXIT
+ export BUILD_ID=$(grep '^BUILD_ID=' $IVERIFY_SPACE/build_info.$SEED | awk -F'BUILD_ID=' {'print $2'})
+     [[ -z $BUILD_ID ]] && EXIT
 
- mv $IVERIFY_SPACE/build_info.$SEED $IVERIFY_SPACE/$IVER.build_info >/dev/null 2>&1 
- export IBUILD_TARGET_PRODUCT=$(grep '^IBUILD_TARGET_PRODUCT=' $IVERIFY_SPACE/$IVER.build_info | awk -F'IBUILD_TARGET_PRODUCT=' {'print $2'})
- export ITASK_REV=$(grep '^ITASK_REV=' $IVERIFY_SPACE/$IVER.build_info | awk -F'ITASK_REV=' {'print $2'})
- export ITASK_ORDER=$(grep '^ITASK_ORDER=' $IVERIFY_SPACE/$IVER.build_info | awk -F'ITASK_ORDER=' {'print $2'} | head -n1)
+ mv $IVERIFY_SPACE/build_info.$SEED $IVERIFY_SPACE/$BUILD_ID.build_info >/dev/null 2>&1 
+ export IBUILD_TARGET_PRODUCT=$(grep '^IBUILD_TARGET_PRODUCT=' $IVERIFY_SPACE/$BUILD_ID.build_info | awk -F'IBUILD_TARGET_PRODUCT=' {'print $2'})
+ export ITASK_REV=$(grep '^ITASK_REV=' $IVERIFY_SPACE/$BUILD_ID.build_info | awk -F'ITASK_REV=' {'print $2'})
+ export ITASK_ORDER=$(grep '^ITASK_ORDER=' $IVERIFY_SPACE/$BUILD_ID.build_info | awk -F'ITASK_ORDER=' {'print $2'} | head -n1)
  [[ ! -z $ITASK_ORDER ]] && export ITASK_TMP=$ITASK_ORDER || export ITASK_TMP=$ITASK_REV
- export NEW_BUILD_INFO_NAME=$IVER.$ITASK_TMP.$IBUILD_TARGET_PRODUCT.build_info
+ export NEW_BUILD_INFO_NAME=$BUILD_ID.$ITASK_TMP.$IBUILD_TARGET_PRODUCT.build_info
 
  $NETCAT 127.0.0.1 5555
- echo "$NOW|$IVER|$HOSTNAME" | $NETCAT -l 5555
- cat $IVERIFY_CONF | egrep 'EMAIL' >>$IVERIFY_SPACE/$IVER.build_info
- /bin/mv $IVERIFY_SPACE/$IVER.build_info $LOCAL_IVERIFY_QUEUE/$NEW_BUILD_INFO_NAME
+ echo "$NOW|$BUILD_ID|$HOSTNAME" | $NETCAT -l 5555
+ cat $IVERIFY_CONF | egrep 'EMAIL' >>$IVERIFY_SPACE/$BUILD_ID.build_info
+ /bin/mv $IVERIFY_SPACE/$BUILD_ID.build_info $LOCAL_IVERIFY_QUEUE/$NEW_BUILD_INFO_NAME
  SETUP_ISTATUS "iverify local queue: $HOSTNAME:$LOCAL_IVERIFY_QUEUE/$NEW_BUILD_INFO_NAME"
  if [[ `cat $IVERIFY_IGNORE_CONF | egrep "^$ITASK_TMP$"` ]] ; then
     rm -f $LOCAL_IVERIFY_QUEUE/$NEW_BUILD_INFO_NAME
