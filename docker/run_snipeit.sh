@@ -34,7 +34,7 @@ export VOLUME_localtime=/etc/localtime:/etc/localtime:ro
 export VOLUME_local=$SNIPEIT_PATH:$SNIPEIT_PATH
 export VOLUME_etc_ssh=/etc/ssh:/etc/ssh:ro
 export DOCKER_NAMES=$TAG_NAME-$TODAY
-export IMAGE_TAG=ibuild/$TAG_NAME
+export IMAGE_TAG=$TAG_NAME
 
 if [[ `docker ps | grep $IMAGE_TAG | awk -F' ' {'print $1'}` ]] ; then
     docker ps | grep $IMAGE_TAG
