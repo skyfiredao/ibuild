@@ -9,5 +9,8 @@ RUN apt-get update -qq \
 RUN addgroup --gid 1000 --system ibuild \
 && adduser --system --shell /bin/bash --disabled-password --uid 1000 --ingroup ibuild --home /local/srv/snipeit snipeit
 
-RUN bash /local/srv/snipe-it/install.sh
+RUN cd /tmp \
+&& git clone https://github.com/snipe/snipe-it.git \
+&& cd /tmp/snipe-it \
+&& bash /local/srv/snipe-it/install.sh
 
