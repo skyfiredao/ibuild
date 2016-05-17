@@ -31,16 +31,15 @@ export MONKEY_SRV_PATH=/local/docker/monkey_srv
 export TAG_NAME=monkey_srv
 export PORT_MAP_HTTPS=443:443
 export PORT_MAP_HTTP=80:80
-export PORT_MAP_ssh=2222:22
 export VOLUME_localtime=/etc/localtime:/etc/localtime:ro
 export VOLUME_local=/local:/local
 export VOLUME_monkey_srv=$MONKEY_SRV_PATH/www:/var/www
 export VOLUME_log=$MONKEY_SRV_PATH/log:/var/log/apache2
 export VOLUME_mysql=$MONKEY_SRV_PATH/mysql:/var/lib/mysql
 export VOLUME_data=$MONKEY_SRV_PATH/data:/var/lib/data
-export VOLUME_php_ini=$MONKEY_SRV_PATH/php.ini:/etc/php5/apache2/php.ini:ro
+export VOLUME_php_ini=$MONKEY_SRV_PATH/php.ini:/etc/php5/apache2/php.ini
 export VOLUME_smarty=$MONKEY_SRV_PATH/src/smarty/libs:/usr/share/php5/smarty
-export VOLUME_sites_000=$MONKEY_SRV_PATH/000-default.conf:/etc/apache2/sites-available/000-default.conf:ro
+export VOLUME_sites_000=$MONKEY_SRV_PATH/000-default.conf:/etc/apache2/sites-available/000-default.conf
 export DOCKER_NAMES=$TAG_NAME-$TODAY
 export IMAGE_TAG=$TAG_NAME
 
@@ -56,7 +55,6 @@ export CONTAINER_ID=$(docker run \
 -d \
 -p $PORT_MAP_HTTPS \
 -p $PORT_MAP_HTTP \
--p $PORT_MAP_ssh \
 -v $VOLUME_localtime \
 -v $VOLUME_data \
 -v $VOLUME_mysql \
@@ -69,11 +67,10 @@ export CONTAINER_ID=$(docker run \
 --name=$DOCKER_NAMES \
 -t $IMAGE_TAG)
 
-docker exec -t $DOCKER_NAMES bash -l -c "service ssh start"
 docker exec -t $DOCKER_NAMES bash -l -c "/etc/init.d/apache2 restart"
 DOCKER_IP=$(docker exec -t $DOCKER_NAMES bash -l -c "hostname -I" | awk -F' ' {'print $1'})
-docker exec -t $DOCKER_NAMES bash -l -c "cat /etc/mysql/my.cnf | sed s/127.0.0.1/$DOCKER_IP/g >/tmp/my.cnf ; cp /tmp/my.cnf /etc/mysql/my.cnf"
-cat $MONKEY_SRV_PATH/www/Clat_Server-V2/clat/smartyapp/myapp/config.php.orig | sed s/10.100.24.4:9090/$IP:80/g >$MONKEY_SRV_PATH/www/Clat_Server-V2/clat/smartyapp/myapp/config.php
+docker exec -t $DOCKER_NAMES bash -l -c "cat /etc/mysql/my.cnf | sed s/127.0.0.1/0.0.0.0/g >/tmp/my.cnf ; cp /tmp/my.cnf /etc/mysql/my.cnf"
+cat $MONKEY_SRV_PATH/www/Clat_Server-V2/clat/smartyapp/myapp/config.php.orig | sed s/10.100.24.4:9090/$IP/g >$MONKEY_SRV_PATH/www/Clat_Server-V2/clat/smartyapp/myapp/config.php
 docker exec -t $DOCKER_NAMES bash -l -c "/etc/init.d/mysql restart"
 
 echo CONTAINER_ID=$CONTAINER_ID
