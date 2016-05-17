@@ -31,6 +31,7 @@ export MONKEY_SRV_PATH=/local/docker/monkey_srv
 export TAG_NAME=monkey_srv
 export PORT_MAP_HTTPS=443:443
 export PORT_MAP_HTTP=80:80
+export PORT_MAP_ssh=2222:22
 export VOLUME_localtime=/etc/localtime:/etc/localtime:ro
 export VOLUME_local=/local:/local
 export VOLUME_monkey_srv=$MONKEY_SRV_PATH/www:/var/www
@@ -55,18 +56,20 @@ export CONTAINER_ID=$(docker run \
 -d \
 -p $PORT_MAP_HTTPS \
 -p $PORT_MAP_HTTP \
+-p $PORT_MAP_ssh \
 -v $VOLUME_localtime \
 -v $VOLUME_data \
 -v $VOLUME_mysql \
 -v $VOLUME_monkey_srv \
 -v $VOLUME_php_ini \
--v $VOLUME_smarty= \
+-v $VOLUME_smarty \
 -v $VOLUME_sites_000 \
 -v $VOLUME_log \
 -e MONKEY_SRV_PATH=$MONKEY_SRV_PATH \
 --name=$DOCKER_NAMES \
 -t $IMAGE_TAG)
 
+docker exec -t $DOCKER_NAMES bash -l -c "service ssh start"
 docker exec -t $DOCKER_NAMES bash -l -c "/etc/init.d/apache2 restart"
 DOCKER_IP=$(docker exec -t $DOCKER_NAMES bash -l -c "hostname -I" | awk -F' ' {'print $1'})
 docker exec -t $DOCKER_NAMES bash -l -c "cat /etc/mysql/my.cnf | sed s/127.0.0.1/$DOCKER_IP/g >/tmp/my.cnf ; cp /tmp/my.cnf /etc/mysql/my.cnf"
