@@ -204,6 +204,12 @@ if [[ ! `echo $CPU | grep ARM` ]] ; then
     bash -x $IBUILD_ROOT/setup/ibuild_node_daemon.sh $TASK_SPACE/itask/svn >/tmp/ibuild_node_daemon.log 2>&1 &
 fi
 
-$IBUILD_ROOT/setup/sync_local_ref_repo.sh 2>/tmp/sync_local_ref_repo.sh.log &
+if [[ $IBUILD_SVN_SRV_HOSTNAME != $HOSTNAME ]] ; then
+    $IBUILD_ROOT/hotfix/mount_ref_repo.sh
+fi
+
+if [[ ! $(df | grep ref_repo | grep sshfs) ]] ; then
+    $IBUILD_ROOT/setup/sync_local_ref_repo.sh 2>/tmp/sync_local_ref_repo.sh.log &
+fi
 
 
