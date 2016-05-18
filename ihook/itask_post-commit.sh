@@ -26,6 +26,7 @@ export LC_CTYPE=C
 export IBUILD_ROOT=$HOME/ibuild
 source /etc/bash.bashrc
 
+# for debug
 # echo --------------------------------------- >>/tmp/ihook-itask.log 2>&1
 # echo $IHOOK_REPOS $IHOOK_REV `date` >>/tmp/ihook-itask.log 2>&1
 
