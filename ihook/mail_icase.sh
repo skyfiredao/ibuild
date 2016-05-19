@@ -98,7 +98,7 @@ if [[ ! -z $GERRIT_PROJECT && `grep $GERRIT_PROJECT $TASK_SPACE/tmp/icase.mail.$
     export OWNER_EMAIL=$GERRIT_CHANGE_OWNER_EMAIL
 fi
 
-export MAIL_LIST=$IBUILD_FOUNDER_EMAIL
+export MAIL_LIST="-r $IBUILD_FOUNDER_EMAIL $IBUILD_FOUNDER_EMAIL"
 if [[ ! -z $EMAIL_TMP && ! `echo $EMAIL_TMP | egrep 'root|ubuntu'` ]] ; then
     export MAIL_LIST="$MAIL_LIST,$EMAIL_TMP"
 fi

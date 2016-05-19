@@ -77,7 +77,7 @@ export GERRIT_PATCHSET_REVISION=$(grep '^GERRIT_PATCHSET_REVISION=' $BUILD_SPEC 
 export GERRIT_PROJECT=$(grep '^GERRIT_PROJECT=' $BUILD_SPEC | awk -F'GERRIT_PROJECT=' {'print $2'})
 export EMAIL_TMP=$(grep '^EMAIL_TMP=' $BUILD_SPEC | awk -F'EMAIL_TMP=' {'print $2'})
 
-export MAIL_LIST=$IBUILD_FOUNDER_EMAIL
+export MAIL_LIST="-r $IBUILD_FOUNDER_EMAIL $IBUILD_FOUNDER_EMAIL"
 
 if [[ ! -z $EMAIL_TMP && ! `echo $EMAIL_TMP | egrep 'root|ubuntu|builder'` ]] ; then
     export MAIL_LIST="$MAIL_LIST,$EMAIL_TMP"
