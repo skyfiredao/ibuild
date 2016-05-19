@@ -59,14 +59,10 @@ sudo chmod 775 /local /local/{ccache,workspace,out,ref_repo}
 sudo chown $USER -R /local
 
 cd $HOME
-wget http://$IBUILD_SVN_SRV/linux/repo
-wget http://$IBUILD_SVN_SRV/linux/ccache-LDFLAGS-3.2
-wget http://$IBUILD_SVN_SRV/linux/bin.tar.bz2
-chmod +x repo ccache-LDFLAGS-3.2
-sudo /bin/mv repo /usr/bin/
-sudo /bin/mv ccache-LDFLAGS-3.2 /usr/bin/ccache
-sudo tar xfj bin.tar.bz2 -C $HOME/
-rm bin.tar.bz2
+bash $HOME/ibuild/bin/get_repo.sh
+bash $HOME/ibuild/bin/build_ccache.sh
+sudo /bin/mv /tmp/repo /usr/bin/
+sudo /bin/mv /tmp/ccache/ccache /usr/bin/ccache
 export REPO=`which repo`
 
 mkdir -p $HOME/.ssh
