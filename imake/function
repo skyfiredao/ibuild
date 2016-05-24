@@ -702,17 +702,17 @@ SETUP_BUILD_OUT()
  mkdir -p $AUTOUT_UPLOAD_PATH/$TODAY
  SPLIT_LINE "upload $TODAY $IVEREV.$SHORT_AUTOUT_NAME"
  [[ -z $ITASK_REV ]] && export ITASK_REV=`ls /tmp | grep log$ | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1`
- [[ -f /tmp/build-$ITASK_REV.log ]] && LOG_HTML /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/log/
+ [[ -f /tmp/build-$ITASK_REV.log ]] && LOG_HTML /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/log/ >/dev/null 2>&1
  [[ -f /tmp/build-$ITASK_REV.log ]] && txt2html /tmp/build-$ITASK_REV.log --outfile $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/build-$ITASK_REV.log.html
 
  if [[ -f $LOG_PATH/BUILD_ERROR ]] ; then
-    cp $LOG_PATH/BUILD_ERROR $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/
+    cp $LOG_PATH/BUILD_ERROR $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/ >/dev/null 2>&1
     cp /tmp/build-*.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/ >/dev/null 2>&1
  else
     export RESULT=PASSED
  fi
 
- time cp -R $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME $AUTOUT_UPLOAD_PATH/$TODAY/
+ time cp -R $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME $AUTOUT_UPLOAD_PATH/$TODAY/ >/dev/null 2>&1
  export STATUS_CP=$?
 
  SETUP_ICASE $TODAY/$IVEREV.$SHORT_AUTOUT_NAME
