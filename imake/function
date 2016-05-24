@@ -731,7 +731,7 @@ LOG_HTML()
  for LOG_NAME in `ls $LOG_INPUT_URL | egrep -v 'xml$|txt$|BUILD_ERROR' | grep log$`
  do
     txt2html $LOG_INPUT_URL/$LOG_NAME --outfile $LOG_OUTPUT_URL/$LOG_NAME.html
-    [[ -f $LOG_OUTPUT_URL/$LOG_NAME.html ]] && rm -f $LOG_INPUT_URL/$LOG_NAME
+#    [[ $(echo $LOG_NAME | egrep 'sync|full_build') && -f $LOG_OUTPUT_URL/$LOG_NAME.html ]] && rm -f $LOG_INPUT_URL/$LOG_NAME
  done
 }
 
