@@ -77,13 +77,15 @@ fi
 # sudo ln -sf /usr/share/zoneinfo/posix/Asia/Shanghai /etc/localtime
 
 # For Docker in ubuntu 14.04 only
-sudo aptitude -y install apt-transport-https ca-certificates
-sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" >/tmp/docker.list
-sudo cp /tmp/docker.list /etc/apt/sources.list.d/
-sudo aptitude install -y apparmor linux-image-extra-$(uname -r) docker.io
-sudo groupadd docker
-sudo usermod -aG docker $(whoami)
+if [[ `echo $RUN_OPTION | egrep 'docker'` ]] ; then
+    sudo aptitude -y install apt-transport-https ca-certificates
+    sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+    echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" >/tmp/docker.list
+    sudo cp /tmp/docker.list /etc/apt/sources.list.d/
+    sudo aptitude install -y apparmor linux-image-extra-$(uname -r) docker.io
+    sudo groupadd docker
+    sudo usermod -aG docker $(whoami)
+fi
 
 # update current system to last
 sudo aptitude -y full-upgrade
