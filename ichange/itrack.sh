@@ -34,7 +34,7 @@ export TASK_SPACE=/run/shm
 export HOSTNAME=`hostname`
 if [[ ! -f $ITRACK_PATH/conf/$HOSTNAME.conf ]] ; then
         echo -e "Can NOT find $ITRACK_PATH/conf/$HOSTNAME.conf"
-        for KILL_PID in `ps aux | grep ssh | grep gerrit | awk -F' ' {'print $2'}`
+        for KILL_PID in `ps aux | grep ssh | grep gerrit | grep stream-events | awk -F' ' {'print $2'}`
         do
                 kill -9 $KILL_PID
                 echo -e "kill stream-events"
