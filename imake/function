@@ -405,7 +405,7 @@ REPO_SYNC()
     export REPO_SYNC_OPTION=''
  fi
 
- sudo sysctl -w net.ipv4.tcp_window_scaling=0
+ sudo sysctl -w net.ipv4.tcp_window_scaling=0 >/dev/null 2>&1
 
  $IBUILD_ROOT/hotfix/clean_dirty.sh >/dev/null 2>&1
 
