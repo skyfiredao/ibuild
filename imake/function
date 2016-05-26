@@ -293,7 +293,7 @@ BTRFS_CLEANUP()
 {
  export BTRFS_TOP=`basename $1`
 
- for SUBV_REPO_MD5 in `ls $LOC_WORKSPACE/subv_repo | egrep -v 'info'`
+ for SUBV_REPO_MD5 in `ls $LOC_WORKSPACE/subv_repo | egrep -v 'info|tmp'`
  do
     export SUBV_REPO_CLEAN=''
     [[ ! -f $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5/Makefile ]] && export SUBV_REPO_CLEAN=yes
