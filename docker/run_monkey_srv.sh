@@ -57,6 +57,7 @@ export CONTAINER_ID=$(docker run \
 -d \
 -p $PORT_MAP_HTTPS \
 -p $PORT_MAP_HTTP \
+-p $PORT_MAP_SSH \
 -v $VOLUME_localtime \
 -v $VOLUME_data \
 -v $VOLUME_mysql \
