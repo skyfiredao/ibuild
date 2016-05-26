@@ -31,6 +31,7 @@ export MONKEY_SRV_PATH=/local/docker/monkey_srv
 export TAG_NAME=monkey_srv
 export PORT_MAP_HTTPS=443:443
 export PORT_MAP_HTTP=80:80
+export PORT_MAP_SSH=2222:22
 export VOLUME_localtime=/etc/localtime:/etc/localtime:ro
 export VOLUME_local=/local:/local
 export VOLUME_monkey_srv=$MONKEY_SRV_PATH/www:/var/www
@@ -72,6 +73,7 @@ DOCKER_IP=$(docker exec -t $DOCKER_NAMES bash -l -c "hostname -I" | awk -F' ' {'
 docker exec -t $DOCKER_NAMES bash -l -c "cat /etc/mysql/my.cnf | sed s/127.0.0.1/0.0.0.0/g >/tmp/my.cnf ; cp /tmp/my.cnf /etc/mysql/my.cnf"
 cat $MONKEY_SRV_PATH/www/Clat_Server-V2/clat/smartyapp/myapp/config.php.orig | sed s/10.100.24.4:9090/$IP/g >$MONKEY_SRV_PATH/www/Clat_Server-V2/clat/smartyapp/myapp/config.php
 docker exec -t $DOCKER_NAMES bash -l -c "/etc/init.d/mysql restart"
+docker exec -t $DOCKER_NAMES bash -l -c "service ssh start"
 
 echo CONTAINER_ID=$CONTAINER_ID
 docker ps | egrep "CONTAINER|$IMAGE_TAG"
