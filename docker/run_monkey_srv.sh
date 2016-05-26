@@ -42,6 +42,7 @@ export VOLUME_php_ini=$MONKEY_SRV_PATH/php.ini:/etc/php5/apache2/php.ini
 export VOLUME_smarty=$MONKEY_SRV_PATH/src/smarty/libs:/usr/share/php5/smarty
 export VOLUME_sites_000=$MONKEY_SRV_PATH/000-default.conf:/etc/apache2/sites-available/000-default.conf
 export VOLUME_etc_ssh=/etc/ssh:/etc/ssh:ro
+export VOLUME_authorized_keys=$MONKEY_SRV_PATH/authorized_keys:/var/monkey/.ssh/authorized_keys:ro
 export DOCKER_NAMES=$TAG_NAME-$TODAY
 export IMAGE_TAG=$TAG_NAME
 
@@ -66,6 +67,7 @@ export CONTAINER_ID=$(docker run \
 -v $VOLUME_smarty \
 -v $VOLUME_sites_000 \
 -v $VOLUME_etc_ssh \
+-v $VOLUME_authorized_keys \
 -v $VOLUME_log \
 -e MONKEY_SRV_PATH=$MONKEY_SRV_PATH \
 --name=$DOCKER_NAMES \
@@ -75,6 +77,7 @@ docker exec -t $DOCKER_NAMES bash -l -c "/etc/init.d/apache2 restart"
 DOCKER_IP=$(docker exec -t $DOCKER_NAMES bash -l -c "hostname -I" | awk -F' ' {'print $1'})
 docker exec -t $DOCKER_NAMES bash -l -c "cat /etc/mysql/my.cnf | sed s/127.0.0.1/0.0.0.0/g >/tmp/my.cnf ; cp /tmp/my.cnf /etc/mysql/my.cnf"
 cat $MONKEY_SRV_PATH/www/Clat_Server-V2/clat/smartyapp/myapp/config.php.orig | sed s/10.100.24.4:9090/$IP/g >$MONKEY_SRV_PATH/www/Clat_Server-V2/clat/smartyapp/myapp/config.php
+docker exec -t $DOCKER_NAMES bash -l -c "echo 'allowscp' >> /etc/rssh.conf"
 docker exec -t $DOCKER_NAMES bash -l -c "/etc/init.d/mysql restart"
 docker exec -t $DOCKER_NAMES bash -l -c "service ssh start"
 
