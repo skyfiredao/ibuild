@@ -41,6 +41,7 @@ export VOLUME_data=$MONKEY_SRV_PATH/data:/var/lib/data
 export VOLUME_php_ini=$MONKEY_SRV_PATH/php.ini:/etc/php5/apache2/php.ini
 export VOLUME_smarty=$MONKEY_SRV_PATH/src/smarty/libs:/usr/share/php5/smarty
 export VOLUME_sites_000=$MONKEY_SRV_PATH/000-default.conf:/etc/apache2/sites-available/000-default.conf
+export VOLUME_etc_ssh=/etc/ssh:/etc/ssh:ro
 export DOCKER_NAMES=$TAG_NAME-$TODAY
 export IMAGE_TAG=$TAG_NAME
 
@@ -63,6 +64,7 @@ export CONTAINER_ID=$(docker run \
 -v $VOLUME_php_ini \
 -v $VOLUME_smarty \
 -v $VOLUME_sites_000 \
+-v $VOLUME_etc_ssh \
 -v $VOLUME_log \
 -e MONKEY_SRV_PATH=$MONKEY_SRV_PATH \
 --name=$DOCKER_NAMES \
