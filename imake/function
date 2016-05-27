@@ -356,7 +356,7 @@ REPO_INFO()
  echo "$REPO_CMD init -u ssh://$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD" >/tmp/$USER.repo_init.tmp
  export REPO_INIT_CMD_MD5_NAME=$(cat /tmp/$USER.repo_init.tmp | md5sum | awk -F' ' {'print $1'} | cut -c1-5)
  export BTRFS_NAME=$REPO_INIT_CMD_MD5_NAME
- export BUILD_PATH_TOP=$LOC_WORKSPACE/build/$BTRFS_NAME
+ export BUILD_PATH_TOP=$LOC_WORKSPACE/build/ibuild
  if [[ ! -z $IBUILD_SUBV_REPO && -d $LOC_WORKSPACE/subv_repo/$IBUILD_SUBV_REPO ]] ; then
     export LOC_SUBV_REPO=$LOC_WORKSPACE/subv_repo/$IBUILD_SUBV_REPO
  else
