@@ -673,6 +673,8 @@ SETUP_BUILD_OUT()
 #        export DOWNLOAD_PKG_NAME=release.$RELEASE_VER.tgz
     elif [[ `ls $BUILD_PATH_TOP/autout/ | grep 'release' | head -n1` ]] ; then
         export DOWNLOAD_PKG_NAME=$(ls $BUILD_PATH_TOP/autout/ | grep 'release' | head -n1)
+    elif [[ $TARGET_PRODUCT = sdk ]] ; then
+        export DOWNLOAD_PKG_NAME=$(ls $BUILD_PATH_TOP/autout/ | grep android-sdk | grep zip$)
     else
         SPLIT_LINE no_release_package
     fi
