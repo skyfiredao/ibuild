@@ -23,6 +23,9 @@ export USER=$(whoami)
 export SEED=$RANDOM
 export LASTWEEK=$(date +%yw%W)
 export TOWEEK=$(date +%yw%V)
+if [[ $LASTWEEK = $TOWEEK ]] ; then
+    export LASTWEEK=$(date +%yw)$(echo $(date +%V) - 1 | bc)
+fi
 export TOYEAR=$(date +%Y)
 export TASK_SPACE=/dev/shm
 export LOCK_SPACE=/dev/shm/lock
@@ -181,6 +184,7 @@ if [[ $MODE = busy ]] ; then
     SETUP_ICASE $TOWEEK
     CHECK_BUSY
 elif [[ $MODE = clean ]] ; then
+    SETUP_ICASE $LASTWEEK
     CLEAN_IBUILD_UPLOAD_SPACE
 else
     SETUP_ICASE $LASTWEEK
