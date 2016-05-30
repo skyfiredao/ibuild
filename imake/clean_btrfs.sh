@@ -40,7 +40,7 @@ fi
 
 CLEAN_SUBV_REPO()
 {
- for SUBV_REPO_MD5 in `ls $LOC_WORKSPACE/subv_repo | egrep -v 'info'`
+ for SUBV_REPO_MD5 in `ls $LOC_WORKSPACE/subv_repo | egrep -v 'info|tmp'`
  do
 	if [[ ! -f $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5/Makefile || `cat $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5.info | grep mirror` ]] ; then
 		export SEED=$RANDOM
