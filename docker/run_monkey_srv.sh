@@ -46,15 +46,15 @@ export VOLUME_authorized_keys=$MONKEY_SRV_PATH/authorized_keys:/var/monkey/.ssh/
 export DOCKER_NAMES=$TAG_NAME-$TODAY
 export IMAGE_TAG=$TAG_NAME
 
-mkdir -p $MONKEY_SRV_PATH/{www,data} >/dev/null 2>1
-sudo chmod 777 -R $MONKEY_SRV_PATH/data >/dev/null 2>1
-sudo /etc/init.d/lightdm stop >/dev/null 2>1
-sudo /etc/init.d/pulseaudio stop >/dev/null 2>1
-sudo /etc/init.d/cups stop >/dev/null 2>1
-sudo /etc/init.d/cups-browsed stop >/dev/null 2>1
-sudo pkill -9 pulseaudio >/dev/null 2>1
-sudo pkill -9 indicator-sound-service >/dev/null 2>1
-chmod -x /usr/lib/x86_64-linux-gnu/indicator-sound/indicator-sound-service /usr/bin/pulseaudio
+mkdir -p $MONKEY_SRV_PATH/{www,data} >/dev/null 2>&1
+/usr/bin/sudo chmod 777 -R $MONKEY_SRV_PATH/data >/dev/null 2>&1
+/usr/bin/sudo /etc/init.d/lightdm stop >/dev/null 2>&1
+/usr/bin/sudo /etc/init.d/pulseaudio stop >/dev/null 2>&1
+/usr/bin/sudo /etc/init.d/cups stop >/dev/null 2>&1
+/usr/bin/sudo /etc/init.d/cups-browsed stop >/dev/null 2>&1
+/usr/bin/sudo pkill -9 pulseaudio >/dev/null 2>&1
+/usr/bin/sudo pkill -9 indicator-sound-service >/dev/null 2>&1
+/usr/bin/sudo chmod -x /usr/lib/x86_64-linux-gnu/indicator-sound/indicator-sound-service /usr/bin/pulseaudio
 
 if [[ `docker ps | grep $IMAGE_TAG | awk -F' ' {'print $1'}` ]] ; then
     docker ps | grep $IMAGE_TAG
