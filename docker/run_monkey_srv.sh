@@ -46,8 +46,8 @@ export VOLUME_authorized_keys=$MONKEY_SRV_PATH/authorized_keys:/var/monkey/.ssh/
 export DOCKER_NAMES=$TAG_NAME-$TODAY
 export IMAGE_TAG=$TAG_NAME
 
-mkdir -p $MONKEY_SRV_PATH/{www,data}
-chmod 777 -R $MONKEY_SRV_PATH/data
+mkdir -p $MONKEY_SRV_PATH/{www,data} >/dev/null 2>1
+sudo chmod 777 -R $MONKEY_SRV_PATH/data >/dev/null 2>1
 sudo /etc/init.d/lightdm stop >/dev/null 2>1
 sudo /etc/init.d/pulseaudio stop >/dev/null 2>1
 sudo /etc/init.d/cups stop >/dev/null 2>1
