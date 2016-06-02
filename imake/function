@@ -119,6 +119,8 @@ EXPORT_IBUILD_SPEC()
  export IBUILD_GRTSRV_MANIFEST=$(grep '^IBUILD_GRTSRV_MANIFEST=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_MANIFEST=' {'print $2'})
  export IBUILD_GRTSRV_REPO=$(grep '^IBUILD_GRTSRV_REPO=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_REPO=' {'print $2'})
  export IBUILD_GRTSRV_URL=$(grep '^IBUILD_GRTSRV_URL=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_URL=' {'print $2'})
+ export IBUILD_FETCH_GRTSRV=$(grep '^IBUILD_FETCH_GRTSRV=' $IBUILD_SPEC | awk -F'IBUILD_FETCH_GRTSRV=' {'print $2'})
+    [[ -z $IBUILD_FETCH_GRTSRV ]] && export IBUILD_FETCH_GRTSRV=$IBUILD_GRTSRV
  export IBUILD_MAKE_OPTION=$(grep '^IBUILD_MAKE_OPTION=' $IBUILD_SPEC | awk -F'IBUILD_MAKE_OPTION=' {'print $2'})
  export IBUILD_MAKE_TOOL=$(grep '^IBUILD_MAKE_TOOL=' $IBUILD_SPEC | awk -F'IBUILD_MAKE_TOOL=' {'print $2'})
  export IBUILD_MODE=$(grep '^IBUILD_MODE=' $IBUILD_SPEC | awk -F'IBUILD_MODE=' {'print $2'})
@@ -230,8 +232,8 @@ BUNDLE_BUILD()
 # git fetch mode
  grep '^IBUILD_FETCH_HEAD=' $IBUILD_SPEC | grep -v '|$'| awk -F'IBUILD_FETCH_HEAD=' {'print $2'} | while read IBUILD_FETCH_HEAD_ENTRY
  do
-    export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F'|' {'print $1'})
-    export IBUILD_FETCH_HEAD_REFS=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F'|' {'print $2'})
+    export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F' ' {'print $1'})
+    export IBUILD_FETCH_HEAD_REFS=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F' ' {'print $2'})
     export IBUILD_FETCH_HEAD_PATH=$($REPO_CMD list | grep $IBUILD_FETCH_HEAD_PROJECT$ | awk -F':' {'print $1'} | head -n1)
     [[ -z $IBUILD_FETCH_HEAD_PATH ]] && export IBUILD_FETCH_HEAD_PATH="NO_path_for_$IBUILD_FETCH_HEAD_PROJECT"
     SPLIT_LINE "bundle: git fetch $IBUILD_FETCH_HEAD_REFS in $IBUILD_FETCH_HEAD_PATH"
@@ -239,8 +241,8 @@ BUNDLE_BUILD()
     echo -e "cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH" >>$LOG_PATH/bundle.log 2>&1
     cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH >>$LOG_PATH/bundle.log 2>&1
     export STATUS_GIT=$?
-    echo -e "git fetch ssh://$IBUILD_GRTSRV/$IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS\n" >>$LOG_PATH/bundle.log 2>&1
-    time git fetch ssh://$IBUILD_GRTSRV_ID@$IBUILD_GRTSRV/$IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS >>$LOG_PATH/bundle.log 2>&1
+    echo -e "git fetch ssh://$IBUILD_FETCH_GRTSRV/$IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS\n" >>$LOG_PATH/bundle.log 2>&1
+    time git fetch ssh://$IBUILD_FETCH_GRTSRV/$IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS >>$LOG_PATH/bundle.log 2>&1
     export STATUS_GIT=$?
     echo $STATUS_GIT >>$LOG_PATH/bundle.log
     if [[ $STATUS_GIT = 0 ]] ; then
