@@ -243,8 +243,8 @@ BUNDLE_BUILD()
     echo -e "cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH" >>$LOG_PATH/bundle.log 2>&1
     cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH >>$LOG_PATH/bundle.log 2>&1
     export STATUS_GIT=$?
-    echo -e "$IBUILD_SPEC\n" >>$LOG_PATH/bundle.log 2>&1
-    time $IBUILD_SPEC >>$LOG_PATH/bundle.log 2>&1
+    echo -e "$IBUILD_FETCH_HEAD_ENTRY\n" >>$LOG_PATH/bundle.log 2>&1
+    time $IBUILD_FETCH_HEAD_ENTRY >>$LOG_PATH/bundle.log 2>&1
     export STATUS_GIT=$?
     echo $STATUS_GIT >>$LOG_PATH/bundle.log
     if [[ $STATUS_GIT != 0 && ! -z $IBUILD_FETCH_HEAD_REFS ]] ; then
