@@ -237,6 +237,7 @@ BUNDLE_BUILD()
     export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $1'})
     export IBUILD_FETCH_HEAD_REFS=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $2'})
     export IBUILD_FETCH_HEAD_PATH=$($REPO_CMD list | grep $IBUILD_FETCH_HEAD_PROJECT$ | awk -F':' {'print $1'} | head -n1)
+    export IBUILD_FETCH_HEAD_ID=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $1'} | awk -F'@' {'print $1'} | awk -F'//' {'print $2'})
     [[ -z $IBUILD_FETCH_HEAD_PATH ]] && export IBUILD_FETCH_HEAD_PATH="NO_path_for_$IBUILD_FETCH_HEAD_PROJECT"
     SPLIT_LINE "bundle: git fetch $IBUILD_FETCH_HEAD_REFS in $IBUILD_FETCH_HEAD_PATH"
     echo "------------------------- $IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS" >>$LOG_PATH/bundle.log 2>&1
@@ -244,7 +245,7 @@ BUNDLE_BUILD()
     cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH >>$LOG_PATH/bundle.log 2>&1
     export STATUS_GIT=$?
     echo -e "$IBUILD_FETCH_HEAD_ENTRY\n" >>$LOG_PATH/bundle.log 2>&1
-    time $IBUILD_FETCH_HEAD_ENTRY >>$LOG_PATH/bundle.log 2>&1
+    time $(echo $IBUILD_FETCH_HEAD_ENTRY | sed 's/$IBUILD_FETCH_HEAD_ID@//g') >>$LOG_PATH/bundle.log 2>&1
     export STATUS_GIT=$?
     echo $STATUS_GIT >>$LOG_PATH/bundle.log
     if [[ $STATUS_GIT != 0 && ! -z $IBUILD_FETCH_HEAD_REFS ]] ; then
