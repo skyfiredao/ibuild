@@ -121,7 +121,7 @@ $DOWNLOAD_URL
 
 [[ ! -z $DOWNLOAD_PKG_NAME ]] && echo -e "wget $DOWNLOAD_URL/$DOWNLOAD_PKG_NAME" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
 if [[ $RESULT != PASSED ]] ; then
-    echo -e "Error Log:\n$DOWNLOAD_URL/log/error.log.html" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
+    echo -e "Error Log:\n$DOWNLOAD_URL/log/error.log.txt" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
     rm -f $TASK_SPACE/tmp/icase.mail.$SEED/error.log >/dev/null 2>&1
     wget -q $DOWNLOAD_URL/log/error.log -O $TASK_SPACE/tmp/icase.mail.$SEED/error.log
 fi

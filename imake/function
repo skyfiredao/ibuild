@@ -705,7 +705,8 @@ SETUP_BUILD_OUT()
  SPLIT_LINE "upload $TODAY $IVEREV.$SHORT_AUTOUT_NAME"
  [[ -z $ITASK_REV ]] && export ITASK_REV=`ls /tmp | grep log$ | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1`
  [[ -f /tmp/build-$ITASK_REV.log ]] && LOG_HTML /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/log/ >/dev/null 2>&1
- [[ -f /tmp/build-$ITASK_REV.log ]] && txt2html /tmp/build-$ITASK_REV.log --outfile $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/build-$ITASK_REV.log.html
+# [[ -f /tmp/build-$ITASK_REV.log ]] && txt2html /tmp/build-$ITASK_REV.log --outfile $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/build-$ITASK_REV.log.html
+ [[ -f /tmp/build-$ITASK_REV.log ]] && cp /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/build-$ITASK_REV.log.txt
 
  if [[ -f $LOG_PATH/BUILD_ERROR ]] ; then
     cp $LOG_PATH/BUILD_ERROR $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/ >/dev/null 2>&1
@@ -732,7 +733,8 @@ LOG_HTML()
 
  for LOG_NAME in `ls $LOG_INPUT_URL | egrep -v 'xml$|txt$|BUILD_ERROR' | grep log$`
  do
-    txt2html $LOG_INPUT_URL/$LOG_NAME --outfile $LOG_OUTPUT_URL/$LOG_NAME.html
+#    txt2html $LOG_INPUT_URL/$LOG_NAME --outfile $LOG_OUTPUT_URL/$LOG_NAME.html
+     mv $LOG_INPUT_URL/$LOG_NAME $LOG_INPUT_URL/$LOG_NAME.txt
 #    [[ $(echo $LOG_NAME | egrep 'sync|full_build') && -f $LOG_OUTPUT_URL/$LOG_NAME.html ]] && rm -f $LOG_INPUT_URL/$LOG_NAME
  done
 }

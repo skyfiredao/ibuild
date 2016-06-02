@@ -99,7 +99,8 @@ cp -Ra $AUTOUT/$BUILD_OUT_FOLDER $SHARE_PATH/$TODAY/ && rm -fr $AUTOUT/$BUILD_OU
 
 for LOG in `ls $AUTOUT/log`
 do
-    txt2html $AUTOUT/log/$LOG --outfile $SHARE_PATH/$TODAY/$BUILD_OUT_FOLDER/log/$LOG.html
+#    txt2html $AUTOUT/log/$LOG --outfile $SHARE_PATH/$TODAY/$BUILD_OUT_FOLDER/log/$LOG.html
+    cp $AUTOUT/log/$LOG $SHARE_PATH/$TODAY/$BUILD_OUT_FOLDER/log/$LOG.txt
 done
 
 rm -f $LOCK_SPACE/build.lock
