@@ -234,8 +234,8 @@ BUNDLE_BUILD()
 # git fetch mode 1 with IBUILD_FETCH_GRTSRV and naked git fetch
  grep '^git fetch' $IBUILD_SPEC | while read IBUILD_FETCH_HEAD_ENTRY
  do
-    export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F'$IBUILD_FETCH_GRTSRV/' {'print $2'} | awk -F' ' {'print $1'})
-    export IBUILD_FETCH_HEAD_REFS=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F'$IBUILD_FETCH_GRTSRV/' {'print $2'} | awk -F' ' {'print $2'})
+    export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $1'})
+    export IBUILD_FETCH_HEAD_REFS=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $2'})
     export IBUILD_FETCH_HEAD_PATH=$($REPO_CMD list | grep $IBUILD_FETCH_HEAD_PROJECT$ | awk -F':' {'print $1'} | head -n1)
     [[ -z $IBUILD_FETCH_HEAD_PATH ]] && export IBUILD_FETCH_HEAD_PATH="NO_path_for_$IBUILD_FETCH_HEAD_PROJECT"
     SPLIT_LINE "bundle: git fetch $IBUILD_FETCH_HEAD_REFS in $IBUILD_FETCH_HEAD_PATH"
