@@ -223,7 +223,7 @@ BUNDLE_BUILD()
      export BUNDLE_PATCH=$(echo $BUNDLE_PATCH_ENTRY | awk -F'download' {'print $2'})
 
      SPLIT_LINE "bundle: repo download $BUNDLE_PATCH"
-     echo "------------------------- $EMAIL_PATCH_OWNER|$BUNDLE_PATCH" >>$LOG_PATH/bundle.log 2>&1
+     echo "------------------------- $EMAIL_PATCH_OWNER $BUNDLE_PATCH" >>$LOG_PATH/bundle.log 2>&1
      time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
      export STATUS_REPO=$?
      [[ $STATUS_REPO != 0 && ! -z $BUNDLE_PATCH ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
@@ -237,22 +237,29 @@ BUNDLE_BUILD()
     export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $1'})
     export IBUILD_FETCH_HEAD_REFS=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $2'})
     export IBUILD_FETCH_HEAD_PATH=$($REPO_CMD list | grep $IBUILD_FETCH_HEAD_PROJECT$ | awk -F':' {'print $1'} | head -n1)
-    export IBUILD_FETCH_HEAD_ID=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $1'} | awk -F'@' {'print $1'} | awk -F'//' {'print $2'})
+    export IBUILD_FETCH_GRTSRV_ID=$(echo $IBUILD_FETCH_GRTSRV | awk -F'@' {'print $1'})
+    export IBUILD_FETCH_GRTSRV_PORT=$(echo $IBUILD_FETCH_GRTSRV | awk -F':' {'print $2'} | awk -F'/' {'print $1'})
+    export IBUILD_FETCH_HEAD_ENTRY_FIX=$(echo $IBUILD_FETCH_HEAD_ENTRY | sed -e "s/$IBUILD_FETCH_GRTSRV_ID@//g" | sed -e "s/:$IBUILD_FETCH_GRTSRV_PORT//g" | awk -F'&&' {'print $1'})
     [[ -z $IBUILD_FETCH_HEAD_PATH ]] && export IBUILD_FETCH_HEAD_PATH="NO_path_for_$IBUILD_FETCH_HEAD_PROJECT"
-    SPLIT_LINE "bundle: git fetch $IBUILD_FETCH_HEAD_REFS in $IBUILD_FETCH_HEAD_PATH"
+    SPLIT_LINE "bundle: $IBUILD_FETCH_HEAD_ENTRY"
     echo "------------------------- $IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS" >>$LOG_PATH/bundle.log 2>&1
     echo -e "cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH" >>$LOG_PATH/bundle.log 2>&1
     cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH >>$LOG_PATH/bundle.log 2>&1
     export STATUS_GIT=$?
-    echo -e "$IBUILD_FETCH_HEAD_ENTRY\n" >>$LOG_PATH/bundle.log 2>&1
-#    time $(echo $IBUILD_FETCH_HEAD_ENTRY | sed "s/$IBUILD_FETCH_HEAD_ID@//g") >>$LOG_PATH/bundle.log 2>&1
-    time $IBUILD_FETCH_HEAD_ENTRY >>$LOG_PATH/bundle.log 2>&1
+    echo -e "$IBUILD_FETCH_HEAD_ENTRY_FIX\n" >>$LOG_PATH/bundle.log 2>&1
+    time $IBUILD_FETCH_HEAD_ENTRY_FIX >>$LOG_PATH/bundle.log 2>&1
     export STATUS_GIT=$?
     echo $STATUS_GIT >>$LOG_PATH/bundle.log
+    if [[ $STATUS_GIT = 0 ]] ; then
+        echo -e "\ngit cherry-pick FETCH_HEAD\n" >>$LOG_PATH/bundle.log 2>&1
+        git cherry-pick FETCH_HEAD >>$LOG_PATH/bundle.log 2>&1
+        export STATUS_GIT=$?
+        echo $STATUS_GIT >>$LOG_PATH/bundle.log
+    fi
     if [[ $STATUS_GIT != 0 && ! -z $IBUILD_FETCH_HEAD_REFS ]] ; then
         FILTER_BAD_PATCH $IBUILD_FETCH_HEAD_REFS
     fi
-    SETUP_ISTATUS "patch: $IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS" $ITASK_REV
+    SETUP_ISTATUS "patch: $IBUILD_FETCH_HEAD_ENTRY" $ITASK_REV
     LOG_STATUS $STATUS_GIT bundle $LOG_PATH/bundle.log
  done
 
