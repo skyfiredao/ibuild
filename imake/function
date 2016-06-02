@@ -201,7 +201,7 @@ FILTER_BAD_PATCH()
 
 BUNDLE_BUILD()
 {
-# BUNDLE_PATCH repo download mode
+# BUNDLE_PATCH repo download mode 1 with BUNDLE_PATCH
  grep '^BUNDLE_PATCH=' $IBUILD_SPEC | awk -F'BUNDLE_PATCH=' {'print $2'} | while read BUNDLE_PATCH_ENTRY
  do
      export EMAIL_PATCH_OWNER=$(echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $1'})
@@ -215,7 +215,8 @@ BUNDLE_BUILD()
      SETUP_ISTATUS "patch: BUNDLE_PATCH_ENTRY" $ITASK_REV
      LOG_STATUS $STATUS_REPO bundle $LOG_PATH/bundle.log
  done
-# repo download mode
+
+# repo download mode 2 with naked repo download
  grep '^repo download' $IBUILD_SPEC | while read BUNDLE_PATCH_ENTRY
  do
      [[ ! -z $EMAIL_TMP ]] && export EMAIL_PATCH_OWNER=$EMAIL_TMP
@@ -229,7 +230,31 @@ BUNDLE_BUILD()
      SETUP_ISTATUS "patch: $BUNDLE_PATCH_ENTRY" $ITASK_REV
      LOG_STATUS $STATUS_REPO bundle $LOG_PATH/bundle.log
  done
-# git fetch mode
+
+# git fetch mode 1 with IBUILD_FETCH_GRTSRV and naked git fetch
+ grep '^git fetch' $IBUILD_SPEC | while read IBUILD_FETCH_HEAD_ENTRY
+ do
+    export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F'$IBUILD_FETCH_GRTSRV/' {'print $2'} | awk -F' ' {'print $1'})
+    export IBUILD_FETCH_HEAD_REFS=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F'$IBUILD_FETCH_GRTSRV/' {'print $2'} | awk -F' ' {'print $2'})
+    export IBUILD_FETCH_HEAD_PATH=$($REPO_CMD list | grep $IBUILD_FETCH_HEAD_PROJECT$ | awk -F':' {'print $1'} | head -n1)
+    [[ -z $IBUILD_FETCH_HEAD_PATH ]] && export IBUILD_FETCH_HEAD_PATH="NO_path_for_$IBUILD_FETCH_HEAD_PROJECT"
+    SPLIT_LINE "bundle: git fetch $IBUILD_FETCH_HEAD_REFS in $IBUILD_FETCH_HEAD_PATH"
+    echo "------------------------- $IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS" >>$LOG_PATH/bundle.log 2>&1
+    echo -e "cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH" >>$LOG_PATH/bundle.log 2>&1
+    cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH >>$LOG_PATH/bundle.log 2>&1
+    export STATUS_GIT=$?
+    echo -e "$IBUILD_SPEC\n" >>$LOG_PATH/bundle.log 2>&1
+    time $IBUILD_SPEC >>$LOG_PATH/bundle.log 2>&1
+    export STATUS_GIT=$?
+    echo $STATUS_GIT >>$LOG_PATH/bundle.log
+    if [[ $STATUS_GIT != 0 && ! -z $IBUILD_FETCH_HEAD_REFS ]] ; then
+        FILTER_BAD_PATCH $IBUILD_FETCH_HEAD_REFS
+    fi
+    SETUP_ISTATUS "patch: $IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS" $ITASK_REV
+    LOG_STATUS $STATUS_GIT bundle $LOG_PATH/bundle.log
+ done
+
+# git fetch mode 2 with IBUILD_FETCH_HEAD and IBUILD_FETCH_GRTSRV
  grep '^IBUILD_FETCH_HEAD=' $IBUILD_SPEC | grep -v '|$'| awk -F'IBUILD_FETCH_HEAD=' {'print $2'} | while read IBUILD_FETCH_HEAD_ENTRY
  do
     export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F' ' {'print $1'})
