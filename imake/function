@@ -684,6 +684,7 @@ EXPORT_MANIFEST()
     ln -sf $AUTOUT_PATH/$AUTOUT_NAME autout >/dev/null 2>&1
     ln -sf $AUTOUT_PATH/$AUTOUT_NAME $OUT/autout >/dev/null 2>&1
  fi
+ cp $OUT/system/build.prop autout/ >/dev/null 2>&1
 }
 
 SETUP_BUILD_OUT()
