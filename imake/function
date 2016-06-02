@@ -241,7 +241,7 @@ BUNDLE_BUILD()
     export IBUILD_FETCH_GRTSRV_PORT=$(echo $IBUILD_FETCH_GRTSRV | awk -F':' {'print $2'} | awk -F'/' {'print $1'})
     export IBUILD_FETCH_HEAD_ENTRY_FIX=$(echo $IBUILD_FETCH_HEAD_ENTRY | sed -e "s/$IBUILD_FETCH_GRTSRV_ID@//g" | sed -e "s/:$IBUILD_FETCH_GRTSRV_PORT//g" | awk -F'&&' {'print $1'})
     [[ -z $IBUILD_FETCH_HEAD_PATH ]] && export IBUILD_FETCH_HEAD_PATH="NO_path_for_$IBUILD_FETCH_HEAD_PROJECT"
-    SPLIT_LINE "bundle: $IBUILD_FETCH_HEAD_ENTRY"
+    SPLIT_LINE "bundle: git fetch $IBUILD_FETCH_HEAD_REFS in $IBUILD_FETCH_HEAD_PATH"
     echo "------------------------- $IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS" >>$LOG_PATH/bundle.log 2>&1
     echo -e "cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH" >>$LOG_PATH/bundle.log 2>&1
     cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH >>$LOG_PATH/bundle.log 2>&1
