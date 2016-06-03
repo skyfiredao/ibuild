@@ -42,7 +42,7 @@ if [[ -f $SPEC_URL ]] ; then
     rm -f /dev/shm/spec.build
     cp $SPEC_URL /dev/shm/$SPEC_NAME
     ln -sf /dev/shm/$SPEC_NAME /dev/shm/spec.build
-    bash $IBUILD_ROOT/imake/build.sh
+    bash -x $IBUILD_ROOT/imake/build.sh
 else
     echo "Can NOT find $SPEC_URL"
 fi
