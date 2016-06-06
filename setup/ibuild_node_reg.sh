@@ -70,6 +70,9 @@ export IBUILD_SVN_SRV_HOSTNAME=$(echo $IBUILD_SVN_SRV | awk -F'.' {'print $1'})
     [[ $IBUILD_SVN_SRV = $IP ]] && export IBUILD_SVN_SRV_HOSTNAME=$HOSTNAME
 export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
 export IBUILD_SVN_REV_SRV=$(svn info $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
+export ITASK_SVN_SRV=$(grep '^ITASK_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'ITASK_SVN_SRV=' {'print $2'})
+    [[ -z $ITASK_SVN_SRV ]] && export ITASK_SVN_SRV=$IBUILD_SVN_SRV
+export ITASK_SVN_SRV_HOSTNAME=$(echo $ITASK_SVN_SRV | awk -F'.' {'print $1'})
 
 $IBUILD_ROOT/setup/reboot.sh
 
@@ -81,20 +84,20 @@ if [[ -f $TASK_SPACE/itask/svn.$TODAY.lock && -d $TASK_SPACE/itask/svn/.svn ]] ;
         svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn
         if [[ $? != 0 ]] ; then
             rm -fr $TASK_SPACE/itask/svn >/dev/null 2>&1
-            svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
+            svn co -q $IBUILD_SVN_OPTION svn://$ITASK_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
         fi
     fi
 else
     mkdir -p $TASK_SPACE/itask >/dev/null 2>&1
     rm -fr $TASK_SPACE/itask/svn* >/dev/null 2>&1
     touch $TASK_SPACE/itask/svn.$TODAY.lock
-    svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
+    svn co -q $IBUILD_SVN_OPTION svn://$ITASK_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
 fi
 
 if [[ $IBUILD_TOP_SVN_SRV_HOSTNAME != $IBUILD_SVN_SRV_HOSTNAME && ! -z $IBUILD_TOP_SVN_SRV ]] ; then
     rm -fr $TASK_SPACE/itask.top
     mkdir -p $TASK_SPACE/itask.top
-    svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_TOP_SVN_SRV/itask/itask $TASK_SPACE/itask.top/svn
+    svn co -q $IBUILD_SVN_OPTION svn://$ITASK_SVN_SRV/itask/itask $TASK_SPACE/itask.top/svn
 fi
 
 if [[ ! -d $TASK_SPACE/itask/svn/inode ]] ; then
@@ -136,7 +139,7 @@ if [[ `svn st $TASK_SPACE/itask/svn/inode/$HOSTNAME | grep $HOSTNAME` ]] ; then
     svn ci $IBUILD_SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask/svn/inode/$HOSTNAME
     if [[ $? != 0 ]] ; then
         rm -fr $TASK_SPACE/itask/svn
-        svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
+        svn co -q $IBUILD_SVN_OPTION svn://$ITASK_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
         echo -e "Waiting for next cycle because conflict"
         exit 1
     fi
