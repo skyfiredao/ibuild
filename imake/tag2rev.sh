@@ -15,9 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Change log
-# 150120 Create by Ding Wei
-source /etc/bash.bashrc
-export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH
+# 160607 Create by Ding Wei
+source /etc/bash.bashrc >/dev/null 2>&1
 export LC_CTYPE=C
 export LC_ALL=C
 export IBUILD_ROOT=$HOME/ibuild
@@ -26,32 +25,27 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 	echo -e "Please put ibuild in your $HOME"
 	exit 0
 fi
-export ITASK_REV=$1
-export ITASK_TMP=$ITASK_REV
-export LOCK_SPACE=/dev/shm/lock
-mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
-source $IBUILD_ROOT/imake/function $ITASK_REV
-touch $LOCK_SPACE/itask.lock
-EXPORT_IBUILD_CONF
-EXPORT_IBUILD_SPEC $ITASK_REV
-
-rm -f $LOG_PATH/* >/dev/null 2>&1
-
-hostname
-echo $IP
-date
-echo itask:$ITASK_REV
-
+source $IBUILD_ROOT/imake/function >/dev/null 2>&1
+EXPORT_IBUILD_CONF >/dev/null 2>&1
+EXPORT_IBUILD_SPEC >/dev/null 2>&1
 REPO_INFO
-$IBUILD_ROOT/imake/$IBUILD_MAKE_TOOL
- 
-[[ ! -f $LOG_PATH/BUILD_ERROR && $IBUILD_MODE != nobuild ]] && SETUP_BUILD_OUT
-SPLIT_LINE DONE
+SETUP_BUILD_REPO
 
-REPO_INFO
-export SYNC_ONLY=yes
-REPO_SYNC $LOC_SUBV_REPO
-CLEAN_EXIT
+[[ ! -z $IBUILD_ADD_STEP_1 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_1"
+
+cd $BUILD_PATH_TOP/build
+export TAG_DAILY=$(git tag -l | grep $(date +%Y%m%d))
+export TAG_DAILY_NAME=$(basename $TAG_DAILY)
+if [[ ! -z $TAG_DAILY ]] ; then
+    cd $BUILD_PATH_TOP
+    SPLIT_LINE git_checkout_$TAG_DAILY
+    time $REPO_CMD forall -j$JOBS -c git checkout $TAG_DAILY >$LOG_PATH/$TAG_DAILY.log 2>&1
+    rm -f $TAG_DAILY_NAME.xml
+    time $REPO_CMD manifest  -r -o $BUILD_PATH_TOP/$TAG_DAILY_NAME.xml
+    SETUP_IVERSION $BUILD_PATH_TOP/$TAG_DAILY_NAME.xml $TAG_DAILY_NAME.xml
+fi
+
+[[ ! -z $IBUILD_ADD_STEP_2 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_2"
 
 
