@@ -48,3 +48,5 @@ if [[ ! -z $TAG_DAILY ]] ; then
     [[ ! -z $IBUILD_ADD_STEP_2 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_2"
 fi
 
+rm -fr $AUTOUT_PATH/*tag2rev*
+
