@@ -435,6 +435,8 @@ REPO_SYNC()
  if [[ ! -z $IVERSION && -z $SYNC_ONLY ]] ; then
     export IVER_MANIFEST_URL=$(svn log -v -r $IVERSION $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion | egrep 'A /iversion|M /iversion' | awk -F' ' {'print $2'})
     svn export -r $IVERSION $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/$IVER_MANIFEST_URL $LOG_PATH/manifest-r$IVERSION.xml
+    export MANIFEST_NAME=$(basename $IVER_MANIFEST_URL | sed 's/.xml//g')
+    touch $LOG_PATH/$MANIFEST_NAME
     rm -f .repo/manifests/manifest-r*.xml >/dev/null 2>&1
     cp $LOG_PATH/manifest-r$IVERSION.xml .repo/manifests/
     export REPO_SYNC_OPTION="-m manifest-r$IVERSION.xml"
@@ -569,8 +571,8 @@ SETUP_ISTATUS()
 
 SETUP_IVERSION()
 {
- export ORIG_MAINFEST_URL=$1
- export IVER_MAINFEST_NAME=$2.xml
+ export ORIG_MANIFEST_URL=$1
+ export IVER_MANIFEST_NAME=$2.xml
 
  if [[ -d $TASK_SPACE/iversion-$TOWEEK ]] ; then
      export IBUILD_SVN_REV_LOC=`svn info $TASK_SPACE/iversion-$TOWEEK | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
@@ -582,18 +584,18 @@ else
      svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add iversion/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK >/dev/null 2>&1
      svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK $TASK_SPACE/iversion-$TOWEEK
  fi
- cp $ORIG_MAINFEST_URL $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME
- export MANIFEST_VER=$(md5sum $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME | cut -c1-5)
+ cp $ORIG_MANIFEST_URL $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME
+ export MANIFEST_VER=$(md5sum $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | cut -c1-5)
 
- SPLIT_LINE $IVER_MAINFEST_NAME
- svn add $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME >/dev/null 2>&1
- svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVER_MAINFEST_NAME" $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME
+ SPLIT_LINE $IVER_MANIFEST_NAME
+ svn add $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME >/dev/null 2>&1
+ svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVER_MANIFEST_NAME" $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME
  if [[ $? = 0 ]] ; then
-#    export BUILD_ID=$(echo $BUILD_TIME | cut -c7-8).r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
-     export BUILD_ID=r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MAINFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+#    export BUILD_ID=$(echo $BUILD_TIME | cut -c7-8).r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+     export BUILD_ID=r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
  else
      SPLIT_LINE iversion_issue
-     echo $IVER_MAINFEST_NAME
+     echo $IVER_MANIFEST_NAME
      export BUILD_ID=$(echo $BUILD_TIME | cut -c7-8).$MANIFEST_VER
  fi
 }
@@ -624,6 +626,7 @@ TIME_START=$BUILD_TIME
 TIME_END=$TIME_END
 BUILD_ID=$BUILD_ID
 IVERSION=$IVERSION
+MANIFEST_NAME=$MANIFEST_NAME
 ITASK_REV=$ITASK_REV
 BUILD_TIME=`echo $END_SEC_TIME - $BUILD_SEC_TIME | bc`
 REL_PATH=$TODAY/$AUTOUT_NAME
