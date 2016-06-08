@@ -459,7 +459,7 @@ REPO_SYNC()
     MASK_LOG $AUTOUT_PATH/log/init.log
  fi
 
- SPLIT_LINE repo_sync
+ SPLIT_LINE "repo_sync_$REPO_SYNC_OPTION"
  if [[ -z $SYNC_ONLY ]] ; then
     if [[ -f Makefile && -z $IBUILD_GRTSRV_TAG ]] ; then
         time $REPO_CMD sync -c --no-tags -j$JOBS $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1

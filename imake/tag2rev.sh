@@ -44,6 +44,7 @@ if [[ ! -z $TAG_DAILY ]] ; then
     rm -f $TAG_DAILY_NAME.xml
     time $REPO_CMD manifest -r -o $BUILD_PATH_TOP/$TAG_DAILY_NAME.xml
     SETUP_IVERSION $BUILD_PATH_TOP/$TAG_DAILY_NAME.xml $TAG_DAILY_NAME
+    export IVERSION=$(svn info $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK/$TAG_DAILY_NAME.xml | grep Revision: | awk -F' ' {'print $2'})
 fi
 
 [[ ! -z $IBUILD_ADD_STEP_2 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_2"
