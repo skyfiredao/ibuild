@@ -461,7 +461,7 @@ REPO_SYNC()
 
  SPLIT_LINE repo_sync
  if [[ -z $SYNC_ONLY ]] ; then
-    if [[ -f Makefile ]] ; then
+    if [[ -f Makefile && -z $IBUILD_GRTSRV_TAG ]] ; then
         time $REPO_CMD sync -c --no-tags -j$JOBS $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
     else
         time $REPO_CMD sync -j$JOBS $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
@@ -510,7 +510,7 @@ SETUP_BUILD_REPO()
  LOG_STATUS $? snapshot_$BUILD_PATH_TOP $LOG_PATH/fs_issue.log
 
  REPO_SYNC $BUILD_PATH_TOP
- if [[ ! -z $IBUILD_GRTSRV_TAG ]] ; then
+ if [[ ! -z $IBUILD_GRTSRV_TAG && $IBUILD_GRTSRV_TAG != NULL ]] ; then
     SPLIT_LINE git_checkout_$IBUILD_GRTSRV_TAG
     time $REPO_CMD forall -j$JOBS -c git checkout $IBUILD_GRTSRV_TAG >$LOG_PATH/$IBUILD_GRTSRV_TAG.log 2>&1
  fi
