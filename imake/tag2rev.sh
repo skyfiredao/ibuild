@@ -42,8 +42,8 @@ if [[ ! -z $TAG_DAILY ]] ; then
     SPLIT_LINE git_checkout_$TAG_DAILY
     time $REPO_CMD forall -j$JOBS -c git checkout $TAG_DAILY >$LOG_PATH/$TAG_DAILY.log 2>&1
     rm -f $TAG_DAILY_NAME.xml
-    time $REPO_CMD manifest  -r -o $BUILD_PATH_TOP/$TAG_DAILY_NAME.xml
-    SETUP_IVERSION $BUILD_PATH_TOP/$TAG_DAILY_NAME.xml $TAG_DAILY_NAME.xml
+    time $REPO_CMD manifest -r -o $BUILD_PATH_TOP/$TAG_DAILY_NAME.xml
+    SETUP_IVERSION $BUILD_PATH_TOP/$TAG_DAILY_NAME.xml $TAG_DAILY_NAME
 fi
 
 [[ ! -z $IBUILD_ADD_STEP_2 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_2"
