@@ -35,18 +35,20 @@ SETUP_BUILD_REPO
 [[ ! -z $IBUILD_ADD_STEP_1 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_1"
 
 cd $BUILD_PATH_TOP/build
-export TAG_DAILY=$(git tag -l | grep $(date +%Y%m%d))
-export TAG_DAILY_NAME=$(basename $TAG_DAILY)
-if [[ ! -z $TAG_DAILY ]] ; then
-    cd $BUILD_PATH_TOP
-    SPLIT_LINE git_checkout_$TAG_DAILY
-    time $REPO_CMD forall -j$JOBS -c git checkout $TAG_DAILY >$LOG_PATH/$TAG_DAILY_NAME.log 2>&1
-    rm -f $TAG_DAILY_NAME.xml
-    time $REPO_CMD manifest -r -o $BUILD_PATH_TOP/$TAG_DAILY_NAME.xml
-    SETUP_IVERSION $BUILD_PATH_TOP/$TAG_DAILY_NAME.xml $TAG_DAILY_NAME
-    export IVERSION=$(svn info $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK/$TAG_DAILY_NAME.xml | grep Revision: | awk -F' ' {'print $2'})
-    [[ ! -z $IBUILD_ADD_STEP_2 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_2"
-fi
+for TAG_DAILY in $(git tag -l | grep $(date +%Y%m%d))
+do
+    export TAG_DAILY_NAME=$(basename $TAG_DAILY)
+    if [[ ! -z $TAG_DAILY ]] ; then
+        cd $BUILD_PATH_TOP
+        SPLIT_LINE git_checkout_$TAG_DAILY
+        time $REPO_CMD forall -j$JOBS -c git checkout $TAG_DAILY >$LOG_PATH/$TAG_DAILY_NAME.log 2>&1
+        rm -f $TAG_DAILY_NAME.xml
+        time $REPO_CMD manifest -r -o $BUILD_PATH_TOP/$TAG_DAILY_NAME.xml
+        SETUP_IVERSION $BUILD_PATH_TOP/$TAG_DAILY_NAME.xml $TAG_DAILY_NAME
+        export IVERSION=$(svn info $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK/$TAG_DAILY_NAME.xml | grep Revision: | awk -F' ' {'print $2'})
+        [[ ! -z $IBUILD_ADD_STEP_2 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_2"
+    fi
+done
 
 rm -fr $AUTOUT_PATH/*tag2rev*
 
