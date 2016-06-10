@@ -584,6 +584,8 @@ else
      svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add iversion/$TOYEAR/$TOWEEK" svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK >/dev/null 2>&1
      svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK $TASK_SPACE/iversion-$TOWEEK
  fi
+ export LATEST_MANIFEST=$(ls $TASK_SPACE/iversion-$TOWEEK | tail -n1)
+ [[ ! -z $LATEST_MANIFEST ]] && svn cp $TASK_SPACE/iversion-$TOWEEK/$LATEST_MANIFEST $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME >/dev/null 2>&1
  cp $ORIG_MANIFEST_URL $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME
  export MANIFEST_VER=$(md5sum $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | cut -c1-5)
 
