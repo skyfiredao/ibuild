@@ -233,7 +233,7 @@ BUNDLE_BUILD()
  done
 
 # git fetch mode 1 with IBUILD_FETCH_GRTSRV and naked git fetch
- grep '^git fetch' $IBUILD_SPEC | while read IBUILD_FETCH_HEAD_ENTRY
+ grep '^git fetch' $IBUILD_SPEC | awk -F'&' {'print $1'} | while read IBUILD_FETCH_HEAD_ENTRY
  do
     export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $1'})
     export IBUILD_FETCH_HEAD_REFS=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $2'})
