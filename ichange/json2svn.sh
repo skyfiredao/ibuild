@@ -138,6 +138,7 @@ do
     export g_type=$(cat $ORDER.json | egrep '"type":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
     export g_newRev=$(cat $ORDER.json | egrep '"newRev":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
     export g_refName=$(cat $ORDER.json | egrep '"refName":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
+    export g_ref=$(cat $ORDER.json | egrep '"ref":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
     export g_username=$(cat $ORDER.json | egrep '"username":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
     export g_url=$(cat $ORDER.json | egrep '"url":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
     [[ ! -z $g_url ]] && export g_change_number=$(basename $g_url)
@@ -157,8 +158,8 @@ do
 
     if [[ ! -z $g_revision ]] ; then
         mkdir -p $TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch
-        echo "$g_revision|$g_id|$g_email|$g_path|$g_project|$g_change_number|$g_patchSet_number|$g_value" >>$TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch/$TOWEEK.$g_type
-        echo "$g_revision|$g_id|$g_email|$g_path|$g_project|$g_change_number|$g_patchSet_number|$g_value" >>$TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch/$TOWEEK.all-change
+        echo "$g_revision|$g_id|$g_email|$g_path|$g_project|$g_change_number|$g_patchSet_number|$g_value|$g_ref" >>$TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch/$TOWEEK.$g_type
+        echo "$g_revision|$g_id|$g_email|$g_path|$g_project|$g_change_number|$g_patchSet_number|$g_value|$g_ref" >>$TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch/$TOWEEK.all-change
     fi
     for SVN_ADD in `svn st $TASK_SPACE/itrack/svn | egrep '^\?' | awk -F' ' {'print $2'}`
     do
