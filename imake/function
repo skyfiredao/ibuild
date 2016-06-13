@@ -237,7 +237,7 @@ BUNDLE_BUILD()
  do
     export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $1'})
     export IBUILD_FETCH_HEAD_REFS=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $2'})
-    export IBUILD_FETCH_HEAD_PATH=$($REPO_CMD list | grep $IBUILD_FETCH_HEAD_PROJECT$ | awk -F':' {'print $1'} | head -n1)
+    export IBUILD_FETCH_HEAD_PATH=$($REPO_CMD list | egrep ": $IBUILD_FETCH_HEAD_PROJECT$" | awk -F':' {'print $1'} | head -n1)
     export IBUILD_FETCH_GRTSRV_ID=$(echo $IBUILD_FETCH_GRTSRV | awk -F'@' {'print $1'})
     export IBUILD_FETCH_GRTSRV_PORT=$(echo $IBUILD_FETCH_GRTSRV | awk -F':' {'print $2'} | awk -F'/' {'print $1'})
     export IBUILD_FETCH_HEAD_ENTRY_FIX=$(echo $IBUILD_FETCH_HEAD_ENTRY | sed -e "s/$IBUILD_FETCH_GRTSRV_ID@//g" | sed -e "s/:$IBUILD_FETCH_GRTSRV_PORT//g" | awk -F'&&' {'print $1'})
