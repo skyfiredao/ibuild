@@ -168,7 +168,8 @@ sudo sensors-detect
 
 # install web server for monitor if need
 if [[ `echo $RUN_OPTION | egrep 'admin'` ]] ; then
-    sudo aptitude -y install nginx php5-fpm gmetad ganglia-webfrontend
+#    sudo aptitude -y install nginx php5-fpm gmetad ganglia-webfrontend
+    sudo aptitude -y install apache2 libapache2-mod-php5 gmetad ganglia-webfrontend
 fi
 
 # install debug tool
