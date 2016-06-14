@@ -157,7 +157,7 @@ if [[ $IBUILD_MODE = bundle ]] ; then
     done
     grep '^IBUILD_FETCH_HEAD=' $BUILD_INFO | awk -F'IBUILD_FETCH_HEAD=' {'print $2'} | while read BUNDLE_PATCH_ENTRY
     do
-        echo "$BUNDLE_PATCH_ENTRY" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
+        echo -e "$BUNDLE_PATCH_ENTRY\n" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
     done
 fi
 
