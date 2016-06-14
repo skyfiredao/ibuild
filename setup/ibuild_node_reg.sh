@@ -178,10 +178,10 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
         touch $LOCK_SPACE/ganglia-$(date +%p)
         export DOMAIN_EXT=$(cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'})
             [[ -z $DOMAIN_EXT ]] && export DOMAIN_EXT=No_Domain
-        for IBUILD_NODE in `ls /var/lib/ganglia/rrds/ibuild/ | grep [a-z,A-Z] | egrep -v "SummaryInfo|$HOSTNAME" | sed "s/.$DOMAIN_EXT//g"`
+        for IBUILD_NODE in `ls /var/lib/ganglia/rrds/ibuild/ | grep [a-z,A-Z] | tr a-z A-Z | egrep -v "SummaryInfo|$HOSTNAME" | sed "s/.$DOMAIN_EXT//g"`
         do
-            export IBUILD_NODE_IP=$(ping -c 1 $IBUILD_NODE | grep PING | awk -F'(' {'print $2'} | awk -F')' {'print $1'})
-            if [[ ! $(grep $IBUILD_NODE /etc/hosts | grep $IBUILD_NODE_IP) ]] ; then
+            export IBUILD_NODE_IP=$(grep '^IP=' $TASK_SPACE/itask/svn/inode/$IBUILD_NODE | awk -F'IP=' {'print $2'})
+            if [[ ! -z $IBUILD_NODE_IP && ! $(grep $IBUILD_NODE /etc/hosts | grep $IBUILD_NODE_IP) ]] ; then
                 cat /etc/hosts | grep -v $IBUILD_NODE >/tmp/hosts
                 echo "$IBUILD_NODE_IP $IBUILD_NODE $IBUILD_NODE.$DOMAIN_EXT" >>/tmp/hosts
                 sudo cp /tmp/hosts /etc/hosts
