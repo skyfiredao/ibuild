@@ -30,6 +30,5 @@ do
     export ICHANGE_PATH=$(find | grep $URL_SRV | awk -F"$URL_SRV" {'print $1'} | sort -u | tail -n1)
     cd $ICHANGE_LOC/$ICHANGE_PATH
     export ICHANGE_ENTRY=$(grep -R $URL_ID * | tail -n1 | awk -F':' {'print $2'})
-    export IBUILD_FETCH_HEAD=$(echo $ICHANGE_ENTRY | awk -F'|' {'print $5" "$8'})
-    echo "IBUILD_FETCH_HEAD=$IBUILD_FETCH_HEAD" >>~/patch.list
+    echo 'git fetch ssh://'"$URL_SRV"/"$(echo $ICHANGE_ENTRY | awk -F'|' {'print $5" "$8'})"' && git cherry-pick FETCH_HEAD' >>~/patch.list
 done
