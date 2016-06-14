@@ -45,7 +45,7 @@ do
             mv /tmp/tmp.spec $SPEC
         fi
     done
-    cat $SPEC | egrep -v '^GERRIT_|BAD_PATCH_ENTRY|EMAIL_TMP|ITASK_ORDER|NEW_IBUILD_SPEC_NAME' | sort -u >/tmp/tmp.spec
+    cat $SPEC | egrep -v '^GERRIT_|BAD_PATCH_ENTRY|EMAIL_TMP|ITASK_ORDER|NEW_IBUILD_SPEC_NAME|IBUILD_SPEC' | sort -u >/tmp/tmp.spec
     mv /tmp/tmp.spec $SPEC
 done
 
