@@ -183,7 +183,7 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
             export IBUILD_NODE_IP=$(grep '^IP=' $TASK_SPACE/itask/svn/inode/$IBUILD_NODE | awk -F'IP=' {'print $2'})
             if [[ ! -z $IBUILD_NODE_IP && ! $(grep $IBUILD_NODE /etc/hosts | grep $IBUILD_NODE_IP) ]] ; then
                 cat /etc/hosts | grep -v $IBUILD_NODE >/tmp/hosts
-                echo "$IBUILD_NODE_IP $IBUILD_NODE $IBUILD_NODE.$DOMAIN_EXT" >>/tmp/hosts
+                echo "$IBUILD_NODE_IP $IBUILD_NODE $IBUILD_NODE.$DOMAIN_EXT" | tr A-Z a-z >>/tmp/hosts
                 sudo cp /tmp/hosts /etc/hosts
             fi
         done
