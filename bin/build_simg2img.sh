@@ -24,6 +24,7 @@ make
 if [[ -f simg2img ]] ; then
     sudo cp simg2img img2simg simg2simg append2simg /usr/bin/
     [[ -d /local/ibuild/bin ]] && cp simg2img img2simg simg2simg append2simg /local/ibuild/bin/
+    echo "Done"
 else
     echo "Can NOT find simg2img"
 if

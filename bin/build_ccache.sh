@@ -26,6 +26,7 @@ make -j8
 if [[ -f ccache ]] ; then
     sudo cp ccache /usr/bin/
     [[ -d /local/ibuild/bin ]] && cp ccache /local/ibuild/bin/
+    echo "Done"
 else
     echo "Can NOT find ccache"
 fi

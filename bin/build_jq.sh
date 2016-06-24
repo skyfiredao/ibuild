@@ -27,6 +27,7 @@ make -j8 LDFLAGS=-all-static
 if [[ -f jq ]] ; then
     sudo cp jq /usr/bin/
     [[ -d /local/ibuild/bin ]] && cp jq /local/ibuild/bin/
+    echo "Done"
 else
     echo "Can NOT find jq"
 fi

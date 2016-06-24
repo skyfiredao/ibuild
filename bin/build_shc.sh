@@ -24,6 +24,7 @@ make
 if [[ -f shc ]] ; then
     sudo cp shc /usr/bin/
     [[ -d /local/ibuild/bin ]] && cp shc /local/ibuild/bin/
+    echo "Done"
 else
     echo "Can NOT find shc"
 fi

@@ -25,6 +25,7 @@ make
 if [[ -f xyaffs2 ]] ; then
     sudo cp xyaffs2 /usr/bin/
     [[ -d /local/ibuild/bin ]] && cp xyaffs2 /local/ibuild/bin/
+    echo "Done"
 else
     echo "Can NOT find xyaffs2"
 fi

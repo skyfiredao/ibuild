@@ -25,6 +25,7 @@ make -j8
 if [[ -f mpstat ]] ; then
     sudo cp {mpstat,iostat,pidstat} /usr/bin/
     [[ -d /local/ibuild/bin ]] && cp {mpstat,iostat,pidstat} /local/ibuild/bin/
+    echo "Done"
 else
     echo "Can NOT find mpstat"
 fi
