@@ -122,8 +122,8 @@ $DOWNLOAD_URL
 [[ ! -z $DOWNLOAD_PKG_NAME ]] && echo -e "wget $DOWNLOAD_URL/$DOWNLOAD_PKG_NAME" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
 if [[ $RESULT != PASSED ]] ; then
     echo -e "Error Log:\n$DOWNLOAD_URL/log/error.log.txt" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
-    rm -f $TASK_SPACE/tmp/icase.mail.$SEED/error.log >/dev/null 2>&1
-    wget -q $DOWNLOAD_URL/log/error.log -O $TASK_SPACE/tmp/icase.mail.$SEED/error.log
+    rm -f $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt >/dev/null 2>&1
+    wget -q $DOWNLOAD_URL/log/error.log.txt -O $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt
 fi
 
 echo -e "
@@ -163,9 +163,9 @@ fi
 
 [[ $IBUILD_MODE = bundle || $IBUILD_MODE = normal ]] && export SUB_IBUILD_MODE="[$IBUILD_MODE]"
 
-if [[ -f $TASK_SPACE/tmp/icase.mail.$SEED/error.log ]] ; then
+if [[ -f $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt ]] ; then
     echo -e "\n------------------------- Error log" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
-    cat $TASK_SPACE/tmp/icase.mail.$SEED/error.log | egrep -v '32m|0m' | tail -n50 >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
+    cat $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt | egrep -v '32m|0m' | tail -n50 >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
     echo -e "------------------------- End" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
 fi
 
