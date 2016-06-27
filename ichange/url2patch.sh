@@ -22,6 +22,8 @@ export ICHANGE_LOC=~/svn/ichange
 
 [[ ! -f $URL_LIST || ! -d $ICHANGE_LOC ]] && exit
 
+rm -f ~/patch.list
+
 for URL in `cat $URL_LIST`
 do
     export URL_SRV=$(echo $URL |  awk -F'//' {'print $2'} | awk -F'/' {'print $1'})
@@ -29,6 +31,8 @@ do
     cd $ICHANGE_LOC
     export ICHANGE_PATH=$(find | grep $URL_SRV | awk -F"$URL_SRV" {'print $1'} | sort -u | tail -n1)
     cd $ICHANGE_LOC/$ICHANGE_PATH
-    export ICHANGE_ENTRY=$(grep -R $URL_ID * | tail -n1 | awk -F':' {'print $2'})
-    echo 'git fetch ssh://'"$URL_SRV"/"$(echo $ICHANGE_ENTRY | awk -F'|' {'print $5" "$8'})"' && git cherry-pick FETCH_HEAD' >>~/patch.list
+    export ICHANGE_ENTRY=$(grep -R $URL_ID $URL_SRV | tail -n1 | awk -F':' {'print $2'})
+    echo 'git fetch ssh://'"$URL_SRV"/"$(echo $ICHANGE_ENTRY | awk -F'|' {'print $5" "$9'})"' && git cherry-pick FETCH_HEAD' >>~/patch.list
 done
+
+cat ~/patch.list
