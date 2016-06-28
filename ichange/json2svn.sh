@@ -155,6 +155,11 @@ do
     export g_path=''
     [[ ! `ls $TASK_SPACE/itrack/svn/manifest | grep xml` ]] && UPDATE_XML
     [[ ! -z $g_project ]] && export g_path=$(grep $g_project $TASK_SPACE/itrack/svn/manifest/*.xml | awk -F'path="' {'print $2'} | awk -F'" name=' {'print $1'} | awk -F'"' {'print $1'} | grep -v ^$ | sort -u | head -n1)
+    if [[ ! -z $g_project && -z $g_path ]] ; then
+        export remote_name=$(echo $g_project | awk -F'/' {'print $1'})
+        export g_project=$(echo $g_project | awk -F"$remote_name/" {'print $2'})
+        export g_path=$(grep $g_project $TASK_SPACE/itrack/svn/manifest/*.xml | awk -F'path="' {'print $2'} | awk -F'" name=' {'print $1'} | awk -F'"' {'print $1'} | grep -v ^$ | sort -u | head -n1)
+    fi
 
     if [[ ! -z $g_revision ]] ; then
         mkdir -p $TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch
