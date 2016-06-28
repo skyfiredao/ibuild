@@ -49,6 +49,7 @@ else
 fi
 
 export ICASE_REV=$1
+[[ -z $ICASE_REV ]] && exit
 export ICASE_URL=$(svn log -v -r $ICASE_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
 
 if [[ ! `echo $ICASE_URL | grep '^/icase/'` ]] ; then
