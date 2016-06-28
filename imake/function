@@ -422,7 +422,7 @@ IBUILD_ADD_STEPS()
 {
  SPLIT_LINE "$1"
  echo ---------- `date` >>$LOG_PATH/ibuild_add_steps.log 2>&1
- time $1 >>$LOG_PATH/ibuild_add_steps.log 2>&1
+ time $IBUILD_ROOT/hotfix/$(echo $1 | awk -F'ibuild/hotfix/' {'print $2'}) >>$LOG_PATH/ibuild_add_steps.log 2>&1
  echo ---------- `date` >>$LOG_PATH/ibuild_add_steps.log 2>&1
 }
 
