@@ -706,7 +706,7 @@ DIFF_MANIFEST()
      svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK $TASK_SPACE/iversion-$TOWEEK
  fi
  if [[ $(md5sum $TASK_SPACE/iversion-$TOWEEK/*itest* | grep $MANIFEST_MD5) ]] ; then
-     export IBUILD_MODE=nobuild
+     export DIFF_MANIFEST=nobuild
  fi
 }
 

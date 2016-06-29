@@ -45,7 +45,7 @@ SETUP_BUILD_REPO
 [[ ! -z $IBUILD_ADD_STEP_1 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_1"
 [[ ! -z $GERRIT_CHANGE_NUMBER ]] && REPO_DOWNLOAD
 [[ $(echo $IBUILD_NOTE | egrep "itest") ]] && DIFF_MANIFEST
-[[ $IBUILD_MODE = nobuild ]] && exit 0
+[[ $DIFF_MANIFEST = nobuild ]] && exit 0
 
 cd $BUILD_PATH_TOP
 SPLIT_LINE envsetup
