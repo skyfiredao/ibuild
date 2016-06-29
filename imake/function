@@ -700,7 +700,7 @@ SETUP_BUILD_OUT()
 {
  [[ -d $BUILD_PATH_TOP ]] && cd $BUILD_PATH_TOP
  EXPORT_MANIFEST $LOG_PATH/after_build_manifest.xml
- cp $OUT/system/build.prop $BUILD_PATH_TOP/autout/
+ cp $OUT/system/build.prop $BUILD_PATH_TOP/autout/ >/dev/null 2>&1
 
  if [[ $RESULT != FAILED ]] ; then
     if [[ -f images_$IBUILD_TARGET_PRODUCT.txz ]] ; then
@@ -713,7 +713,7 @@ SETUP_BUILD_OUT()
         cp $REL_PKG_NAME.tar $AUTOUT_PATH/$AUTOUT_NAME/
         export DOWNLOAD_PKG_NAME=$REL_PKG_NAME.tar
     elif [[ -d $BUILD_PATH_TOP/release ]] ; then
-        cp $OUT/system/build.prop $BUILD_PATH_TOP/release/
+        cp $OUT/system/build.prop $BUILD_PATH_TOP/release/ >/dev/null 2>&1
         [[ -z $BUILD_ID ]] && export RELEASE_VER=$MANIFEST_VER || export RELEASE_VER=$BUILD_ID
         tar cf $BUILD_PATH_TOP/autout/release.$RELEASE_VER.tar release
         export DOWNLOAD_PKG_NAME=release.$RELEASE_VER.tar

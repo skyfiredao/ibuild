@@ -64,5 +64,6 @@ export STATUS_MAKE=$?
 LOG_STATUS $STATUS_MAKE make_j$JOBS $LOG_PATH/full_build.log
 
 [[ ! -z $IBUILD_ADD_STEP_2 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_2"
-
+cp $OUT/system/build.prop $BUILD_PATH_TOP/autout/ >/dev/null 2>&1
+cp $OUT/system/build.prop $BUILD_PATH_TOP/release/ >/dev/null 2>&1
 
