@@ -46,7 +46,7 @@ echo itask:$ITASK_REV
 REPO_INFO
 $IBUILD_ROOT/imake/$IBUILD_MAKE_TOOL
  
-[[ ! -f $LOG_PATH/BUILD_ERROR && $IBUILD_MODE != nobuild && $DIFF_MANIFEST != nobuild ]] && SETUP_BUILD_OUT
+[[ ! -f $LOG_PATH/BUILD_ERROR && $IBUILD_MODE != nobuild && ! -f $LOG_PATH/nobuild ]] && SETUP_BUILD_OUT
 SPLIT_LINE DONE
 
 REPO_INFO
