@@ -696,6 +696,20 @@ EXPORT_MANIFEST()
  fi
 }
 
+DIFF_MANIFEST()
+{
+ export DIFF_MANIFEST=''
+ export MANIFEST_MD5=$(md5sum $EXPORT_MANIFEST_PATH/manifest.xml | awk -F' ' {'print $1'})
+ if [[ -d $TASK_SPACE/iversion-$TOWEEK ]] ; then
+     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOWEEK
+ else
+     svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/iversion/$TOYEAR/$TOWEEK $TASK_SPACE/iversion-$TOWEEK
+ fi
+ if [[ $(md5sum $TASK_SPACE/iversion-$TOWEEK/*itest* | grep $MANIFEST_MD5) ]] ; then
+     export IBUILD_MODE=nobuild
+ fi
+}
+
 SETUP_BUILD_OUT()
 {
  [[ -d $BUILD_PATH_TOP ]] && cd $BUILD_PATH_TOP
