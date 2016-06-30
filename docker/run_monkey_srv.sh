@@ -84,7 +84,7 @@ docker exec -t $DOCKER_NAMES bash -l -c "/etc/init.d/apache2 restart"
 DOCKER_IP=$(docker exec -t $DOCKER_NAMES bash -l -c "hostname -I" | awk -F' ' {'print $1'})
 docker exec -t $DOCKER_NAMES bash -l -c "cat /etc/mysql/my.cnf | sed s/127.0.0.1/0.0.0.0/g >/tmp/my.cnf ; cp /tmp/my.cnf /etc/mysql/my.cnf"
 cat $MONKEY_SRV_PATH/www/Clat_Server-V2/clat/smartyapp/myapp/config.php.orig | sed s/10.100.24.4:9090/$IP/g >$MONKEY_SRV_PATH/www/Clat_Server-V2/clat/smartyapp/myapp/config.php
-docker exec -t $DOCKER_NAMES bash -l -c "rm -f /usr/bin/python ; ln -sf /usr/bin/python3 /usr/bin/python"
+# docker exec -t $DOCKER_NAMES bash -l -c "rm -f /usr/bin/python ; ln -sf /usr/bin/python3 /usr/bin/python"
 docker exec -t $DOCKER_NAMES bash -l -c "echo 'allowscp' >> /etc/rssh.conf"
 docker exec -t $DOCKER_NAMES bash -l -c "/etc/init.d/mysql restart"
 docker exec -t $DOCKER_NAMES bash -l -c "service ssh start"
