@@ -201,6 +201,19 @@ FILTER_BAD_PATCH()
  /tmp/itask /tmp/$NEW_IBUILD_SPEC_NAME >>$LOG_PATH/rebundle.log 2>&1
 }
 
+GIT_LOG()
+{
+ cd $1
+ export GIT_LOG_SINCE="1,weeks"
+ echo $1 >>$LOG_PATH/git_log.txt
+ echo $1 >>$LOG_PATH/release_log.txt
+ echo $1 >>$LOG_PATH/git_diff.txt
+ git log --pretty=format:"%h %s" --graph --since=$GIT_LOG_SINCE >>$LOG_PATH/git_log.txt
+ git shortlog --since=$GIT_LOG_SINCE >>$LOG_PATH/release_log.txt
+ git log --pretty=format:"%h %s" --graph -p --since=$GIT_LOG_SINCE >>$LOG_PATH/git_diff.txt
+ cd -
+}
+
 BUNDLE_BUILD()
 {
 # BUNDLE_PATCH repo download mode 1 with BUNDLE_PATCH
