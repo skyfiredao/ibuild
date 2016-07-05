@@ -55,7 +55,7 @@ MATCHING()
 
  if [[ ! -d $LOCK_SPACE/inode ]] ; then
      mkdir -p $LOCK_SPACE/inode >/dev/null 2>&1
-     rsync -r --delete --exclude "*ibuild*" --exclude ".svn" $TASK_SPACE/inode.svn/ $LOCK_SPACE/inode/
+     rsync -r --delete --exclude ".svn" $TASK_SPACE/inode.svn/ $LOCK_SPACE/inode/
      rm -f $LOCK_SPACE/inode/*ibuild*
  fi
 
@@ -81,7 +81,7 @@ MATCHING()
      svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.svn
      chmod 777 -R $TASK_SPACE/inode.svn >/dev/null 2>&1
      mkdir -p $LOCK_SPACE/inode >/dev/null 2>&1
-     rsync -r --delete --exclude "*ibuild*" --exclude ".svn" $TASK_SPACE/inode.svn/ $LOCK_SPACE/inode/
+     rsync -r --delete --exclude ".svn" $TASK_SPACE/inode.svn/ $LOCK_SPACE/inode/
      rm -f $LOCK_SPACE/inode/*ibuild*
  fi
 
