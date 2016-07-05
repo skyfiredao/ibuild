@@ -45,12 +45,14 @@ if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 fi
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
-[[ ! -z $1 ]] && export ITASK_REV=$1
-
 export NETCAT=`which nc`
-	[[ -z $NETCAT ]] && export NETCAT="$IBUILD_ROOT/bin/netcat.openbsd-u14.04"
+        [[ -z $NETCAT ]] && export NETCAT="$IBUILD_ROOT/bin/netcat.openbsd-u14.04"
 
-$NETCAT 127.0.0.1 1234
+if [[ ! -z $1 && $1 != node_matching ]] ; then
+    export ITASK_REV=$1
+fi
+
+[[ $1 != node_matching ]] && $NETCAT 127.0.0.1 1234
 # pkill -9 nc >/dev/null 2>&1
 
 # sudo rm -f /root/ibuild >/dev/null 2>&1

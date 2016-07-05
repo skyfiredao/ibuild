@@ -31,7 +31,7 @@ export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
 chmod 777 -R $LOCK_SPACE >/dev/null 2>&1
 
-source $IBUILD_ROOT/imake/function
+source $IBUILD_ROOT/imake/function node_matching
 EXPORT_IBUILD_CONF
 
 EXIT()
