@@ -71,7 +71,7 @@ export IBUILD_GRTSRV_URL=$(grep '^IBUILD_GRTSRV_URL=' $BUILD_INFO | awk -F'IBUIL
 export IBUILD_GRTSRV_MANIFEST=$(grep '^IBUILD_GRTSRV_MANIFEST=' $BUILD_INFO | awk -F'IBUILD_GRTSRV_MANIFEST=' {'print $2'})
 export IBUILD_TARGET_BUILD_VARIANT=$(grep '^IBUILD_TARGET_BUILD_VARIANT=' $BUILD_INFO | awk -F'IBUILD_TARGET_BUILD_VARIANT=' {'print $2'})
 export IBUILD_TARGET_PRODUCT=$(grep '^IBUILD_TARGET_PRODUCT=' $BUILD_INFO | awk -F'IBUILD_TARGET_PRODUCT=' {'print $2'})
-export IBUILD_MODE=$(grep '^IBUILD_MODE=' $BUILD_INFO | awk -F'IBUILD_MODE=' {'print $2'})
+export IBUILD_MODE=$(grep '^IBUILD_MODE=' $BUILD_INFO | awk -F'IBUILD_MODE=' {'print $2'} | grep -v ^$)
     [[ -z $IBUILD_MODE ]] && export IBUILD_MODE=normal
 export IBUILD_NOTE=$(grep '^IBUILD_NOTE=' $BUILD_INFO | awk -F'IBUILD_NOTE=' {'print $2'})
 export BUILD_ID=$(grep '^BUILD_ID=' $BUILD_INFO | awk -F'BUILD_ID=' {'print $2'})
