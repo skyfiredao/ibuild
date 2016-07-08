@@ -143,7 +143,7 @@ if [[ ! -z $GERRIT_PATCHSET_REVISION ]] ; then
         export MAIL_REPO_CMD="repo download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER"
     fi
     echo "$MAIL_REPO_CMD" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
-    export SUB_IBUILD_MODE="[$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER]"
+    export SUB_IBUILD_MODE="[patch][$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER]"
 fi
 
 if [[ $IBUILD_MODE = bundle ]] ; then
@@ -163,7 +163,7 @@ if [[ $IBUILD_MODE = bundle ]] ; then
     done
 fi
 
-[[ $IBUILD_MODE = bundle || $IBUILD_MODE = normal ]] && export SUB_IBUILD_MODE="[$IBUILD_MODE]"
+[[ ! -z $IBUILD_MODE && -z $SUB_IBUILD_MODE ]] && export SUB_IBUILD_MODE="[$IBUILD_MODE]"
 
 if [[ -f $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt ]] ; then
     echo -e "\n------------------------- Error log" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
