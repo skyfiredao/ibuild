@@ -52,7 +52,7 @@ if [[ -f $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec ]] ; then
     do
 	cp $TASK_SPACE/tmp.ispec.$SEED/spec/$SPEC_NAME $TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME
 
-	echo "IBUILD_MODE=normal" >>$TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME
+	[[ ! $(grep 'IBUILD_MODE=' $TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME) ]] && echo "IBUILD_MODE=normal" >>$TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME
 
 	$IBUILD_ROOT/imake/add_task.sh $TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME
     done
