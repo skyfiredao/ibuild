@@ -32,13 +32,13 @@ export LOC_REPO_WS=$3
 [[ ! -f $MANIFEST_A && ! -f $MANIFEST_B ]] && exit
 [[ ! -d $LOC_REPO_WS/.repo || -z $REPO_CMD ]] && exit
 
-echo "------------------------------ manifest info" >>/tmp/manifest2git_diff-$NOW.txt
+echo -e "\n------------------------------ manifest info" >>/tmp/manifest2git_diff-$NOW.txt
 md5sum $MANIFEST_A $MANIFEST_B >>/tmp/manifest2git_diff-$NOW.txt
 
-echo "------------------------------ Change Project List" >>/tmp/manifest2git_diff-$NOW.txt
+echo -e "\n------------------------------ Change Project List" >>/tmp/manifest2git_diff-$NOW.txt
 diff $MANIFEST_A $MANIFEST_B | awk -F'name="' {'print $2'} | awk -F'"' {'print $1'} | sort -u >>/tmp/manifest2git_diff-$NOW.txt
 
-echo "------------------------------ Change File List" >>/tmp/manifest2git_diff-$NOW.txt
+echo -e "\n------------------------------ Change File List" >>/tmp/manifest2git_diff-$NOW.txt
 for PROJECT_PATH in `diff $MANIFEST_A $MANIFEST_B | awk -F'name="' {'print $2'} | awk -F'"' {'print $1'} | sort -u`
 do
     export REVISION_A=$(grep 'name="'$PROJECT_PATH'"' $MANIFEST_A | awk -F'revision="' {'print $2'} | awk -F'"' {'print $1'})
@@ -51,6 +51,7 @@ do
     cd $LOC_REPO_WS
 done
 
+echo -e "\n------------------------------ DIff" >>/tmp/manifest2git_diff-$NOW.txt
 for PROJECT_PATH in `diff $MANIFEST_A $MANIFEST_B | awk -F'name="' {'print $2'} | awk -F'"' {'print $1'} | sort -u`
 do
     export REVISION_A=$(grep 'name="'$PROJECT_PATH'"' $MANIFEST_A | awk -F'revision="' {'print $2'} | awk -F'"' {'print $1'})
@@ -63,4 +64,5 @@ do
     cd $LOC_REPO_WS
 done
 
-echo /tmp/manifest2git_diff-$NOW.txt
+echo -e "\n/tmp/manifest2git_diff-$NOW.txt"
+
