@@ -32,6 +32,8 @@ export LOC_REPO_WS=$3
 [[ ! -f $MANIFEST_A && ! -f $MANIFEST_B ]] && exit
 [[ ! -d $LOC_REPO_WS/.repo || -z $REPO_CMD ]] && exit
 
+cd $LOC_REPO_WS
+
 echo -e "\n------------------------------ manifest info" >>/tmp/manifest2git_diff-$NOW.txt
 md5sum $MANIFEST_A $MANIFEST_B >>/tmp/manifest2git_diff-$NOW.txt
 
