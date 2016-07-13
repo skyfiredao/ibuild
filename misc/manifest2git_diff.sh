@@ -66,5 +66,6 @@ do
     echo >>/tmp/manifest2git_diff-$NOW.txt
 done
 
+[[ -d /local/share/tmp ]] && cp /tmp/manifest2git_diff-$NOW.txt /local/share/tmp/
 echo -e "\n/tmp/manifest2git_diff-$NOW.txt"
 
