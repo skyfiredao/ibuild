@@ -23,15 +23,16 @@ export USER=$(whoami)
 export SEED=$RANDOM
 export NOW=$(date +%y%m%d%H%M%S)
 export TASK_SPACE=/dev/shm
+export REPO_CMD=$(which repo)
 export MANIFEST_A=$1
 export MANIFEST_B=$2
 export LOC_REPO_WS=$3
 [[ -z $LOC_REPO_WS ]] && export LOC_REPO_WS=$(pwd)
 
 [[ ! -f $MANIFEST_A && ! -f $MANIFEST_B ]] && exit
-[[ ! -d $LOC_REPO_WS/.repo ]] && exit
+[[ ! -d $LOC_REPO_WS/.repo || -z $REPO_CMD ]] && exit
 
-echo "------------------------------ manifest info"
+echo "------------------------------ manifest info" >>/tmp/manifest2git_diff-$NOW.txt
 md5sum $MANIFEST_A $MANIFEST_B >>/tmp/manifest2git_diff-$NOW.txt
 
 echo "------------------------------ Change Project List" >>/tmp/manifest2git_diff-$NOW.txt
@@ -42,9 +43,10 @@ for PROJECT_PATH in `diff $MANIFEST_A $MANIFEST_B | awk -F'name="' {'print $2'} 
 do
     export REVISION_A=$(grep 'name="'$PROJECT_PATH'"' $MANIFEST_A | awk -F'revision="' {'print $2'} | awk -F'"' {'print $1'})
     export REVISION_B=$(grep 'name="'$PROJECT_PATH'"' $MANIFEST_B | awk -F'revision="' {'print $2'} | awk -F'"' {'print $1'})
-    cd $LOC_REPO_WS/$PROJECT_PATH
-    echo "-------------------- $PROJECT_PATH" >>/tmp/manifest2git_diff-$NOW.txt
+    cd $LOC_REPO_WS/$($REPO_CMD list | egrep ": $PROJECT_PATH$" | awk -F':' {'print $1'} | head -n1)
+    echo ">>>>>>>>>> $PROJECT_PATH" >>/tmp/manifest2git_diff-$NOW.txt
     git diff --name-status $REVISION_A $REVISION_B >>/tmp/manifest2git_diff-$NOW.txt
+    [[ $? != 0 ]] && echo $PROJECT_PATH
     echo >>/tmp/manifest2git_diff-$NOW.txt
     cd $LOC_REPO_WS
 done
@@ -53,11 +55,12 @@ for PROJECT_PATH in `diff $MANIFEST_A $MANIFEST_B | awk -F'name="' {'print $2'} 
 do
     export REVISION_A=$(grep 'name="'$PROJECT_PATH'"' $MANIFEST_A | awk -F'revision="' {'print $2'} | awk -F'"' {'print $1'})
     export REVISION_B=$(grep 'name="'$PROJECT_PATH'"' $MANIFEST_B | awk -F'revision="' {'print $2'} | awk -F'"' {'print $1'})
-    cd $LOC_REPO_WS/$PROJECT_PATH
-    echo "-------------------- $PROJECT_PATH" >>/tmp/manifest2git_diff-$NOW.txt
+    cd $LOC_REPO_WS/$($REPO_CMD list | egrep ": $PROJECT_PATH$" | awk -F':' {'print $1'} | head -n1)
+    echo ">>>>>>>>>> $PROJECT_PATH" >>/tmp/manifest2git_diff-$NOW.txt
     git show $REVISION_A $REVISION_B >>/tmp/manifest2git_diff-$NOW.txt
+    [[ $? != 0 ]] && echo $PROJECT_PATH
     echo >>/tmp/manifest2git_diff-$NOW.txt
     cd $LOC_REPO_WS
 done
 
-
+echo /tmp/manifest2git_diff-$NOW.txt
