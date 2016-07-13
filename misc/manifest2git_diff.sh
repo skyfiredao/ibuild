@@ -26,7 +26,7 @@ export TASK_SPACE=/dev/shm
 export MANIFEST_A=$1
 export MANIFEST_B=$2
 export LOC_REPO_WS=$3
-[[ -z $LOC_REPO_WS ]] && export LOC_REPO_WS='./'
+[[ -z $LOC_REPO_WS ]] && export LOC_REPO_WS=$(pwd)
 
 [[ ! -f $MANIFEST_A && ! -f $MANIFEST_B ]] && exit
 [[ ! -d $LOC_REPO_WS/.repo ]] && exit
