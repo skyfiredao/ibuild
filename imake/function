@@ -449,6 +449,7 @@ REPO_SYNC()
  export INDEX_LOCK=''
 
  if [[ ! -z $IVERSION && -z $SYNC_ONLY ]] ; then
+    export BUILD_NUMBER=iversion.$IVERSION
     export IVER_MANIFEST_URL=$(svn log -v -r $IVERSION $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion | egrep 'A /iversion|M /iversion' | awk -F' ' {'print $2'})
     svn export -q -r $IVERSION $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/$IVER_MANIFEST_URL $LOG_PATH/manifest-r$IVERSION.xml
     export MANIFEST_NAME=$(basename $IVER_MANIFEST_URL | sed 's/.xml//g')
@@ -610,7 +611,8 @@ else
  svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVER_MANIFEST_NAME" $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME
  if [[ $? = 0 ]] ; then
 #    export BUILD_ID=$(echo $BUILD_TIME | cut -c7-8).r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
-     export BUILD_ID=r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+     export BUILD_ID=r$(svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
+     [[ !-z $BUILD_NUMBER ]] && export BUILD_NUMBER=iversion.$(svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
  else
      SPLIT_LINE iversion_issue
      echo $IVER_MANIFEST_NAME
