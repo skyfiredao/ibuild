@@ -612,7 +612,7 @@ else
  if [[ $? = 0 ]] ; then
 #    export BUILD_ID=$(echo $BUILD_TIME | cut -c7-8).r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
      export BUILD_ID=r$(svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
-     [[ !-z $BUILD_NUMBER ]] && export BUILD_NUMBER=iversion.$(svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
+     [[ ! -z $BUILD_NUMBER ]] && export BUILD_NUMBER=iversion.$(svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
  else
      SPLIT_LINE iversion_issue
      echo $IVER_MANIFEST_NAME
@@ -711,7 +711,7 @@ EXPORT_MANIFEST()
     ln -sf $AUTOUT_PATH/$AUTOUT_NAME autout >/dev/null 2>&1
     ln -sf $AUTOUT_PATH/$AUTOUT_NAME $OUT/autout >/dev/null 2>&1
  fi
- SETUP_IVERSION $EXPORT_MANIFEST_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
+# SETUP_IVERSION $EXPORT_MANIFEST_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
 }
 
 DIFF_MANIFEST()
@@ -760,7 +760,7 @@ SETUP_BUILD_OUT()
     fi
  fi
 
-# SETUP_IVERSION $LOG_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
+ SETUP_IVERSION $LOG_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
  if [[ ! -z $ITASK_REV ]] ; then
     export IVEREV=$BUILD_ID.$ITASK_REV
  else
