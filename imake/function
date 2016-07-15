@@ -711,7 +711,7 @@ EXPORT_MANIFEST()
     ln -sf $AUTOUT_PATH/$AUTOUT_NAME autout >/dev/null 2>&1
     ln -sf $AUTOUT_PATH/$AUTOUT_NAME $OUT/autout >/dev/null 2>&1
  fi
-# SETUP_IVERSION $EXPORT_MANIFEST_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
+ [[ $(echo $EXPORT_MANIFEST_URL | grep before_build) ]] && SETUP_IVERSION $EXPORT_MANIFEST_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
 }
 
 DIFF_MANIFEST()
@@ -731,7 +731,7 @@ DIFF_MANIFEST()
 SETUP_BUILD_OUT()
 {
  [[ -d $BUILD_PATH_TOP ]] && cd $BUILD_PATH_TOP
- EXPORT_MANIFEST $LOG_PATH/after_build_manifest.xml
+# EXPORT_MANIFEST $LOG_PATH/after_build_manifest.xml
  cp $OUT/system/build.prop $BUILD_PATH_TOP/autout/ >/dev/null 2>&1
 
  if [[ $RESULT != FAILED ]] ; then
@@ -760,7 +760,7 @@ SETUP_BUILD_OUT()
     fi
  fi
 
- SETUP_IVERSION $LOG_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
+# SETUP_IVERSION $LOG_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
  if [[ ! -z $ITASK_REV ]] ; then
     export IVEREV=$BUILD_ID.$ITASK_REV
  else

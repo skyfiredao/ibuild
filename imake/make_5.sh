@@ -48,6 +48,8 @@ SETUP_BUILD_REPO
 [[ -f $LOG_PATH/nobuild ]] && exit 0
 
 cd $BUILD_PATH_TOP
+EXPORT_MANIFEST $LOG_PATH/before_build_manifest.xml
+
 SPLIT_LINE envsetup
 time source build/envsetup.sh >$LOG_PATH/envsetup.log 2>&1
 LOG_STATUS $? envsetup.sh $LOG_PATH/envsetup.log
