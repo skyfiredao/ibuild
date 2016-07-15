@@ -434,9 +434,12 @@ SETUP_SUBV_REPO()
 
 IBUILD_ADD_STEPS()
 {
- SPLIT_LINE "$1"
+ export IBUILD_ADD_STEP_CMD=$1
+ SPLIT_LINE "IBUILD_ADD_STEP_CMD"
+
  echo ---------- `date` >>$LOG_PATH/ibuild_add_steps.log 2>&1
- time $IBUILD_ROOT/hotfix/$(echo $1 | awk -F'ibuild/hotfix/' {'print $2'}) >>$LOG_PATH/ibuild_add_steps.log 2>&1
+ [[ $(echo $IBUILD_ADD_STEP_CMD | egrep '^source ') ]] && export SOURCE_CMD=source || export SOURCE_CMD=''
+ time $SOURCE_CMD $IBUILD_ROOT/hotfix/$(echo $IBUILD_ADD_STEP_CMD | awk -F'ibuild/hotfix/' {'print $2'}) >>$LOG_PATH/ibuild_add_steps.log 2>&1
  echo ---------- `date` >>$LOG_PATH/ibuild_add_steps.log 2>&1
 }
 
