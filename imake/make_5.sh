@@ -42,13 +42,14 @@ REPO_INFO
 SETUP_BUILD_REPO
 
 [[ $IBUILD_MODE = bundle ]] && BUNDLE_BUILD
-[[ ! -z $IBUILD_ADD_STEP_1 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_1"
 [[ ! -z $GERRIT_CHANGE_NUMBER ]] && REPO_DOWNLOAD
 [[ $(echo $IBUILD_NOTE | egrep "itest") ]] && DIFF_MANIFEST
 [[ -f $LOG_PATH/nobuild ]] && exit 0
 
 cd $BUILD_PATH_TOP
 EXPORT_MANIFEST $LOG_PATH/before_build_manifest.xml
+
+[[ ! -z $IBUILD_ADD_STEP_1 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_1"
 
 [[ -z $BUILD_NUMBER && ! -z $IVERSION ]] && export BUILD_NUMBER=$IVERSION
 SPLIT_LINE envsetup
