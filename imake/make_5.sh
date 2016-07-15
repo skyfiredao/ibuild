@@ -50,11 +50,11 @@ SETUP_BUILD_REPO
 cd $BUILD_PATH_TOP
 EXPORT_MANIFEST $LOG_PATH/before_build_manifest.xml
 
+[[ -z $BUILD_NUMBER && ! -z $IVERSION ]] && export BUILD_NUMBER=$IVERSION
 SPLIT_LINE envsetup
 time source build/envsetup.sh >$LOG_PATH/envsetup.log 2>&1
 LOG_STATUS $? envsetup.sh $LOG_PATH/envsetup.log
 
-[[ -z $BUILD_NUMBER && ! -z $IVERSION ]] && export BUILD_NUMBER=$IVERSION
 SPLIT_LINE "lunch $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT"
 time lunch $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT >$LOG_PATH/lunch.log 2>&1
 LOG_STATUS $? lunch $LOG_PATH/lunch.log
