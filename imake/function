@@ -435,7 +435,7 @@ SETUP_SUBV_REPO()
 IBUILD_ADD_STEPS()
 {
  export IBUILD_ADD_STEP_CMD=$1
- SPLIT_LINE "IBUILD_ADD_STEP_CMD"
+ SPLIT_LINE "$IBUILD_ADD_STEP_CMD"
 
  echo ---------- `date` >>$LOG_PATH/ibuild_add_steps.log 2>&1
  [[ $(echo $IBUILD_ADD_STEP_CMD | egrep '^source ') ]] && export SOURCE_CMD=source || export SOURCE_CMD=''
