@@ -161,7 +161,6 @@ EXPORT_IBUILD_SPEC()
  export GERRIT_PROJECT=`grep '^GERRIT_PROJECT=' $IBUILD_SPEC | awk -F'GERRIT_PROJECT=' {'print $2'}`
 # export =`grep '^=' $IBUILD_SPEC | awk -F'=' {'print $2'}`
  [[ ! -z $$IBUILD_GRTSRV_BRANCH ]] && export IBUILD_GRTSRV_BRANCH_TOP=$(echo $IBUILD_GRTSRV_BRANCH | awk -F'/' {'print $1'})
- export THE_BUILD_NUMBER=$ITASK_REV
 
  export SPEC_NAME=`basename $IBUILD_SPEC`
  export AUTOUT_PATH=$LOC_WORKSPACE/autout
@@ -449,7 +448,7 @@ REPO_SYNC()
  export INDEX_LOCK=''
 
  if [[ ! -z $IVERSION && -z $SYNC_ONLY ]] ; then
-    export BUILD_NUMBER=iversion.$IVERSION
+    export BUILD_NUMBER=$IVERSION
     export IVER_MANIFEST_URL=$(svn log -v -r $IVERSION $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion | egrep 'A /iversion|M /iversion' | awk -F' ' {'print $2'})
     svn export -q -r $IVERSION $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/$IVER_MANIFEST_URL $LOG_PATH/manifest-r$IVERSION.xml
     export MANIFEST_NAME=$(basename $IVER_MANIFEST_URL | sed 's/.xml//g')
@@ -612,7 +611,7 @@ else
  if [[ $? = 0 ]] ; then
 #    export BUILD_ID=$(echo $BUILD_TIME | cut -c7-8).r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
      export BUILD_ID=r$(svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
-     [[ ! -z $BUILD_NUMBER ]] && export BUILD_NUMBER=iversion.$(svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
+     [[ ! -z $BUILD_NUMBER ]] && export BUILD_NUMBER=$(svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
  else
      SPLIT_LINE iversion_issue
      echo $IVER_MANIFEST_NAME
@@ -639,7 +638,7 @@ STATUS_MAKE=$STATUS_MAKE
 STATUS_MAKE_REL=$STATUS_MAKE_REL
 EMAIL_PATCH_OWNER=$EMAIL_PATCH_OWNER
 SLAVE_HOST=`hostname`
-THE_BUILD_NUMBER=$THE_BUILD_NUMBER
+BUILD_NUMBER=$BUILD_NUMBER
 SLAVE_IP=$IP
 TIME_START=$BUILD_TIME
 TIME_END=$TIME_END
