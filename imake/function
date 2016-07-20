@@ -748,9 +748,9 @@ SETUP_BUILD_OUT()
         export DOWNLOAD_PKG_NAME=$REL_PKG_NAME.tar
     elif [[ -d $BUILD_PATH_TOP/release ]] ; then
         cp $OUT/system/build.prop $BUILD_PATH_TOP/release/ >/dev/null 2>&1
-        [[ -z $BUILD_ID ]] && export RELEASE_VER=$MANIFEST_VER || export RELEASE_VER=$BUILD_ID
-        [[ -z $RELEASE_VER ]] && export RELEASE_VER=$BUILD_NUMBER
-        tar cf $BUILD_PATH_TOP/autout/release.$RELEASE_VER.tar release
+        [[ -z $BUILD_ID ]] && export RELEASE_VER=.$MANIFEST_VER || export RELEASE_VER=.$BUILD_ID
+        [[ -z $RELEASE_VER ]] && export RELEASE_VER=.$BUILD_NUMBER
+        tar cf $BUILD_PATH_TOP/autout/release$RELEASE_VER.tar release
         export DOWNLOAD_PKG_NAME=release.$RELEASE_VER.tar
 #        tar cfz $BUILD_PATH_TOP/autout/release.$RELEASE_VER.tgz release
 #        export DOWNLOAD_PKG_NAME=release.$RELEASE_VER.tgz

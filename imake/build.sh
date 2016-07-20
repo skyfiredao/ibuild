@@ -45,7 +45,8 @@ echo itask:$ITASK_REV
 
 REPO_INFO
 $IBUILD_ROOT/imake/$IBUILD_MAKE_TOOL
- 
+
+[[ -z $BUILD_NUMBER && ! -z $IVERSION ]] && export BUILD_NUMBER=$IVERSION
 [[ ! -f $LOG_PATH/BUILD_ERROR && $IBUILD_MODE != nobuild && ! -f $LOG_PATH/nobuild ]] && SETUP_BUILD_OUT
 SPLIT_LINE DONE
 
