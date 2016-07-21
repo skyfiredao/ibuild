@@ -452,6 +452,7 @@ REPO_SYNC()
 
  if [[ ! -z $IVERSION && -z $SYNC_ONLY ]] ; then
     export BUILD_NUMBER=$IVERSION
+    echo $BUILD_NUMBER >$LOCK_SPACE/BUILD_NUMBER
     export IVER_MANIFEST_URL=$(svn log -v -r $IVERSION $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion | egrep 'A /iversion|M /iversion' | awk -F' ' {'print $2'})
     svn export -q -r $IVERSION $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iversion/$IVER_MANIFEST_URL $LOG_PATH/manifest-r$IVERSION.xml
     export MANIFEST_NAME=$(basename $IVER_MANIFEST_URL | sed 's/.xml//g')
@@ -620,6 +621,8 @@ else
      echo $IVER_MANIFEST_NAME
      export BUILD_ID=$(echo $BUILD_TIME | cut -c7-8).$MANIFEST_VER
  fi
+ echo $BUILD_ID >$LOCK_SPACE/BUILD_ID
+ echo $BUILD_NUMBER >$LOCK_SPACE/BUILD_NUMBER
 }
 
 SETUP_ICASE()
@@ -748,9 +751,9 @@ SETUP_BUILD_OUT()
         export DOWNLOAD_PKG_NAME=$REL_PKG_NAME.tar
     elif [[ -d $BUILD_PATH_TOP/release ]] ; then
         cp $OUT/system/build.prop $BUILD_PATH_TOP/release/ >/dev/null 2>&1
-        [[ -z $BUILD_ID ]] && export RELEASE_VER=.$MANIFEST_VER || export RELEASE_VER=.$BUILD_ID
-        [[ -z $RELEASE_VER ]] && export RELEASE_VER=.$BUILD_NUMBER
-        tar cf $BUILD_PATH_TOP/autout/release$RELEASE_VER.tar release
+        [[ -z $BUILD_NUMBER ]] && export BUILD_NUMBER=$(cat $LOCK_SPACE/BUILD_NUMBER)
+        export RELEASE_VER=$BUILD_NUMBER
+        tar cf $BUILD_PATH_TOP/autout/release.$RELEASE_VER.tar release
         export DOWNLOAD_PKG_NAME=release.$RELEASE_VER.tar
 #        tar cfz $BUILD_PATH_TOP/autout/release.$RELEASE_VER.tgz release
 #        export DOWNLOAD_PKG_NAME=release.$RELEASE_VER.tgz
