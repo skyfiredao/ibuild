@@ -766,7 +766,7 @@ SETUP_BUILD_OUT()
     fi
  fi
 
- SETUP_IVERSION $LOG_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
+ [[ -z $BUILD_NUMBER || -z $BUILD_ID ]] && SETUP_IVERSION $LOG_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
  if [[ ! -z $ITASK_REV ]] ; then
     export IVEREV=$BUILD_ID.$ITASK_REV
  else
