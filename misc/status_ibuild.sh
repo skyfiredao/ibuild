@@ -167,7 +167,7 @@ CLEAN_IBUILD_UPLOAD_SPACE()
      while [[ `ls $IBUILD_UPLOAD_URL | wc -l` -ge 100 ]] ;
      do
          export OLD_IBUILD_UPLOAD_SPACE=$(ls -d $IBUILD_UPLOAD_URL/* | grep -v README | head -n1)
-         echo sudo rm -fr $OLD_IBUILD_UPLOAD_SPACE
+         sudo rm -fr $OLD_IBUILD_UPLOAD_SPACE
      done
  fi
 

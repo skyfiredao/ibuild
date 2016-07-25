@@ -52,7 +52,7 @@ STREAM_EVENTS()
  local GERRIT_SRV=$1
  local GERRIT_SERVER=$GERRIT_ROBOT@$GERRIT_SRV.$DOMAIN_NAME
 
- if [[ ! `ps aux | grep ssh | grep $GERRIT_SRV` ]] ; then
+ if [[ ! `ps aux | grep ssh | grep $GERRIT_SRV.$DOMAIN_NAME` ]] ; then
         ssh $GERRIT_SERVER -p $GERRIT_SRV_PORT gerrit stream-events | while read -r
         do
                 export ORDER=`date +%y%m%d%H%M%S`.$RANDOM
