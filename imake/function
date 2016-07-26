@@ -616,6 +616,8 @@ else
 #    export BUILD_ID=$(echo $BUILD_TIME | cut -c7-8).r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
      if [[ -z $BUILD_ID && ! -z $BUILD_NUMBER && -z $IVERSION ]] ; then
          export BUILD_ID=r$BUILD_NUMBER
+     elif [[ -z $BUILD_ID && ! -z $IVERSION ]] ; then
+        export BUILD_ID=r$(svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
      elif [[ -z $BUILD_ID && -z $BUILD_NUMBER ]] ; then
          export BUILD_NUMBER=$(svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
          export BUILD_ID=r$(svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
