@@ -153,10 +153,10 @@ SETUP_ICASE()
  mkdir -p $TMP_ICASE
  svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$WEEK $TASK_SPACE/tmp.icase.$SEED/icase.svn
  cd $TMP_ICASE/icase.svn
- for NON_NODE in `egrep 'SLAVE_HOST=ibuild' * | awk -F':' {'print $1'}`
- do
-     rm -f $NON_NODE
- done
+# for NON_NODE in `egrep 'SLAVE_HOST=ibuild' * | awk -F':' {'print $1'}`
+# do
+#     rm -f $NON_NODE
+# done
 }
 
 CLEAN_IBUILD_UPLOAD_SPACE()
