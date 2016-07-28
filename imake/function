@@ -613,21 +613,21 @@ else
  svn add $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME >/dev/null 2>&1
  svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVER_MANIFEST_NAME" $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME
  if [[ $? = 0 ]] ; then
-#    export BUILD_ID=$(echo $BUILD_TIME | cut -c7-8).r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
-     if [[ -z $BUILD_ID && ! -z $BUILD_NUMBER && -z $IVERSION ]] ; then
-         export BUILD_ID=r$BUILD_NUMBER
-     elif [[ -z $BUILD_ID && ! -z $IVERSION ]] ; then
-        export BUILD_ID=r$(svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
-     elif [[ -z $BUILD_ID && -z $BUILD_NUMBER ]] ; then
+#    export IBUILD_ID=$(echo $BUILD_TIME | cut -c7-8).r`svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+     if [[ -z $IBUILD_ID && ! -z $BUILD_NUMBER && -z $IVERSION ]] ; then
+         export IBUILD_ID=r$BUILD_NUMBER
+     elif [[ -z $IBUILD_ID && ! -z $IVERSION ]] ; then
+        export IBUILD_ID=r$(svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
+     elif [[ -z $IBUILD_ID && -z $BUILD_NUMBER ]] ; then
          export BUILD_NUMBER=$(svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
-         export BUILD_ID=r$(svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
+         export IBUILD_ID=r$(svn info $TASK_SPACE/iversion-$TOWEEK/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
      fi
  else
      SPLIT_LINE iversion_issue
      echo $IVER_MANIFEST_NAME
-     [[ -z $BUILD_ID ]] && export BUILD_ID=$(echo $BUILD_TIME | cut -c7-8).$MANIFEST_VER
+     [[ -z $IBUILD_ID ]] && export IBUILD_ID=$(echo $BUILD_TIME | cut -c7-8).$MANIFEST_VER
  fi
- echo $BUILD_ID >$LOCK_SPACE/BUILD_ID
+ echo $IBUILD_ID >$LOCK_SPACE/IBUILD_ID
  echo $BUILD_NUMBER >$LOCK_SPACE/BUILD_NUMBER
 }
 
@@ -654,7 +654,7 @@ BUILD_NUMBER=$BUILD_NUMBER
 SLAVE_IP=$IP
 TIME_START=$BUILD_TIME
 TIME_END=$TIME_END
-BUILD_ID=$BUILD_ID
+IBUILD_ID=$IBUILD_ID
 IVERSION=$IVERSION
 MANIFEST_NAME=$MANIFEST_NAME
 ITASK_REV=$ITASK_REV
@@ -698,9 +698,9 @@ else
  fi
 
  if [[ ! -z $ITASK_REV ]] ; then
-    export IVEREV=$BUILD_ID.$ITASK_REV
+    export IVEREV=$IBUILD_ID.$ITASK_REV
  else
-    export IVEREV=$BUILD_ID
+    export IVEREV=$IBUILD_ID
  fi
  cp $LOG_PATH/build_info.txt $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt
  svn add $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt >/dev/null 2>&1
@@ -772,11 +772,11 @@ SETUP_BUILD_OUT()
     fi
  fi
 
- [[ -z $BUILD_NUMBER || -z $BUILD_ID ]] && SETUP_IVERSION $LOG_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
+ [[ -z $BUILD_NUMBER || -z $IBUILD_ID ]] && SETUP_IVERSION $LOG_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
  if [[ ! -z $ITASK_REV ]] ; then
-    export IVEREV=$BUILD_ID.$ITASK_REV
+    export IVEREV=$IBUILD_ID.$ITASK_REV
  else
-    export IVEREV=$BUILD_ID
+    export IVEREV=$IBUILD_ID
  fi
 
  LOG_HTML $LOG_PATH $LOG_PATH

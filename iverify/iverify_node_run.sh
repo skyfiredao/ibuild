@@ -73,11 +73,11 @@ ASSIGN_DEVICE()
  fi
 
  export IBUILD_TARGET_PRODUCT=$(grep '^IBUILD_TARGET_PRODUCT=' $BUILD_INFO | awk -F'IBUILD_TARGET_PRODUCT=' {'print $2'})
- export BUILD_ID=$(grep '^BUILD_ID=' $BUILD_INFO | awk -F'BUILD_ID=' {'print $2'})
+ export IBUILD_ID=$(grep '^IBUILD_ID=' $BUILD_INFO | awk -F'IBUILD_ID=' {'print $2'})
  export ITASK_REV=$(grep '^ITASK_REV=' $BUILD_INFO | awk -F'ITASK_REV=' {'print $2'})
  export ITASK_ORDER=$(grep '^ITASK_ORDER=' $BUILD_INFO | awk -F'ITASK_ORDER=' {'print $2'} | head -n1)
  [[ ! -z $ITASK_ORDER ]] && export ITASK_TMP=$ITASK_ORDER || export ITASK_TMP=$ITASK_REV
- export IVERIFY_REVER=$BUILD_ID.$ITASK_TMP
+ export IVERIFY_REVER=$IBUILD_ID.$ITASK_TMP
  export IVERIFY_DEVICE_ID=''
 
  $ADB devices >$TASK_SPACE/iverify/adb_devices.log
@@ -161,8 +161,8 @@ export CLASSPATH=/usr/lib/jvm/java-7-openjdk-amd64/lib:.
 export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 
 export ITASK_REV=$ITASK_TMP
-export BUILD_ID=$BUILD_ID
-export IVEREV=$BUILD_ID.$ITASK_REV
+export IBUILD_ID=$IBUILD_ID
+export IVEREV=$IBUILD_ID.$ITASK_REV
 export ITASK_SPEC_URL=$HISTORY_IVERIFY_LOG/$IVERIFY_REVER.build_info
 export IVERIFY_hostrunner_project=$IVERIFY_hostrunner_project
 export IVERIFY_hostrunner_variant=$IVERIFY_hostrunner_variant

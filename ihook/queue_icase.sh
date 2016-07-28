@@ -70,7 +70,7 @@ export IBUILD_TARGET_BUILD_VARIANT=$(grep '^IBUILD_TARGET_BUILD_VARIANT=' $BUILD
 export IBUILD_TARGET_PRODUCT=$(grep '^IBUILD_TARGET_PRODUCT=' $BUILD_INFO | awk -F'IBUILD_TARGET_PRODUCT=' {'print $2'})
 export DOWNLOAD_PKG_NAME=$(grep '^DOWNLOAD_PKG_NAME=' $BUILD_INFO | awk -F'DOWNLOAD_PKG_NAME=' {'print $2'} | head -n1)
 export ITASK_REV=$(grep '^ITASK_REV=' $BUILD_INFO | awk -F'ITASK_REV=' {'print $2'} | tail -n1)
-export BUILD_ID=$(grep '^BUILD_ID=' $BUILD_INFO | awk -F'BUILD_ID=' {'print $2'})
+export IBUILD_ID=$(grep '^IBUILD_ID=' $BUILD_INFO | awk -F'IBUILD_ID=' {'print $2'})
 export IVERIFY=$(grep '^IVERIFY=' $BUILD_INFO | awk -F'IVERIFY=' {'print $2'} | tail -n1)
 export IVERIFY_PRIORITY=$(grep '^IVERIFY_PRIORITY=' $BUILD_INFO | awk -F'IVERIFY_PRIORITY=' {'print $2'} | tail -n1)
     [[ -z $IVERIFY_PRIORITY ]] && export IVERIFY_PRIORITY=x
