@@ -165,7 +165,8 @@ EXPORT_IBUILD_SPEC()
  export SPEC_NAME=`basename $IBUILD_SPEC`
  export AUTOUT_PATH=$LOC_WORKSPACE/autout
  export AUTOUT_UPLOAD_PATH=$LOC_WORKSPACE/upload
- export AUTOUT_NAME=`echo $SPEC_NAME | awk -F'spec.build.' {'print $2'}`
+ [[ $(echo $SPEC_NAME | grep patch.spec.build) ]] && export PATCH_SPEC='patch.' || export PATCH_SPEC=''
+ export AUTOUT_NAME=$(echo $SPEC_NAME | awk -F'spec.build.' {'print $2'})$PATCH_SPEC
  export LOG_PATH=$AUTOUT_PATH/$AUTOUT_NAME/log
     mkdir -p $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_UPLOAD_PATH $LOG_PATH $AUTOUT_PATH/log >/dev/null 2>&1
     echo '#'$SPEC_NAME >$LOG_PATH/build_info.txt

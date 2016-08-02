@@ -143,7 +143,7 @@ CHECK_PASSRATE()
 {
  echo -e "build PASSED:\t"`grep RESULT=PASSED *.txt | awk -F':' {'print $1'} | sort -u | wc -l`
  echo -e "build FAILED:\t"`egrep 'RESULT=FAILED' *.txt | awk -F':' {'print $1'} | sort -u | wc -l`
- echo -e "build ISSUE:\t"`egrep 'RESULT=ISSUE|RESULT=$' *.txt | awk -F':' {'print $1'} | sort -u | wc -l`
+ echo -e "tools ISSUE:\t"`egrep 'RESULT=ISSUE|RESULT=$' *.txt | awk -F':' {'print $1'} | sort -u | wc -l`
 }
 
 SETUP_ICASE()
@@ -167,14 +167,16 @@ CLEAN_IBUILD_UPLOAD_SPACE()
      while [[ `ls $IBUILD_UPLOAD_URL | wc -l` -ge 100 ]] ;
      do
          export OLD_IBUILD_UPLOAD_SPACE=$(ls -d $IBUILD_UPLOAD_URL/* | grep -v README | head -n1)
-         sudo rm -fr $OLD_IBUILD_UPLOAD_SPACE
+         sudo rm -fr $OLD_IBUILD_UPLOAD_SPACE >/dev/null 2>&1
+         echo "clean build/"$(basename $OLD_IBUILD_UPLOAD_SPACE)
      done
  fi
 
  export IBUILD_UPLOAD_SPACE_Use=$(df $IBUILD_UPLOAD_URL | awk -F' ' {'print $5'} | grep -v Use | awk -F'%' {'print $1'})
  if [[ $IBUILD_UPLOAD_SPACE_Use -ge 90 ]] ; then
      export OLD_IBUILD_UPLOAD_SPACE=$(ls -d $IBUILD_UPLOAD_URL/* | grep -v README | head -n1)
-     echo sudo rm -fr $OLD_IBUILD_UPLOAD_SPACE
+     sudo rm -fr $OLD_IBUILD_UPLOAD_SPACE >/dev/null 2>&1
+     echo "clean build/"$(basename $OLD_IBUILD_UPLOAD_SPACE)
  fi
 }
 
