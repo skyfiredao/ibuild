@@ -192,6 +192,7 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
     fi
 
     export SHARE_POINT=$(df | grep local | grep share | awk -F' ' {'print $6'})
+    [[ $(df | grep local | grep share | grep sshfs) ]] && export SHARE_POINT=$(df | grep local | grep share | awk -F':' {'print $2'} | awk -F' ' {'print $1'})
     export SHARE_POINT_USAGE=$(df | grep local | grep share | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
     export RM_ENTRY=$(ls $SHARE_POINT | head -n1)
     if [[ $SHARE_POINT_USAGE -ge 90 && ! -z $RM_ENTRY ]] ; then
