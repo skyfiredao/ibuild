@@ -719,9 +719,9 @@ EXPORT_MANIFEST()
  /bin/cp tmp_manifest.xml $EXPORT_MANIFEST_URL >/dev/null 2>&1
  /bin/cp tmp_manifest.xml $EXPORT_MANIFEST_PATH/manifest.xml >/dev/null 2>&1
  if [[ -f Makefile && ! -z $AUTOUT_NAME ]] ; then
-    rm -f autout $OUT/autout >/dev/null 2>&1
+    rm -f autout >/dev/null 2>&1
     ln -sf $AUTOUT_PATH/$AUTOUT_NAME autout >/dev/null 2>&1
-    ln -sf $AUTOUT_PATH/$AUTOUT_NAME $OUT/autout >/dev/null 2>&1
+    [[ ! -z $OUT ]] && rm -f $OUT/autout ; ln -sf $AUTOUT_PATH/$AUTOUT_NAME $OUT/autout >/dev/null 2>&1
  fi
  [[ $(echo $EXPORT_MANIFEST_URL | grep before_build) ]] && SETUP_IVERSION $EXPORT_MANIFEST_PATH/manifest.xml $BUILD_TIME.$AUTOUT_NAME
 }
