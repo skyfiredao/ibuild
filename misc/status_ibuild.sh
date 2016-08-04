@@ -53,7 +53,7 @@ CHECK_NODE()
  grep SLAVE_HOST * | awk -F'=' {'print $2'} | sort -u >$TMP_ICASE/status_ci_server.tmp
  for NODE in `cat $TMP_ICASE/status_ci_server.tmp`
  do
-	echo -e "$NODE: \t"`grep $NODE * | wc -l`
+	echo -e "$NODE: \t"`grep SLAVE_HOST=$NODE * | wc -l`
  done
 
  SPLIT_LINE overview
