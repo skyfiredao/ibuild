@@ -51,7 +51,14 @@ export CONTAINER_ID=$(docker run \
 --name=$DOCKER_NAMES \
 -t $IMAGE_TAG)
 
-docker exec -t $DOCKER_NAMES bash -l -c "service ssh start"
+docker exec -t $DOCKER_NAMES bash -l -c "service ssh start" >/tmp/docker.tmp 2>&1
+cat /tmp/docker.tmp
+
+if [[ $(cat /tmp/docker.tmp |grep running | grep Error) ]] ; then
+    ERROR_DOCKER_ID=$(cat /tmp/docker.tmp |grep running | grep Error | awk -F' ' {'print $6'})
+    docker rm $ERROR_DOCKER_ID
+    docker exec -t $DOCKER_NAMES bash -l -c "service ssh start"
+fi
 
 echo CONTAINER_ID=$CONTAINER_ID
 docker ps | egrep "CONTAINER|$IMAGE_TAG"
