@@ -26,7 +26,6 @@ export IP2=$(/sbin/ifconfig | grep 'inet addr:' | egrep -v '127.0.0.1|:172.[0-9]
 [[ $IP = $IP2 ]] && export IP2=''
 export MAC=$(/sbin/ifconfig | grep HWaddr | awk -F'HWaddr ' {'print $2'} | head -n1)
 export HOSTNAME=$(hostname)
-export DOMAIN_NAME=$(cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'} | sed 's/sjc10/ant/g')
 export BTRFS_PATH=$(mount | grep btrfs | awk -F' ' {'print $3'} | tail -n1)
 export MEMORY=$(free -g | grep Mem | awk -F' ' {'print $2'})
     export MEMORY=$(echo $MEMORY + 1 | bc)
@@ -108,7 +107,6 @@ fi
 echo "# build node info
 IP=$IP
 HOSTNAME=$HOSTNAME
-DOMAIN_NAME=$DOMAIN_NAME
 MAC=$MAC
 BTRFS_PATH=$BTRFS_PATH
 MEMORY=$MEMORY
@@ -125,12 +123,6 @@ if [[ $IBUILD_TOP_SVN_SRV_HOSTNAME != $IBUILD_SVN_SRV_HOSTNAME ]] ; then
         cp $TASK_SPACE/itask/$HOSTNAME $TASK_SPACE/itask.top/svn/inode/$HOSTNAME >/dev/null 2>&1
         svn add $TASK_SPACE/itask.top/svn/inode/$HOSTNAME >/dev/null 2>&1
         svn ci $IBUILD_SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask.top/svn/inode/$HOSTNAME
-    fi
-    if [[ -f $TASK_SPACE/itask.top/svn/inode/$IBUILD_SVN_SRV_HOSTNAME && $IBUILD_SVN_SRV_HOSTNAME != $HOSTNAME && ! -z $IBUILD_TOP_SVN_SRV ]] ; then
-        cat /etc/hosts | grep -v $IBUILD_SVN_SRV_HOSTNAME >$TASK_SPACE/hosts
-export IP_SVN_SRV=$(grep '^IP=' $TASK_SPACE/itask.top/svn/inode/$IBUILD_SVN_SRV_HOSTNAME | awk -F'IP=' {'print $2'})
-        echo "$IP_SVN_SRV $IBUILD_SVN_SRV_HOSTNAME.$DOMAIN_NAME $IBUILD_SVN_SRV_HOSTNAME" >>$TASK_SPACE/hosts
-        sudo cp $TASK_SPACE/hosts /etc/hosts
     fi
 fi
 
@@ -176,17 +168,6 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
     if [[ ! -f $LOCK_SPACE/ganglia-$(date +%p) ]] ; then
         rm -f $LOCK_SPACE/ganglia-*
         touch $LOCK_SPACE/ganglia-$(date +%p)
-        export DOMAIN_EXT=$(cat /etc/resolv.conf | grep search | awk -F' ' {'print $2'})
-            [[ -z $DOMAIN_EXT ]] && export DOMAIN_EXT=No_Domain
-        for IBUILD_NODE in `ls /var/lib/ganglia/rrds/ibuild/ | grep [a-z,A-Z] | tr a-z A-Z | egrep -v "SummaryInfo|$HOSTNAME" | sed "s/.$DOMAIN_EXT//g"`
-        do
-            export IBUILD_NODE_IP=$(grep '^IP=' $TASK_SPACE/itask/svn/inode/$IBUILD_NODE | awk -F'IP=' {'print $2'})
-            if [[ ! -z $IBUILD_NODE_IP && ! $(grep $IBUILD_NODE /etc/hosts | grep $IBUILD_NODE_IP) ]] ; then
-                cat /etc/hosts | grep -v $IBUILD_NODE >/tmp/hosts
-                echo "$IBUILD_NODE_IP $IBUILD_NODE $IBUILD_NODE.$DOMAIN_EXT" | tr A-Z a-z >>/tmp/hosts
-                sudo cp /tmp/hosts /etc/hosts
-            fi
-        done
         sudo /etc/init.d/gmetad restart
         sudo /etc/init.d/ganglia-monitor restart
     fi
