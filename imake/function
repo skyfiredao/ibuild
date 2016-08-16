@@ -64,6 +64,7 @@ EXPORT_IBUILD_CONF()
  export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
  export LOC_REF_REPO_PATH=$(grep '^LOC_REF_REPO_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_REF_REPO_PATH=' {'print $2'})
  export LOC_WORKSPACE=$(grep '^LOC_WORKSPACE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'LOC_WORKSPACE=' {'print $2'})
+ export IBUILD_DOWNLOAD_SRV=$(grep '^IBUILD_DOWNLOAD_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_DOWNLOAD_SRV=' {'print $2'})
 # mkdir -p /local/{ccache,out} >/dev/null 2>&1
  mkdir -p /local/workspace/{subv_repo,build} >/dev/null 2>&1
  [[ -z $CCACHE_DIR ]] && export CCACHE_DIR=$(grep '^CCACHE_DIR=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_DIR=' {'print $2'})
@@ -669,7 +670,7 @@ GERRIT_CHANGE_OWNER_NAME=$GERRIT_CHANGE_OWNER_NAME
 GERRIT_PATCHSET_NUMBER=$GERRIT_PATCHSET_NUMBER
 GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION
 GERRIT_PROJECT=$GERRIT_PROJECT
-DOWNLOAD_URL=http://$IBUILD_SVN_SRV/build/$ICASE_UPLOAD_URL
+DOWNLOAD_URL=http://$IBUILD_DOWNLOAD_SRV/build/$ICASE_UPLOAD_URL
 DOWNLOAD_PKG_NAME=$DOWNLOAD_PKG_NAME
 " >>$LOG_PATH/build_info.txt
 
