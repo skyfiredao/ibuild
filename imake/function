@@ -327,7 +327,7 @@ BTRFS_CLEANUP_SUBV_REPO()
     export SUBV_REPO_CLEAN=''
     export SUBV_REPO_TIME=$(stat -c %Z $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5)
     export SUBV_REPO_SIZE=$(du -sh $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5/.repo 2>/dev/null | grep G | awk -F'G' {'print $1'} | awk -F'.' {'print $1'})
-    [[ ! -z $SUBV_REPO_SIZE && $SUBV_REPO_SIZE -ge 30 ]] && export SUBV_REPO_CLEAN=yes
+    [[ ! -z $SUBV_REPO_SIZE && $SUBV_REPO_SIZE -ge 50 ]] && export SUBV_REPO_CLEAN=yes
     [[ `echo $FULL_TODAY - $SUBV_REPO_TIME | bc` -ge 2600000 ]] && export SUBV_REPO_CLEAN=yes
 
     if [[ ! -z $SUBV_REPO_CLEAN ]] ; then
