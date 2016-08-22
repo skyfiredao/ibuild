@@ -19,21 +19,23 @@
 source /etc/bash.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
-export USER=`whoami`
+export USER=$(whoami)
 export TASK_SPACE=/dev/shm
-export TOHOUR=`date +%H`
+export TOHOUR=$(date +%H)
 export SEED=$RANDOM
-export TOYMD=`date +%Y%m%d`
-export BEFORE_TOYMD=`date +%Y%m%d --date="$TOYMD 1 days ago"`
+export TOYMD=$(date +%Y%m%d)
+export BEFORE_TOYMD=$(date +%Y%m%d --date="$TOYMD 1 days ago")
 
 export IBUILD_ROOT=$HOME/ibuild
-        [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
+        [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
 	echo -e "Please put ibuild in your $HOME"
 	exit 0
 fi
-export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
-export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
+export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
+export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
+export ISPEC_SVN_SRV=$(grep '^ISPEC_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'ISPEC_SVN_SRV=' {'print $2'})
+    [[ -z $ISPEC_SVN_SRV ]] && export ISPEC_SVN_SRV=$IBUILD_SVN_SRV
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
@@ -64,8 +66,8 @@ if [[ -f $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec.bundle ]] ; then
   do
       for SPEC_NAME in `ls $TASK_SPACE/tmp.ispec.$SEED/spec | grep $SPEC_FILTER`
       do
-	export IBUILD_GRTSRV=`grep '^IBUILD_GRTSRV=' $TASK_SPACE/tmp.ispec.$SEED/spec/$SPEC_NAME | awk -F'IBUILD_GRTSRV=' {'print $2'} | awk -F':' {'print $1'}`
-	export IBUILD_GRTSRV_BRANCH=`grep '^IBUILD_GRTSRV_BRANCH=' $TASK_SPACE/tmp.ispec.$SEED/spec/$SPEC_NAME | awk -F'IBUILD_GRTSRV_BRANCH=' {'print $2'}`
+	export IBUILD_GRTSRV=$(grep '^IBUILD_GRTSRV=' $TASK_SPACE/tmp.ispec.$SEED/spec/$SPEC_NAME | awk -F'IBUILD_GRTSRV=' {'print $2'} | awk -F':' {'print $1'})
+	export IBUILD_GRTSRV_BRANCH=$(grep '^IBUILD_GRTSRV_BRANCH=' $TASK_SPACE/tmp.ispec.$SEED/spec/$SPEC_NAME | awk -F'IBUILD_GRTSRV_BRANCH=' {'print $2'})
 
 	cp $TASK_SPACE/tmp.ispec.$SEED/spec/$SPEC_NAME $TASK_SPACE/tmp.ispec.$SEED/bundle.$SPEC_NAME
 	echo "IBUILD_MODE=bundle" >>$TASK_SPACE/tmp.ispec.$SEED/bundle.$SPEC_NAME
