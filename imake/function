@@ -502,14 +502,14 @@ REPO_SYNC()
  SPLIT_LINE "repo_sync $REPO_SYNC_OPTION"
  if [[ -z $SYNC_ONLY ]] ; then
     if [[ -f Makefile && -z $IBUILD_GRTSRV_TAG ]] ; then
-        time $REPO_CMD sync -c --no-tags -j$JOBS $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+        time $REPO_CMD sync -c --no-tags -j$JOBS --force-sync $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
     else
-        time $REPO_CMD sync -j$JOBS $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+        time $REPO_CMD sync -j$JOBS --force-sync $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
     fi
     export STATUS_SYNC=$?
     rm -f log && ln -sf $LOG_PATH
  elif [[ ! -z $SYNC_ONLY ]] ; then
-    BTRFS_CLEANUP_SUBV_REPO && $REPO_CMD sync -j$JOBS >$AUTOUT_PATH/log/$REPO_SYNC_LOG_NAME.log 2>&1 &
+    BTRFS_CLEANUP_SUBV_REPO && $REPO_CMD sync -j$JOBS --force-sync >$AUTOUT_PATH/log/$REPO_SYNC_LOG_NAME.log 2>&1 &
  fi
 
  for INDEX_LOCK_REPO in `grep index.lock $LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>/dev/null | awk -F"'" {'print $2'} | awk -F'/.git' {'print $1'}`
@@ -519,7 +519,7 @@ REPO_SYNC()
  done
 
  if [[ ! -z $INDEX_LOCK && -z $SYNC_ONLY ]] ; then
-    time $REPO_CMD sync -c --no-tags -j$JOBS $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+    time $REPO_CMD sync -c --no-tags -j$JOBS --force-sync $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
     export STATUS_SYNC=$?
  fi
 
