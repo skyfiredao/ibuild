@@ -27,22 +27,22 @@ sysctl -p
 
 ipsec pki --gen --outform pem > ca.pem
 
-ipsec pki --self --in ca.pem --dn "C=com, O=dwvpn, CN=VPN CA" --ca --outform pem >ca.cert.pem
+ipsec pki --self --in ca.pem --dn "C=com, O=dwvpn, CN=dwvpn" --ca --outform pem >ca.cert.pem
 
 ipsec pki --gen --outform pem > server.pem
 
 ipsec pki --pub --in server.pem | ipsec pki --issue --cacert ca.cert.pem \
---cakey ca.pem --dn "C=com, O=dwvpn, CN=www.digitalocean.com" \
---san="www.digitalocean.com" --flag serverAuth --flag ikeIntermediate \
+--cakey ca.pem --dn "C=com, O=dwvpn, CN=dwvpn" \
+--san="dwvpn" --flag serverAuth --flag ikeIntermediate \
 --outform pem > server.cert.pem
 
 ipsec pki --gen --outform pem > client.pem
 
 ipsec pki --pub --in client.pem | ipsec pki --issue --cacert ca.cert.pem \
---cakey ca.pem --dn "C=com, O=dwvpn, CN=VPN Client" --outform pem > client.cert.pem
+--cakey ca.pem --dn "C=com, O=dwvpn, CN=dwvpn" --outform pem > client.cert.pem
 
 openssl pkcs12 -export -inkey client.pem -in client.cert.pem -name "client" \
--certfile ca.cert.pem -caname "VPN CA" -out client.cert.p12
+-certfile ca.cert.pem -caname "dwvpn" -out client.cert.p12
 
 cp -r ca.cert.pem /etc/ipsec.d/cacerts/
 cp -r server.cert.pem /etc/ipsec.d/certs/
