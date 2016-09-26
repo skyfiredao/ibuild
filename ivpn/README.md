@@ -10,6 +10,7 @@ aptitude install libssl-dev libpam0g-dev
 ./configure --enable-eap-identity --enable-eap-md5 --enable-eap-mschapv2 --enable-eap-tls --enable-eap-ttls --enable-eap-peap --enable-eap-tnc --enable-eap-dynamic --enable-eap-radius --enable-xauth-eap --enable-xauth-pam --enable-dhcp --enable-openssl --enable-addrblock --enable-unity --enable-certexpire --enable-radattr --enable-tools --enable-openssl --disable-gmp --enable-nat-transport --disable-mysql --disable-ldap --prefix=/usr --sysconfdir=/etc
 
 make
+
 make install
 
 ### setup ipsec
@@ -37,9 +38,13 @@ ipsec pki --pub --in client.pem | ipsec pki --issue --cacert ca.cert.pem --cakey
 openssl pkcs12 -export -inkey client.pem -in client.cert.pem -name "client" -certfile ca.cert.pem -caname "dwvpn" -out client.cert.p12
 
 cp -r ca.cert.pem /etc/ipsec.d/cacerts/
+
 cp -r server.cert.pem /etc/ipsec.d/certs/
+
 cp -r server.pem /etc/ipsec.d/private/
+
 cp -r client.cert.pem /etc/ipsec.d/certs/
+
 cp -r client.pem /etc/ipsec.d/private/
 
 ### debug mode
