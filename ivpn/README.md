@@ -1,3 +1,4 @@
+### setup strongswan
 wget https://download.strongswan.org/strongswan-5.5.0.tar.bz2
 
 tar xfj strongswan-5.5.0.tar.bz2
@@ -17,6 +18,7 @@ aptitude install libssl-dev libpam0g-dev
 make
 make install
 
+### setup ipsec
 sudo cp ipsec.conf ipsec.secrets strongswan.conf sysctl.conf /etc/
 
 change Your_Account and Your_Password in ipsec.secrets
@@ -25,6 +27,7 @@ merge rc.local to /etc/rc.local
 
 sysctl -p
 
+### setup CA and key
 ipsec pki --gen --outform pem > ca.pem
 
 ipsec pki --self --in ca.pem --dn "C=com, O=dwvpn, CN=dwvpn" --ca --outform pem >ca.cert.pem
@@ -50,7 +53,7 @@ cp -r server.pem /etc/ipsec.d/private/
 cp -r client.cert.pem /etc/ipsec.d/certs/
 cp -r client.pem /etc/ipsec.d/private/
 
-
+### debug mode
 ipsec start --nofork
 
 
