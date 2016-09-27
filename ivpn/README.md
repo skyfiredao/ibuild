@@ -1,3 +1,29 @@
+### Server Side as VPN server
+strongswan
+IPSec
+config:
+~/.ssh/authorized_keys
+https://github.com/daviding924/ibuild/blob/master/etc/strongswan.conf
+https://github.com/daviding924/ibuild/blob/master/etc/ipsec.conf
+https://github.com/daviding924/ibuild/blob/master/etc/ipsec.secrets
+https://github.com/daviding924/ibuild/blob/master/etc/sysctl.conf
+https://github.com/daviding924/ibuild/blob/master/etc/iptables/rules.v4
+https://github.com/daviding924/ibuild/blob/master/etc/security/limits.conf
+https://github.com/daviding924/ibuild/blob/master/etc/rc.local.srv
+
+### Linux Client Side as WiFi AP over VPN
+iptables
+hostapd
+sshuttle
+dnsmsaq
+config:
+https://github.com/daviding924/ibuild/blob/master/etc/dnsmasq.conf
+https://github.com/daviding924/ibuild/blob/master/etc/rc.local.pi
+https://github.com/daviding924/ibuild/blob/master/etc/hostapd/hostapd.conf
+
+### iOS Client Side
+IPSec VPN
+
 ### setup strongswan
 wget https://download.strongswan.org/strongswan-5.5.0.tar.bz2
 
