@@ -22,21 +22,22 @@ export LC_CTYPE=C
 export USER=`whoami`
 export RUN_PATH=`dirname $0`
 export RUN_OPTION="$*"
+export DEBUG=$1
 
 export DISTRIB_RELEASE=`grep '^DISTRIB_RELEASE=' /etc/lsb-release | awk -F'=' {'print $2'}`
 export IP=`/sbin/ifconfig | grep 'inet addr' | grep -v '127.0.0.1' | awk -F':' {'print $2'} | awk -F' ' {'print $1'}`
 export CPU=`cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u`
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
 
-if [[ ! `sudo -l | grep ALL | grep NOPASSWD` ]] ; then
-	echo "No sudo NOPASSWD permission"
+if [[ ! `sudo -l | grep ALL | grep NOPASSWD` && $(whoami) != root ]] ; then
+	echo "No permission"
 	exit 0
 fi
 
 [[ -f ~/bash.ibuild.bashrc ]] && source ~/bash.ibuild.bashrc
 
-sudo apt-get update
-sudo apt-get --force-yes -y install subversion openssh-server aptitude vim
+$DEBUG apt-get update
+$DEBUG apt-get --force-yes -y install subversion openssh-server aptitude vim
 
 export IBUILD_ROOT=$HOME/ibuild
 	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
@@ -54,25 +55,25 @@ export SVN_REV_SRV=`svn info $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itas
 # chmod +s /sbin/btrfs*
 
 # create ibuild workspace
-sudo mkdir -p /local/{ccache,out,ref_repo}
-sudo mkdir -p /local/workspace/{subv_repo,build,autout,upload}
-sudo mkdir -p /local/workspace/autout/log
-sudo chmod 775 /local /local/{ccache,workspace,out,ref_repo}
-sudo chown $USER -R /local
+$DEBUG mkdir -p /local/{ccache,out,ref_repo}
+$DEBUG mkdir -p /local/workspace/{subv_repo,build,autout,upload}
+$DEBUG mkdir -p /local/workspace/autout/log
+$DEBUG chmod 775 /local /local/{ccache,workspace,out,ref_repo}
+$DEBUG chown $USER -R /local
 
 cd $HOME
 bash $HOME/ibuild/bin/get_repo.sh
 bash $HOME/ibuild/bin/build_ccache.sh
-sudo /bin/mv /tmp/repo /usr/bin/
-sudo /bin/mv /tmp/ccache/ccache /usr/bin/ccache
+$DEBUG /bin/mv /tmp/repo /usr/bin/
+$DEBUG /bin/mv /tmp/ccache/ccache /usr/bin/ccache
 export REPO=`which repo`
 
 mkdir -p $HOME/.ssh
 echo "StrictHostKeyChecking=no" >> $HOME/.ssh/config
 
 if [[ `readlink /bin/sh` = dash && -f /bin/bash ]] ; then
-    sudo rm -f /bin/sh
-    sudo ln -sf /bin/bash /bin/sh
+    $DEBUG rm -f /bin/sh
+    $DEBUG ln -sf /bin/bash /bin/sh
 fi
 
 # If your local is China
@@ -80,20 +81,20 @@ fi
 
 # For Docker in ubuntu 14.04 only
 if [[ `echo $RUN_OPTION | egrep 'docker'` ]] ; then
-    sudo aptitude -y install apt-transport-https ca-certificates
-    sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+    $DEBUG aptitude -y install apt-transport-https ca-certificates
+    $DEBUG apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
     echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" >/tmp/docker.list
-    sudo cp /tmp/docker.list /etc/apt/sources.list.d/
-    sudo aptitude install -y apparmor linux-image-extra-$(uname -r) docker.io
-    sudo groupadd docker
-    sudo usermod -aG docker $(whoami)
+    $DEBUG cp /tmp/docker.list /etc/apt/sources.list.d/
+    $DEBUG aptitude install -y apparmor linux-image-extra-$(uname -r) docker.io
+    $DEBUG groupadd docker
+    $DEBUG usermod -aG docker $(whoami)
 fi
 
 # update current system to last
-sudo aptitude -y full-upgrade
+$DEBUG aptitude -y full-upgrade
 
 # install android build tool
-sudo aptitude -y install git-core gnupg flex bison gperf build-essential \
+$DEBUG aptitude -y install git-core gnupg flex bison gperf build-essential \
 zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 \
 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev ccache \
 libgl1-mesa-dev libxml2-utils xsltproc unzip python-networkx \
@@ -101,17 +102,17 @@ libncurses5-dev:i386 libx11-dev:i386 libreadline6-dev:i386 libgl1-mesa-glx:i386 
 git libc6-dev g++-multilib mingw32 tofrodos python-markdown zlib1g-dev:i386
 
 # supportReDex  
-sudo aptitude -y install g++ automake autoconf autoconf-archive libtool libboost-all-dev \
+$DEBUG aptitude -y install g++ automake autoconf autoconf-archive libtool libboost-all-dev \
 libevent-dev libdouble-conversion-dev libgoogle-glog-dev libgflags-dev liblz4-dev \
 liblzma-dev libsnappy-dev make binutils-dev libjemalloc-dev libssl-dev \
 libiberty-dev
 
-[[ -f /usr/lib/i386-linux-gnu/mesa/libGL.so.1 ]] && sudo ln -s /usr/lib/i386-linux-gnu/mesa/libGL.so.1 /usr/lib/i386-linux-gnu/libGL.so
+[[ -f /usr/lib/i386-linux-gnu/mesa/libGL.so.1 ]] && $DEBUG ln -s /usr/lib/i386-linux-gnu/mesa/libGL.so.1 /usr/lib/i386-linux-gnu/libGL.so
 
 
 # install old build tool
 if [[ `echo $RUN_OPTION | egrep 'legatary'` ]] ; then
-    sudo aptitude -y install ant binutils binutils-dev binutils-static \
+    $DEBUG aptitude -y install ant binutils binutils-dev binutils-static \
     libncursesw5-dev ncurses-hexedit ant1.8 lib64z1-dev libzzip-dev \
     gcc-4.2 g++-4.2 libstdc++5 libstdc++6-4.2 automake1.8 automake1.9 \
     libz-dev libwxgtk2.6-dev libcurses-widgets-perl lib32readline5-dev \
@@ -124,7 +125,7 @@ if [[ `echo $RUN_OPTION | egrep 'legatary'` ]] ; then
 fi
 
 # install system util
-sudo aptitude -y install pbzip2 wget htop iotop zip unzip screen sysv-rc-conf \
+$DEBUG aptitude -y install pbzip2 wget htop iotop zip unzip screen sysv-rc-conf \
 tree p7zip p7zip-full splint hal vim vim-full exuberant-ctags fakeroot txt2html \
 apt-btrfs-snapshot btrfs-tools sshfs curl lsb-release openssh-server \
 tmux gnuplot dos2unix meld parted gnu-fdisk squashfs-tools mkisofs jq \
@@ -132,69 +133,69 @@ u-boot-tools uboot-mkimage gawk xlockmore cramfsprogs lzop python-argparse \
 postfix
 
 # install version control tool
-sudo aptitude -y install git git-core tig subversion subversion-tools \
+$DEBUG aptitude -y install git git-core tig subversion subversion-tools \
 python-svn libsvn-perl
 
 # Java 7: for Lollipop through Marshmallow
 # Java 6: for Gingerbread through KitKat
 # Java 5: for Cupcake through Froyo
 # install openjdk-8-jdk for Ubuntu >= 15.04
-sudo aptitude -y install openjdk-7-jdk openjdk-8-jdk
-sudo ln -sf /usr/lib/jvm/java-7-openjdk-amd64 /usr/local/jdk1.7
-sudo ln -sf /usr/local/jdk1.7 /usr/local/jdk
+$DEBUG aptitude -y install openjdk-7-jdk openjdk-8-jdk
+$DEBUG ln -sf /usr/lib/jvm/java-7-openjdk-amd64 /usr/local/jdk1.7
+$DEBUG ln -sf /usr/local/jdk1.7 /usr/local/jdk
 
 # install Sun JDK 1.6 for AOSP build before L
 if [[ `echo $RUN_OPTION | egrep 'jdk1.6'` ]] ; then
-    sudo aptitude -y install sun-java6-jdk
+    $DEBUG aptitude -y install sun-java6-jdk
     wget http://$IBUILD_SVN_SRV/linux/jdk1.6.0_45.bz2
-    sudo tar xfj jdk1.6.0_45.bz2 -C /usr/local/
+    $DEBUG tar xfj jdk1.6.0_45.bz2 -C /usr/local/
     rm jdk1.6.0_45.bz2
 
     if [[ -d /usr/lib/jvm/java-6-sun ]] ; then
-        sudo ln -sf /usr/lib/jvm/java-6-sun /usr/local/jdk1.6
+        $DEBUG ln -sf /usr/lib/jvm/java-6-sun /usr/local/jdk1.6
     elif [[ -d /usr/local/jdk1.6.0_45 ]] ; then
-        sudo ln -sf /usr/local/jdk1.6.0_45 /usr/local/jdk1.6
+        $DEBUG ln -sf /usr/local/jdk1.6.0_45 /usr/local/jdk1.6
     else
         echo 'No jdk1.6'
     fi
 fi
 
 # install system monitor tool
-sudo aptitude -y install lm-sensors ganglia-monitor ganglia-modules-linux \
+$DEBUG aptitude -y install lm-sensors ganglia-monitor ganglia-modules-linux \
 nmon bmon nload iftop iptraf speedometer iptstate nmap
 
 # install think oneself clever design for A.....
 # sudo aptitude -y install python maven2
 
 # setup hardware sensors
-sudo sensors-detect
+$DEBUG sensors-detect
 
 # install web server for monitor if need
 if [[ `echo $RUN_OPTION | egrep 'admin'` ]] ; then
 #    sudo aptitude -y install nginx php5-fpm gmetad ganglia-webfrontend
-    sudo aptitude -y install apache2 libapache2-mod-php5 gmetad ganglia-webfrontend websvn
-    sudo cp -R /usr/share/websvn /usr/share/ganglia-webfrontend/
+    $DEBUG aptitude -y install apache2 libapache2-mod-php5 gmetad ganglia-webfrontend websvn
+    $DEBUG cp -R /usr/share/websvn /usr/share/ganglia-webfrontend/
 fi
 
 # install debug tool
 if [[ `echo $RUN_OPTION | egrep 'debuger'` ]] ; then
-    sudo aptitude -y install minicom valgrind
+    $DEBUG aptitude -y install minicom valgrind
 fi
 
 # install lightweight window manager with remote desktop
 if [[ `echo $RUN_OPTION | egrep 'remote'` ]] ; then
-    sudo add-apt-repository ppa:x2go/stable
-    sudo apt-get update
-    sudo aptitude -y install openbox icewm blackbox tightvncserver \
+    $DEBUG add-apt-repository ppa:x2go/stable
+    $DEBUG apt-get update
+    $DEBUG aptitude -y install openbox icewm blackbox tightvncserver \
     x2goserver x2goserver-xsession x2goclient wmii2 dwm wmctrl xfce4
 fi
 
 # clean email service
 if [[ `echo $RUN_OPTION | egrep 'nomail'` ]] ; then
-    sudo aptitude -y purge nbSMTP exim4 exim4-base exim4-daemon-light libpam-smbpass
+    $DEBUG aptitude -y purge nbSMTP exim4 exim4-base exim4-daemon-light libpam-smbpass
 fi
 
-[[ -f /usr/bin/fromdos ]] && sudo ln -s /usr/bin/fromdos /usr/local/bin/dos2unix
+[[ -f /usr/bin/fromdos ]] && $DEBUG ln -s /usr/bin/fromdos /usr/local/bin/dos2unix
 
 echo "export LC_ALL=C
 export LC_CTYPE=C
@@ -212,15 +213,15 @@ alias ccache=/usr/bin/ccache
 export VISUAL=vim
 " >>/tmp/bash.ibuild.bashrc
 if [[ -f ~/bash.ibuild.bashrc ]] ; then
-    sudo cp ~/bash.ibuild.bashrc /etc
+    $DEBUG cp ~/bash.ibuild.bashrc /etc
 else
-    sudo cp /tmp/bash.ibuild.bashrc /etc
+    $DEBUG cp /tmp/bash.ibuild.bashrc /etc
 fi
 
 if [[ ! `grep ibuild /etc/bash.bashrc` ]] ; then
     cp /etc/bash.bashrc /tmp
     echo ". /etc/bash.ibuild.bashrc" >>/tmp/bash.bashrc
-    sudo cp /tmp/bash.bashrc /etc
+    $DEBUG cp /tmp/bash.bashrc /etc
 fi
 
 . /etc/bash.ibuild.bashrc
