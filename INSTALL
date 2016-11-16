@@ -18,3 +18,6 @@ ibuild node:
 8, login as ibuild, add NOPASSWD with visudo
 9, apt-get update && apt-get install --force-yes -y openssh-server subversion screen vim aptitude
 10, copy ssh key to .ssh
+11, download ibuild repo
+12, switch to root and run setup/setup_ubuntu_build_env.sh
+
