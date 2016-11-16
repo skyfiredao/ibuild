@@ -6,3 +6,15 @@
 3, ichange/itrack.sh
     copy ichange/conf/HOSTNAME.conf to your ichange server hostname
     start ichange gerrit steam event monitor
+
+ibuild node:
+1, download ubuntu desktop iso
+2, create a bootable USB stick with iso
+3, boot up ubuntu desktop in node
+4, install ubuntu after boot up ubuntu live desktop
+5, split 20G partition for / with ext4, 4G swap, all of free space for /local with btrfs
+6, create ibuild account, and use Service Tag or Serial No as hostname
+7, reboot after install
+8, login as ibuild, add NOPASSWD with visudo
+9, apt-get update && apt-get install --force-yes -y openssh-server subversion screen vim aptitude
+10, copy ssh key to .ssh

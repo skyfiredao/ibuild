@@ -33,8 +33,10 @@ if [[ ! `sudo -l | grep ALL | grep NOPASSWD` ]] ; then
 	exit 0
 fi
 
+[[ -f ~/bash.ibuild.bashrc ]] && source ~/bash.ibuild.bashrc
+
 sudo apt-get update
-sudo apt-get -y install subversion openssh-server aptitude
+sudo apt-get --force-yes -y install subversion openssh-server aptitude vim
 
 export IBUILD_ROOT=$HOME/ibuild
 	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
@@ -209,7 +211,11 @@ alias screen='screen -R -DD'
 alias ccache=/usr/bin/ccache
 export VISUAL=vim
 " >>/tmp/bash.ibuild.bashrc
-sudo cp /tmp/bash.ibuild.bashrc /etc
+if [[ -f ~/bash.ibuild.bashrc ]] ; then
+    sudo cp ~/bash.ibuild.bashrc /etc
+else
+    sudo cp /tmp/bash.ibuild.bashrc /etc
+fi
 
 if [[ ! `grep ibuild /etc/bash.bashrc` ]] ; then
     cp /etc/bash.bashrc /tmp
