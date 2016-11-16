@@ -36,8 +36,8 @@ fi
 
 [[ -f ~/bash.ibuild.bashrc ]] && source ~/bash.ibuild.bashrc
 
-$DEBUG apt-get update
-$DEBUG apt-get --force-yes -y install subversion openssh-server aptitude vim
+# $DEBUG apt-get update
+# $DEBUG apt-get --force-yes -y install subversion openssh-server aptitude vim
 
 export IBUILD_ROOT=$HOME/ibuild
 	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
