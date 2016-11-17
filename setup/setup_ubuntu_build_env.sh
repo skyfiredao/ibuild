@@ -59,7 +59,7 @@ $DEBUG mkdir -p /local/{ccache,out,ref_repo}
 $DEBUG mkdir -p /local/workspace/{subv_repo,build,autout,upload}
 $DEBUG mkdir -p /local/workspace/autout/log
 $DEBUG chmod 775 /local /local/{ccache,workspace,out,ref_repo}
-$DEBUG chown $USER -R /local
+$DEBUG chown ibuild -R /local
 
 cd $HOME
 bash $HOME/ibuild/bin/get_repo.sh
@@ -130,7 +130,7 @@ tree p7zip p7zip-full splint hal vim vim-full exuberant-ctags fakeroot txt2html 
 apt-btrfs-snapshot btrfs-tools sshfs curl lsb-release openssh-server \
 tmux gnuplot dos2unix meld parted gnu-fdisk squashfs-tools mkisofs jq \
 u-boot-tools uboot-mkimage gawk xlockmore cramfsprogs lzop python-argparse \
-postfix
+postfix logcheck
 
 # install version control tool
 $DEBUG aptitude -y install git git-core tig subversion subversion-tools \
