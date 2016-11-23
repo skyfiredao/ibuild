@@ -573,37 +573,44 @@ SETUP_ISTATUS()
  export ISTATUS_ENTRY=$1
  [[ -z $ITASK_REV ]] && export ITASK_REV=`ls /tmp | grep log$ | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1`
 
- if [[ ! -d $TASK_SPACE/istatus-$TOWEEK ]] ; then
+ if [[ ! -d $TASK_SPACE/istatus-$TOYEAR ]] ; then
      rm -fr $TASK_SPACE/istatus-* >/dev/null 2>&1
-     svn co -q $IBUILD_SVN_OPTION svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK >/dev/null 2>&1
+     svn co -q $IBUILD_SVN_OPTION svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR $TASK_SPACE/istatus-$TOYEAR >/dev/null 2>&1
      if [[ $? != 0 ]] ; then
-         svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add istatus/$TOYEAR/$TOWEEK" svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR/$TOWEEK >/dev/null 2>&1
-         svn co -q $IBUILD_SVN_OPTION svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK >/dev/null 2>&1
+         svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add istatus/$TOYEAR" svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR >/dev/null 2>&1
+         svn co -q $IBUILD_SVN_OPTION svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR $TASK_SPACE/istatus-$TOYEAR >/dev/null 2>&1
      fi
  else
-     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/istatus-$TOWEEK >/dev/null 2>&1
+     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/istatus-$TOYEAR >/dev/null 2>&1
  fi
 
- touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
- touch $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+ touch $TASK_SPACE/istatus-$TOYEAR/$ITASK_REV
+ touch $TASK_SPACE/istatus-$TOYEAR/$ITASK_ORDER
 
- if [[ $ITASK_REV = $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV ]] ; then
-     if [[ ! `grep "|ibuild assign: $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV` ]] ; then
-         echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|ibuild assign: $ITASK_REV $IP" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
+ if [[ $ITASK_REV = $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOYEAR/$ITASK_REV ]] ; then
+     if [[ ! `grep "|ibuild assign: $ITASK_REV" $TASK_SPACE/istatus-$TOYEAR/$ITASK_REV` ]] ; then
+         echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|ibuild assign: $ITASK_REV $IP" >>$TASK_SPACE/istatus-$TOYEAR/$ITASK_REV
      fi
-     echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_REV
- elif [[ ! -z $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV ]] ; then
-     if [[ ! `grep "|ibuild assign: $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER` ]] ; then
-         echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|ibuild assign: $ITASK_REV $IP" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+     echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOYEAR/$ITASK_REV
+ elif [[ ! -z $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOYEAR/$ITASK_REV ]] ; then
+     if [[ ! `grep "|ibuild assign: $ITASK_REV" $TASK_SPACE/istatus-$TOYEAR/$ITASK_ORDER` ]] ; then
+         echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|ibuild assign: $ITASK_REV $IP" >>$TASK_SPACE/istatus-$TOYEAR/$ITASK_ORDER
      fi
-     echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER
+     echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOYEAR/$ITASK_ORDER
  fi
 
- svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_REV >/dev/null 2>&1
- svn add $TASK_SPACE/istatus-$TOWEEK/$ITASK_ORDER >/dev/null 2>&1
- svn ci -q $IBUILD_SVN_OPTION -m "auto: add $ITASK_REV" $TASK_SPACE/istatus-$TOWEEK/*
+ svn add $TASK_SPACE/istatus-$TOYEAR/$ITASK_REV >/dev/null 2>&1
+ svn add $TASK_SPACE/istatus-$TOYEAR/$ITASK_ORDER >/dev/null 2>&1
+
+ while [ `ls $TASK_SPACE/istatus-$TOYEAR | wc -l` -ge 100 ] ;
+ do
+     export OLD_STATUS=`ls $TASK_SPACE/istatus-$TOYEAR | head -n1`
+     svn rm -q $TASK_SPACE/istatus-$TOYEAR/$OLD_STATUS
+ done
+
+ svn ci -q $IBUILD_SVN_OPTION -m "auto: add $ITASK_REV and clean old" $TASK_SPACE/istatus-$TOYEAR/*
  if [[ $? != 0 ]] ; then
-    rm -fr $TASK_SPACE/istatus-$TOWEEK >/dev/null 2>&1
+    rm -fr $TASK_SPACE/istatus-$TOYEAR >/dev/null 2>&1
  fi
 }
 
