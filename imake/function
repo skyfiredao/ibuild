@@ -634,7 +634,6 @@ else
  cp $ORIG_MANIFEST_URL $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME
  export MANIFEST_VER=$(md5sum $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME | cut -c1-5)
 
- SPLIT_LINE $IVER_MANIFEST_NAME
  svn add $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME >/dev/null 2>&1
  svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVER_MANIFEST_NAME" $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME
  if [[ $? = 0 ]] ; then
@@ -642,7 +641,7 @@ else
      if [[ -z $IBUILD_ID && ! -z $BUILD_NUMBER && -z $IVERSION ]] ; then
          export IBUILD_ID=r$BUILD_NUMBER
      elif [[ -z $IBUILD_ID && ! -z $IVERSION ]] ; then
-        export IBUILD_ID=r$(svn info $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
+         export IBUILD_ID=r$(svn info $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
      elif [[ -z $IBUILD_ID && -z $BUILD_NUMBER ]] ; then
          export BUILD_NUMBER=$(svn info $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
          export IBUILD_ID=r$(svn info $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
@@ -652,6 +651,7 @@ else
      echo $IVER_MANIFEST_NAME
      [[ -z $IBUILD_ID ]] && export IBUILD_ID=$(echo $BUILD_TIME | cut -c7-8).$MANIFEST_VER
  fi
+ SPLIT_LINE "$IVER_MANIFEST_NAME $IBUILD_ID"
  echo $IBUILD_ID >$LOCK_SPACE/IBUILD_ID
  echo $BUILD_NUMBER >$LOCK_SPACE/BUILD_NUMBER
 }
