@@ -605,9 +605,10 @@ SETUP_ISTATUS()
  while [ `ls $TASK_SPACE/istatus-$TOYEAR | wc -l` -ge 100 ] ;
  do
      export OLD_STATUS=`ls $TASK_SPACE/istatus-$TOYEAR | head -n1`
-     svn rm -q $TASK_SPACE/istatus-$TOYEAR/$OLD_STATUS
+     svn rm -q --force $TASK_SPACE/istatus-$TOYEAR/$OLD_STATUS
  done
 
+ svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/istatus-$TOYEAR/
  svn ci -q $IBUILD_SVN_OPTION -m "auto: add $ITASK_REV and clean old" $TASK_SPACE/istatus-$TOYEAR/*
  if [[ $? != 0 ]] ; then
     rm -fr $TASK_SPACE/istatus-$TOYEAR >/dev/null 2>&1
