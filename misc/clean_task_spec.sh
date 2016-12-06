@@ -41,7 +41,7 @@ export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | a
 export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
 
 svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/tasks $TASK_SPACE/$USER.tasks.lock.$SEED
-while [ `ls $TASK_SPACE/$USER.tasks.lock.$SEED | grep spec.build | wc -l` -ge 500 ] ;
+while [ `ls $TASK_SPACE/$USER.tasks.lock.$SEED | grep spec.build | wc -l` -ge 300 ] ;
 do
 	export OLD_TASK_SPEC=`ls $TASK_SPACE/$USER.tasks.lock.$SEED | grep spec.build | head -n1`
 	svn rm -q $TASK_SPACE/$USER.tasks.lock.$SEED/$OLD_TASK_SPEC
