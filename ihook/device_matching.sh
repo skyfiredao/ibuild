@@ -74,7 +74,7 @@ MATCHING()
 #     export ASSIGN_HOST_DEVICE=$(cat $IVERIFY_SPACE/$HOST_DEVICE.assign | awk -F'|' {'print $3'})
 #     if [[ $ASSIGN_HOST_DEVICE = $HOST_DEVICE ]] ; then
      if [[ `grep $HOSTNAME_DEVICE $IVERIFY_SPACE/$HOST_DEVICE.assign` ]] ; then
-         svn rm -q $IBUILD_SVN_OPTION -m "auto: remove $PRIORITY_ICASE_REV" svn://$IBUILD_SVN_SRV/istatus/queue/icase/$PRIORITY_ICASE_REV
+         svn rm -q $IBUILD_SVN_OPTION -m "auto: remove $PRIORITY_ICASE_REV" svn://$IBUILD_SVN_SRV/itask/queue/icase/$PRIORITY_ICASE_REV
          svn up -q $IBUILD_SVN_OPTION $QUEUE_SPACE
          if [[ -f $QUEUE_SPACE/$PRIORITY_ICASE_REV ]] ; then
              svn rm --force $QUEUE_SPACE/$PRIORITY_ICASE_REV

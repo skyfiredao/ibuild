@@ -39,7 +39,7 @@ chmod 777 -R $LOCK_SPACE >/dev/null 2>&1
 export QUEUE_SPACE=/local/queue/itask
 export QUEUE_SPACE_TOP=$(dirname $QUEUE_SPACE)
 if [[ ! -d $QUEUE_SPACE_TOP ]] ; then
-    svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/istatus/queue $QUEUE_SPACE_TOP 
+    svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/queue $QUEUE_SPACE_TOP 
     chmod 777 -R $QUEUE_SPACE_TOP
 else
     svn up -q $IBUILD_SVN_OPTION $QUEUE_SPACE_TOP
@@ -56,8 +56,8 @@ if [[ `echo $ITASK_SPEC_URL | grep '^/itask/tasks'` ]] ; then
     [[ -z $IBUILD_PRIORITY ]] && export IBUILD_PRIORITY=x
 
     svn cp -q $IBUILD_SVN_OPTION -m "auto: add $IBUILD_PRIORITY.$ITASK_REV" \
-    svn://$IBUILD_SVN_SRV/istatus/queue/.zero \
-    svn://$IBUILD_SVN_SRV/istatus/queue/itask/$IBUILD_PRIORITY.$ITASK_REV
+    svn://$IBUILD_SVN_SRV/itask/queue/.zero \
+    svn://$IBUILD_SVN_SRV/itask/queue/itask/$IBUILD_PRIORITY.$ITASK_REV
     svn up -q $IBUILD_SVN_OPTION $QUEUE_SPACE
     [[ ! -f $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV ]] && touch $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
 

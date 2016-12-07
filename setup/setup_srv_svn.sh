@@ -170,9 +170,9 @@ done
 # for queue
 cd $TMP_SVN_PATH
 svn co $LOCAL_SVN_OPTION svn://127.0.0.1/itask
-mkdir -p itask/itask/queue/{itask,icase}
-touch itask/itask/queue/.zero
-svn add itask/itask itask/itask/queue
+mkdir -p itask/itask itask/queue/{itask,icase}
+touch itask/queue/.zero
+svn add itask/itask itask/queue
 svn ci $LOCAL_SVN_OPTION -m "auto init queue" itask
 
 rm -fr $TMP_SVN_PATH
