@@ -39,14 +39,15 @@ fi
 
 export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
 export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
+export KEEP_SPEC=300
 
 svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/tasks $TASK_SPACE/$USER.tasks.lock.$SEED
-while [ `ls $TASK_SPACE/$USER.tasks.lock.$SEED | grep spec.build | wc -l` -ge 300 ] ;
+while [ `ls $TASK_SPACE/$USER.tasks.lock.$SEED | grep spec.build | wc -l` -ge $KEEP_SPEC ] ;
 do
 	export OLD_TASK_SPEC=`ls $TASK_SPACE/$USER.tasks.lock.$SEED | grep spec.build | head -n1`
 	svn rm -q $TASK_SPACE/$USER.tasks.lock.$SEED/$OLD_TASK_SPEC
 done
-svn ci $IBUILD_SVN_OPTION -m "auto: clean more than 500" $TASK_SPACE/$USER.tasks.lock.$SEED/ >/tmp/clean_task.log 2>&1
+svn ci $IBUILD_SVN_OPTION -m "auto: clean more than $KEEP_SPEC" $TASK_SPACE/$USER.tasks.lock.$SEED/ >/tmp/clean_task.log 2>&1
 
 rm -fr $TASK_SPACE/$USER.tasks.lock.$SEED
 
