@@ -69,7 +69,7 @@ cat $IBUILD_SRC_PATH/ibuild/etc/subversion/passwd \
 | sed "s/_readonly_/$readonly_PASSWD/g" \
 | sed "s/_iverify_/$iverify_PASSWD/g" >$SRV_SVN_PATH/conf/passwd
 
-for REPO_NAME in ibuild ispec iverify ichange itask icase istatus iversion
+for REPO_NAME in ibuild ispec iverify ichange itask icase iversion
 do
     svnadmin create $SRV_SVN_PATH/repo/$REPO_NAME
     echo "$USER = $USER" >>$SRV_SVN_PATH/repo/$REPO_NAME/conf/passwd
@@ -167,14 +167,13 @@ do
     svn ci $LOCAL_SVN_OPTION -m "auto init $REPO_NAME from $IBUILD_SVN_SRV" $TMP_SVN_PATH/$REPO_NAME
 done
 
-# for istatus
+# for queue
 cd $TMP_SVN_PATH
-svn co $LOCAL_SVN_OPTION svn://127.0.0.1/istatus
-cd istatus
-svn mkdir itask icase
-touch .zero
-svn add .zero
-svn ci $LOCAL_SVN_OPTION -m "auto init istatus"
+svn co $LOCAL_SVN_OPTION svn://127.0.0.1/itask
+mkdir -p itask/itask/queue/{itask,icase}
+touch itask/itask/queue/.zero
+svn add itask/itask itask/itask/queue
+svn ci $LOCAL_SVN_OPTION -m "auto init queue" itask
 
 rm -fr $TMP_SVN_PATH
 # For Pi
