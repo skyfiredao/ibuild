@@ -458,6 +458,7 @@ IBUILD_ADD_STEPS()
  echo ---------- `date` >>$LOG_PATH/ibuild_add_steps.log 2>&1
  [[ $(echo $IBUILD_ADD_STEP_CMD | egrep '^source ') ]] && export SOURCE_CMD=source || export SOURCE_CMD=''
  time $SOURCE_CMD $IBUILD_ROOT/hotfix/$(echo $IBUILD_ADD_STEP_CMD | awk -F'ibuild/hotfix/' {'print $2'}) >>$LOG_PATH/ibuild_add_steps.log 2>&1
+ LOG_STATUS $? $IBUILD_ADD_STEP_CMD $LOG_PATH/ibuild_add_steps.log
  echo ---------- `date` >>$LOG_PATH/ibuild_add_steps.log 2>&1
 }
 
@@ -569,6 +570,34 @@ CCACHE_HOTFIX()
 }
 
 SETUP_ISTATUS()
+{
+ export ISTATUS_ENTRY=$1
+ [[ -z $ITASK_REV ]] && export ITASK_REV=$(ls /tmp | grep log$ | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1)
+
+ if [[ ! -f $AUTOUT_UPLOAD_PATH/README ]] ; then
+     sshfs -o nonempty -p 2222 sshfs@$IBUILD_UPLOAD_URL $AUTOUT_UPLOAD_PATH >$LOG_PATH/sshfs.log 2>&1
+     export MOUNT_STATUS=$?
+     LOG_STATUS $MOUNT_STATUS sshfs_$AUTOUT_UPLOAD_PATH $LOG_PATH/sshfs.log
+ fi
+
+ mkdir -p $AUTOUT_UPLOAD_PATH/$TODAY/istatus >/dev/null 2>&1
+ touch $AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_REV
+ touch $AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_ORDER
+
+ if [[ $ITASK_REV = $ITASK_ORDER && -f $AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_REV ]] ; then
+     if [[ ! `grep "|ibuild assign: $ITASK_REV" $AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_REV` ]] ; then
+         echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|ibuild assign: $ITASK_REV $IP" >>$AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_REV
+     fi
+     echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|$ISTATUS_ENTRY" >>$AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_REV
+ elif [[ ! -z $ITASK_ORDER && -f $AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_REV ]] ; then
+     if [[ ! `grep "|ibuild assign: $ITASK_REV" $AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_ORDER` ]] ; then
+         echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|ibuild assign: $ITASK_REV $IP" >>$AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_ORDER
+     fi
+     echo `date +%y%m%d-%H%M%S`"|$HOSTNAME|$ISTATUS_ENTRY" >>$AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_ORDER
+ fi
+}
+
+SETUP_ISTATUS_OLD()
 {
  export ISTATUS_ENTRY=$1
  [[ -z $ITASK_REV ]] && export ITASK_REV=`ls /tmp | grep log$ | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1`

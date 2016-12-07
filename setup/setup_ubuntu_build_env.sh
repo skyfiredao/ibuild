@@ -252,6 +252,7 @@ fi
 
 echo '
 Our suggestion:
+use low case for host name
 Enable HT(Hyper-Threading) plus 40-60% performance
 run "lshw -c disk" check your disk
 
