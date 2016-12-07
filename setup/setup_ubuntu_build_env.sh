@@ -99,7 +99,8 @@ zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 \
 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev ccache \
 libgl1-mesa-dev libxml2-utils xsltproc unzip python-networkx \
 libncurses5-dev:i386 libx11-dev:i386 libreadline6-dev:i386 libgl1-mesa-glx:i386 \
-git libc6-dev g++-multilib mingw32 tofrodos python-markdown zlib1g-dev:i386
+git libc6-dev g++-multilib mingw32 tofrodos python-markdown zlib1g-dev:i386 \
+pylint
 
 # supportReDex  
 $DEBUG aptitude -y install g++ automake autoconf autoconf-archive libtool libboost-all-dev \

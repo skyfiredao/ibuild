@@ -169,11 +169,12 @@ done
 
 # for queue
 cd $TMP_SVN_PATH
-svn co $LOCAL_SVN_OPTION svn://127.0.0.1/itask
-mkdir -p itask/itask itask/queue/{itask,icase}
-touch itask/queue/.zero
-svn add itask/itask itask/queue
-svn ci $LOCAL_SVN_OPTION -m "auto init queue" itask
+rm -fr itask.svn
+svn co $LOCAL_SVN_OPTION svn://127.0.0.1/itask itask.svn
+mkdir -p itask.svn/itask itask.svn/queue/{itask,icase}
+touch itask.svn/queue/.zero
+svn add itask.svn/itask itask.svn/queue
+svn ci $LOCAL_SVN_OPTION -m "auto init queue" itask.svn
 
 rm -fr $TMP_SVN_PATH
 # For Pi
