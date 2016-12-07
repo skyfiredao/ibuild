@@ -103,11 +103,11 @@ ASSIGN_JOB()
  if [[ `cat $LOCK_SPACE/itask-r$ITASK_REV.jobs | grep $ITASK_REV_MD5 | grep $NODE_MD5` ]] ; then
     echo "$ITASK_REV|$NODE|$NODE_IP|$ITASK_SPEC_NAME" >>$ITASK_PATH/jobs.txt
     svn ci -q $IBUILD_SVN_OPTION -m "auto: assign itask-r$ITASK_REV to $NODE" $ITASK_PATH/jobs.txt
-    svn rm -q $IBUILD_SVN_OPTION -m "auto: remove $PRIORITY_ITASK_REV" svn://$IBUILD_SVN_SRV/istatus/queue/itask/$PRIORITY_ITASK_REV
+    svn rm -q $IBUILD_SVN_OPTION -m "auto: remove $PRIORITY_ITASK_REV" svn://$IBUILD_SVN_SRV/itask/queue/itask/$PRIORITY_ITASK_REV
     svn up -q $IBUILD_SVN_OPTION $QUEUE_SPACE
     if [[ -f $QUEUE_SPACE/$PRIORITY_ITASK_REV ]] ; then
         rm -fr $QUEUE_SPACE
-        svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/istatus/queue $QUEUE_SPACE
+        svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/queue $QUEUE_SPACE
         chmod 777 -R $QUEUE_SPACE
     fi
 #     export QUEUE_SPACE_C=$(svn st $QUEUE_SPACE | grep '^!' | awk -F' ' {'print $3'} | head -n1)
