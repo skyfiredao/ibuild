@@ -72,6 +72,7 @@ export IBUILD_SVN_REV_SRV=$(svn info $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/it
 export ITASK_SVN_SRV=$(grep '^ITASK_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'ITASK_SVN_SRV=' {'print $2'})
     [[ -z $ITASK_SVN_SRV ]] && export ITASK_SVN_SRV=$IBUILD_SVN_SRV
 export ITASK_SVN_SRV_HOSTNAME=$(echo $ITASK_SVN_SRV | awk -F'.' {'print $1'})
+export DIST_FS_SHARE=$(grep '^DIST_FS_SHARE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'DIST_FS_SHARE=' {'print $2'})
 
 $IBUILD_ROOT/setup/reboot.sh
 
@@ -158,6 +159,9 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
         /bin/nc -z -w 3 $CHK_HOST_IP 22 >/dev/null 2>&1
         if [[ $? = 1 ]] ; then
             svn rm $TASK_SPACE/itask/svn/inode/$CHK_HOST
+        elif [[ $? = 0 && ! -z $DIST_FS_SHARE && $CHK_HOST != $HOSTNAME ]] ; then
+            [[ ! -d /local/share/DIST_FS/$CHK_HOST ]] && mkdir -p /local/share/DIST_FS/$CHK_HOST >/dev/null 2>&1
+            [[ ! -f /local/share/DIST_FS/$CHK_HOST/README ]] && sshfs -o nonempty,allow_other,sync_read,cache_timeout=7 -p 22 $CHK_HOST_IP:/local/share/ /local/share/DIST_FS/$CHK_HOST &
         fi
     done
 
