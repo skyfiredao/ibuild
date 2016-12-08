@@ -91,6 +91,7 @@ EXPORT_IBUILD_CONF()
  export IBUILD_GRTSRV_ID_DEFAULT=$(grep '^IBUILD_GRTSRV_ID=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_GRTSRV_ID=' {'print $2'})
  export IBUILD_ROBOT=$(grep '^IBUILD_ROBOT=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_ROBOT=' {'print $2'})
  export REPO_CMD=$(grep '^REPO_CMD=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'REPO_CMD=' {'print $2'})
+ export DIST_FS_SHARE=$(grep '^DIST_FS_SHARE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'DIST_FS_SHARE=' {'print $2'})
 }
 
 EXPORT_IBUILD_SPEC()
@@ -183,6 +184,9 @@ EXPORT_IBUILD_SPEC()
  export AUTOUT_PATH=$LOC_WORKSPACE/autout
  export AUTOUT_UPLOAD_PATH=$LOC_WORKSPACE/upload
  [[ $(echo $SPEC_NAME | grep patch.spec.build) ]] && export PATCH_SPEC='patch.' || export PATCH_SPEC=''
+ if [[ ! -z $DIST_FS_SHARE && -f $DIST_FS_SHARE/README ]] ; then
+    export AUTOUT_UPLOAD_PATH=$DIST_FS_SHARE
+ fi
  export AUTOUT_NAME=$PATCH_SPEC$(echo $SPEC_NAME | awk -F'spec.build.' {'print $2'})
  export LOG_PATH=$AUTOUT_PATH/$AUTOUT_NAME/log
     mkdir -p $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_UPLOAD_PATH $LOG_PATH $AUTOUT_PATH/log >/dev/null 2>&1
@@ -842,10 +846,10 @@ SETUP_BUILD_OUT()
  export LOG_PATH=$AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/log
 
 # please setup run_sshd.sh in docker
- if [[ ! -f $AUTOUT_UPLOAD_PATH/README ]] ; then
-     sshfs -o nonempty -p 2222 sshfs@$IBUILD_UPLOAD_URL $AUTOUT_UPLOAD_PATH >$LOG_PATH/sshfs.log 2>&1
+ if [[ ! -f $LOC_WORKSPACE/upload/README ]] ; then
+     sshfs -o nonempty -p 2222 sshfs@$IBUILD_UPLOAD_URL $LOC_WORKSPACE/upload >$LOG_PATH/sshfs.log 2>&1
      export MOUNT_STATUS=$?
-     LOG_STATUS $MOUNT_STATUS sshfs_$AUTOUT_UPLOAD_PATH $LOG_PATH/sshfs.log 
+     LOG_STATUS $MOUNT_STATUS sshfs_$LOC_WORKSPACE/upload $LOG_PATH/sshfs.log
  fi
 
  mkdir -p $AUTOUT_UPLOAD_PATH/$TODAY
@@ -864,6 +868,11 @@ SETUP_BUILD_OUT()
 
  time cp -R $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME $AUTOUT_UPLOAD_PATH/$TODAY/ >/dev/null 2>&1
  export STATUS_CP=$?
+
+ if [[ $AUTOUT_UPLOAD_PATH = $DIST_FS_SHARE && -f $LOC_WORKSPACE/upload/README ]] ; then
+    mkdir -p $LOC_WORKSPACE/upload/$TODAY >/dev/null 2>&1
+    ln -sf /local/share/DIST_FS/$HOSTNAME/$TODAY/$IVEREV.$SHORT_AUTOUT_NAME $LOC_WORKSPACE/upload/$TODAY/
+ fi
 
  SETUP_ICASE $TODAY/$IVEREV.$SHORT_AUTOUT_NAME
  if [[ $STATUS_CP = 0 ]] ; then
