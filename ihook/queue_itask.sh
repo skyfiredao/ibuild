@@ -42,6 +42,7 @@ if [[ ! -d $QUEUE_SPACE_TOP ]] ; then
     svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/queue $QUEUE_SPACE_TOP 
     chmod 777 -R $QUEUE_SPACE_TOP
 else
+    svn cleanup $QUEUE_SPACE_TOP
     svn up -q $IBUILD_SVN_OPTION $QUEUE_SPACE_TOP
 fi
 
@@ -93,6 +94,7 @@ do
         rm -f $LOCK_SPACE/queue_itask.lock
         exit
     fi
+    svn cleanup $QUEUE_SPACE_TOP
     $IBUILD_ROOT/ihook/node_matching.sh $QUEUE_SPACE >/tmp/node_matching.log 2>&1
     sleep `expr $RANDOM % 3 + 1`
 done
