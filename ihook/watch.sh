@@ -48,6 +48,11 @@ svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec $TASK_SPACE/$WATC
 svn log -v -r $ICHANGE_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ichange >$TASK_SPACE/$WATCH_TMP/svn.log
 export WATCH_GERRIT_SERVER=`cat $TASK_SPACE/$WATCH_TMP/svn.log | grep ichange | egrep -v 'manifest' | awk -F"$TOYEAR" {'print $2'} | awk -F'/' {'print $2'} | sort -u | head -n1`
 export WATCH_GERRIT_BRANCH=`cat $TASK_SPACE/$WATCH_TMP/svn.log | grep ichange | egrep -v 'manifest' | grep $TOWEEK | awk -F"$WATCH_GERRIT_SERVER/" {'print $2'} | awk -F"/$TOWEEK.all-change" {'print $1'} | sort -u | head -n1`
+if [[ $(cat $TASK_SPACE/$WATCH_TMP/svn.log | egrep '\[topic_build\]') ]] ; then
+    export IBUILD_MODE=topic
+else
+    export IBUILD_MODE=patch
+fi
 
 [[ `echo $WATCH_GERRIT_BRANCH | grep all-change` ]] && export WATCH_GERRIT_BRANCH=''
 
@@ -71,7 +76,7 @@ export WATCH_GERRIT_value=`echo $ICHANGE_ENTRY | awk -F'|' {'print $8'}`
 SPEC_EXT()
 {
  export SPEC_EXT_URL=$1
- export SPEC_EXT_NAME=patch.`basename $SPEC_EXT_URL`
+ export SPEC_EXT_NAME=$IBUILD_MODE.`basename $SPEC_EXT_URL`
 
  cat $SPEC_EXT_URL | egrep -v 'IBUILD_MODE=|IBUILD_PRIORITY=' >$TASK_SPACE/$WATCH_TMP/$SPEC_EXT_NAME
  cat << _EOF_ >>$TASK_SPACE/$WATCH_TMP/$SPEC_EXT_NAME
@@ -83,7 +88,7 @@ GERRIT_CHANGE_OWNER_NAME=`echo $WATCH_GERRIT_email | awk -F'@' {'print $1'}`
 GERRIT_PATCHSET_NUMBER=$WATCH_GERRIT_patchSet_number
 GERRIT_PATCHSET_REVISION=$WATCH_GERRIT_revision
 GERRIT_PROJECT=$WATCH_GERRIT_PROJECT
-IBUILD_MODE=patch
+IBUILD_MODE=$IBUILD_MODE
 IBUILD_PRIORITY=3
 _EOF_
 
@@ -106,8 +111,8 @@ ITASK_SUBMIT()
  for SPEC_NAME in `ls $ISPEC_PATH/spec | grep $WATCHDOG_SPEC$`
  do
 	SPEC_EXT $ISPEC_PATH/spec/$SPEC_NAME
-	[[ $WATCH_GERRIT_email != no_mail ]] && $DEBUG $ISPEC_PATH/itask $TASK_SPACE/$WATCH_TMP/patch.$SPEC_NAME
-	$DEBUG mv $TASK_SPACE/$WATCH_TMP/patch.$SPEC_NAME $TASK_SPACE/$WATCH_TMP/patch.$SPEC_NAME.$RANDOM
+	[[ $WATCH_GERRIT_email != no_mail ]] && $DEBUG $ISPEC_PATH/itask $TASK_SPACE/$WATCH_TMP/$IBUILD_MODE.$SPEC_NAME
+	$DEBUG mv $TASK_SPACE/$WATCH_TMP/$IBUILD_MODE.$SPEC_NAME $TASK_SPACE/$WATCH_TMP/$IBUILD_MODE.$SPEC_NAME.$RANDOM
  done
  echo $ICHANGE_REV
  echo $ICHANGE_ENTRY 
