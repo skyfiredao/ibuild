@@ -49,6 +49,7 @@ wget https://download.strongswan.org/strongswan-5.5.0.tar.bz2
 tar xfj strongswan-5.5.0.tar.bz2
 
 icd strongswan-5.5.0
+#aptitude install arno-iptables-firewall
 
 aptitude install libssl-dev libpam0g-dev
 
