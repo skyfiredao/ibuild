@@ -105,6 +105,18 @@ if [[ ! -d $TASK_SPACE/itask/svn/inode ]] ; then
     svn ci $IBUILD_SVN_OPTION -m "auto: add inode in $IP" $TASK_SPACE/itask/svn/inode
 fi
 
+if [[ -f /local/share/README && $IBUILD_SVN_SRV_HOSTNAME != $HOSTNAME ]] ; then
+    export DIST_FS=/local/share
+    export SHARE_POINT_USAGE=$(df $DIST_FS | grep dev | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
+    export RM_ENTRY=$(ls $DIST_FS | head -n1)
+    if [[ $SHARE_POINT_USAGE -ge 70 && ! -z $RM_ENTRY ]] ; then
+        echo "rm -fr $SHARE_POINT/$RM_ENTRY" >>/tmp/clean_share.log 2>&1
+        sudo rm -fr $SHARE_POINT/$RM_ENTRY >>/tmp/clean_share.log 2>&1
+    fi
+else
+    export DIST_FS=''
+fi
+
 echo "# build node info
 IP=$IP
 HOSTNAME=$HOSTNAME
@@ -113,7 +125,8 @@ BTRFS_PATH=$BTRFS_PATH
 MEMORY=$MEMORY
 CPU=$CPU
 JOBS=$JOBS
-USER=$USER" | sort -u >$TASK_SPACE/itask/$HOSTNAME
+USER=$USER
+DIST_FS=$DIST_FS" | sort -u >$TASK_SPACE/itask/$HOSTNAME
 
 [[ ! -z $IP2 ]] && echo "IP2=$IP2" >>$TASK_SPACE/itask/$HOSTNAME
 
@@ -155,13 +168,16 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
     for CHK_HOST in `ls $TASK_SPACE/itask/svn/inode`
     do
         export CHK_HOST_IP=$(grep '^IP=' $TASK_SPACE/itask/svn/inode/$CHK_HOST | awk -F'IP=' {'print $2'})
+        export DIST_FS=$(grep '^DIST_FS=' $TASK_SPACE/itask/svn/inode/$CHK_HOST | awk -F'DIST_FS=' {'print $2'})
 #        /bin/ping -c 3 -W 1 $CHK_HOST_IP >/dev/null 2>&1
         /bin/nc -z -w 3 $CHK_HOST_IP 22 >/dev/null 2>&1
-        if [[ $? = 1 ]] ; then
+        export NC_CHECK_STATUS=$?
+        if [[ $NC_CHECK_STATUS = 1 ]] ; then
             svn rm $TASK_SPACE/itask/svn/inode/$CHK_HOST
-        elif [[ $? = 0 && ! -z $DIST_FS_SHARE && $CHK_HOST != $HOSTNAME ]] ; then
+        fi
+        if [[ $NC_CHECK_STATUS = 0 && ! -z $DIST_FS_SHARE && $CHK_HOST != $HOSTNAME ]] ; then
             [[ ! -d /local/share/DIST_FS/$CHK_HOST ]] && mkdir -p /local/share/DIST_FS/$CHK_HOST >/dev/null 2>&1
-            [[ ! -f /local/share/DIST_FS/$CHK_HOST/README ]] && sshfs -o nonempty,allow_other,sync_read,cache_timeout=7 -p 22 $CHK_HOST_IP:/local/share/ /local/share/DIST_FS/$CHK_HOST &
+            [[ ! -f /local/share/DIST_FS/$CHK_HOST/README && ! -z $DIST_FS ]] && sshfs -o nonempty,allow_other,sync_read,cache_timeout=7 -p 22 $CHK_HOST_IP:/local/share/ /local/share/DIST_FS/$CHK_HOST &
         fi
     done
 
@@ -176,9 +192,9 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
         sudo /etc/init.d/ganglia-monitor restart
     fi
 
-    export SHARE_POINT=$(df | grep local | grep share | awk -F' ' {'print $6'})
-    [[ $(df | grep local | grep share | grep sshfs) ]] && export SHARE_POINT=$(df | grep local | grep share | awk -F':' {'print $2'} | awk -F' ' {'print $1'})
-    export SHARE_POINT_USAGE=$(df | grep local | grep share | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
+    export SHARE_POINT=$(df | grep local | grep share | grep upload | awk -F' ' {'print $6'})
+    [[ $(df | grep local | grep share | grep sshfs | grep upload) ]] && export SHARE_POINT=$(df | grep local | grep share | grep upload | awk -F':' {'print $2'} | awk -F' ' {'print $1'})
+    export SHARE_POINT_USAGE=$(df | grep local | grep share | grep upload | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
     export RM_ENTRY=$(ls $SHARE_POINT | head -n1)
     if [[ $SHARE_POINT_USAGE -ge 90 && ! -z $RM_ENTRY ]] ; then
         echo "rm -fr $SHARE_POINT/$RM_ENTRY" >>/tmp/clean_share.log 2>&1
