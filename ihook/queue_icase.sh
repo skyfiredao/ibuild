@@ -39,14 +39,14 @@ export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.c
 
 export QUEUE_SPACE=/local/queue/icase
 export QUEUE_SPACE_TOP=$(dirname $QUEUE_SPACE)
-if [[ ! -d $QUEUE_SPACE_TOP ]] ; then
-    svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/queue $QUEUE_SPACE_TOP
-    chmod 777 -R $QUEUE_SPACE_TOP
-else
-    svn cleanup $QUEUE_SPACE_TOP
-    svn ci -q $IBUILD_SVN_OPTION -m "auto: cleanup" $QUEUE_SPACE_TOP
-    svn up -q $IBUILD_SVN_OPTION $QUEUE_SPACE_TOP
-fi
+#if [[ ! -d $QUEUE_SPACE_TOP ]] ; then
+#    svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/queue $QUEUE_SPACE_TOP
+#    chmod 777 -R $QUEUE_SPACE_TOP
+#else
+#    svn cleanup $QUEUE_SPACE_TOP
+#    svn ci -q $IBUILD_SVN_OPTION -m "auto: cleanup" $QUEUE_SPACE_TOP
+#    svn up -q $IBUILD_SVN_OPTION $QUEUE_SPACE_TOP
+#fi
 
 export ICASE_REV=$1
 [[ -z $ICASE_REV ]] && exit

@@ -175,6 +175,9 @@ mkdir -p itask.svn/itask itask.svn/queue/{itask,icase}
 touch itask.svn/queue/.zero
 svn add itask.svn/itask itask.svn/queue
 svn ci $LOCAL_SVN_OPTION -m "auto init queue" itask.svn
+mkdir -p /local/share/DIST_FS
+svn co $LOCAL_SVN_OPTION svn://127.0.0.1/itask/queue /local/share/DIST_FS/queue
+ln -sf /local/share/DIST_FS/queue /local/queue
 
 rm -fr $TMP_SVN_PATH
 # For Pi
