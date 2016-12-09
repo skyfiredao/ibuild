@@ -270,20 +270,13 @@ do
     export GERRIT_PROJECT=$(cat /tmp/$TOPIC_ID | sort -u | grep '^project: ' | awk -F': ' {'print $2'})
     export LOCAL_PROJECT_PATH=$(cat /tmp/repo.list | egrep ": $REAL_GERRIT_PROJECT$" | awk -F':' {'print $1'} | head -n1)
     export GERRIT_REFSPEC=$(cat /tmp/$TOPIC_ID | sort -u | grep '^ref: ' | tail -n1 | awk -F': ' {'print $2'})
-    export GERRIT_CHANGE_OWNER_NAME=$(cat /tmp/$TOPIC_ID | sort -u | grep '^name: ' | awk -F': ' {'print $2'} | head -n1)
-    export GERRIT_CHANGE_OWNER_EMAIL=$(cat /tmp/$TOPIC_ID | sort -u | grep '^email: ' | awk -F': ' {'print $2'} | head -n1)
 
     if [[ $(echo $REAL_GERRIT_PROJECT | grep manifest) ]] ; then
         export LOCAL_PROJECT_PATH=.repo/manifests
     fi
 
     if [[ ! -z $LOCAL_PROJECT_PATH ]] ; then
-        echo "GERRIT_PROJECT=$GERRIT_PROJECT
-GERRIT_REFSPEC=$GERRIT_REFSPEC
-GERRIT_CHANGE_OWNER_NAME=$GERRIT_CHANGE_OWNER_NAME
-GERRIT_CHANGE_OWNER_EMAIL=$GERRIT_CHANGE_OWNER_EMAIL
-GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION" >>$LOG_PATH/build_info.txt
-
+        echo "git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC && git cherry-pick FETCH_HEAD" >>$LOG_PATH/build_info.txt
         echo -e "cd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH" >>$LOG_PATH/topic.log 2>&1
         pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH >>$LOG_PATH/topic.log 2>&1
         SPLIT_LINE "topic: git fetch $GERRIT_REFSPEC in $LOCAL_PROJECT_PATH"
@@ -300,13 +293,11 @@ GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION" >>$LOG_PATH/build_info.txt
         popd
     else
         SPLIT_LINE "Can NOT find $LOCAL_PROJECT_PATH in local workspace"
-        export TOPIC_STATUS=1
+        LOG_STATUS 1 topic $LOG_PATH/topic.log
     fi
  done
 
  rm -f /tmp/topic.*.tmp /tmp/patch_into.tmp
-
- CLEAN_EXIT $TOPIC_STATUS
 }
 
 BUNDLE_BUILD()
