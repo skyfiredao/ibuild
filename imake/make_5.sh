@@ -43,7 +43,7 @@ SETUP_BUILD_REPO
 
 [[ $IBUILD_MODE = bundle ]] && BUNDLE_BUILD
 [[ $IBUILD_MODE = topic ]] && TOPIC_BUILD
-[[ ! -z $GERRIT_CHANGE_NUMBER ]] && REPO_DOWNLOAD
+[[ ! -z $GERRIT_CHANGE_NUMBER && $IBUILD_MODE = patch ]] && REPO_DOWNLOAD
 [[ $(echo $IBUILD_NOTE | egrep "itest") ]] && DIFF_MANIFEST
 [[ -f $LOG_PATH/nobuild ]] && exit 0
 
