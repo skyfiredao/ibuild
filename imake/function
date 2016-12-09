@@ -811,7 +811,7 @@ DOWNLOAD_PKG_NAME=$DOWNLOAD_PKG_NAME
     echo 'RESULT=ISSUE' >>$LOG_PATH/build_info.txt
  fi
 
- [[ ! -z $IVERIFY && $RESULT = PASSED ]] && SETUP_ISTATUS "iverify globe queue: svn://$ISTATUS_SVN_SRV/istatus/queue/icase"
+ [[ ! -z $IVERIFY && $RESULT = PASSED ]] && SETUP_ISTATUS "iverify globe queue: queue/icase"
  if [[ $ITASK_ORDER != $ITASK_TMP ]] ; then
      [[ -z $ITASK_ORDER && ! -z $ITASK_TMP ]] && export ITASK_ORDER=$ITASK_TMP
      echo "ITASK_ORDER=$ITASK_ORDER" >>$LOG_PATH/build_info.txt
