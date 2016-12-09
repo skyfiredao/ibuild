@@ -288,7 +288,7 @@ GERRIT_PATCHSET_REVISION=$GERRIT_PATCHSET_REVISION" >>$LOG_PATH/build_info.txt
         pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH >>$LOG_PATH/topic.log 2>&1
         SPLIT_LINE "topic: git fetch $GERRIT_REFSPEC in $LOCAL_PROJECT_PATH"
         echo "------------------------- $GERRIT_PROJECT $GERRIT_REFSPEC" >>$LOG_PATH/topic.log 2>&1
-        git fetch ssh://$GERRIT_SERVER/$GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/topic.log 2>&1
+        git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/topic.log 2>&1
         export STATUS_GIT=$?
         if [[ $STATUS_GIT = 0 ]] ; then
              git cherry-pick FETCH_HEAD >>$LOG_PATH/topic.log 2>&1
