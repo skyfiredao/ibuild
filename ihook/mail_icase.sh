@@ -96,7 +96,7 @@ export GERRIT_PATCHSET_NUMBER=$(grep '^GERRIT_PATCHSET_NUMBER=' $BUILD_INFO | aw
 export GERRIT_CHANGE_STATUS=$(grep '^GERRIT_CHANGE_STATUS=' $BUILD_INFO | awk -F'GERRIT_CHANGE_STATUS=' {'print $2'})
 export GERRIT_PATCHSET_REVISION=$(grep '^GERRIT_PATCHSET_REVISION=' $BUILD_INFO | awk -F'GERRIT_PATCHSET_REVISION=' {'print $2'})
 export GERRIT_PROJECT=$(grep '^GERRIT_PROJECT=' $BUILD_INFO | awk -F'GERRIT_PROJECT=' {'print $2'})
-if [[ ! -z $GERRIT_PROJECT && `grep $GERRIT_PROJECT $TASK_SPACE/tmp/icase.mail.$SEED/ispec/conf/project.conf` ]] ; then
+if [[ ! -z $GERRIT_PROJECT && $(grep $GERRIT_PROJECT $TASK_SPACE/tmp/icase.mail.$SEED/ispec/conf/project.conf) ]] ; then
     export OWNER_EMAIL=$GERRIT_CHANGE_OWNER_EMAIL
 fi
 
@@ -172,7 +172,7 @@ if [[ $IBUILD_MODE = topic ]] ; then
     export GERRIT_TOPIC=$(grep '^GERRIT_TOPIC=' $BUILD_INFO | awk -F'GERRIT_TOPIC=' {'print $2'})
     export SUB_IBUILD_MODE="[topic][$GERRIT_TOPIC]"
     echo -e "------------------------- topic:$GERRIT_TOPIC $GERRIT_CHANGE_OWNER_EMAIL" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
-    grep '^git fetch' >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail 
+    grep '^git fetch' $BUILD_INFO >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail 
 fi
 
 [[ ! -z $IBUILD_MODE && -z $SUB_IBUILD_MODE ]] && export SUB_IBUILD_MODE="[$IBUILD_MODE]"

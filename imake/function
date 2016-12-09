@@ -183,7 +183,8 @@ EXPORT_IBUILD_SPEC()
  export SPEC_NAME=`basename $IBUILD_SPEC`
  export AUTOUT_PATH=$LOC_WORKSPACE/autout
  export AUTOUT_UPLOAD_PATH=$LOC_WORKSPACE/upload
- [[ $(echo $SPEC_NAME | grep patch.spec.build) ]] && export PATCH_SPEC='patch.' || export PATCH_SPEC=''
+# [[ $(echo $SPEC_NAME | grep patch.spec.build) ]] && export PATCH_SPEC='patch.' || export PATCH_SPEC=''
+ [[ $IBUILD_MODE != normal ]] && && export PATCH_SPEC="$IBUILD_MODE." || export PATCH_SPEC=''
  if [[ ! -z $DIST_FS_SHARE && -f $DIST_FS_SHARE/README ]] ; then
     export AUTOUT_UPLOAD_PATH=$DIST_FS_SHARE
  fi
