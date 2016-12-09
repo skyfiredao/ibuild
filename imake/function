@@ -278,7 +278,7 @@ do
     if [[ ! -z $LOCAL_PROJECT_PATH ]] ; then
         echo "git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC && git cherry-pick FETCH_HEAD" >>$LOG_PATH/build_info.txt
         echo -e "cd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH" >>$LOG_PATH/topic.log 2>&1
-        pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH >>$LOG_PATH/topic.log 2>&1
+        pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH
         SPLIT_LINE "topic: git fetch $GERRIT_REFSPEC in $LOCAL_PROJECT_PATH"
         echo "------------------------- $GERRIT_PROJECT $GERRIT_REFSPEC" >>$LOG_PATH/topic.log 2>&1
         git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/topic.log 2>&1
@@ -290,7 +290,7 @@ do
         fi
         SETUP_ISTATUS "topic: $GERRIT_PROJECT $GERRIT_REFSPEC" $ITASK_REV
         LOG_STATUS $STATUS_GIT topic $LOG_PATH/topic.log
-        popd
+        popd >/dev/null 2>&1
     else
         SPLIT_LINE "Can NOT find $LOCAL_PROJECT_PATH in local workspace"
         LOG_STATUS 1 topic $LOG_PATH/topic.log
