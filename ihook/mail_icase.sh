@@ -139,7 +139,7 @@ It based on $IBUILD_GRTSRV/$IBUILD_GRTSRV_URL -b $IBUILD_GRTSRV_BRANCH -m $IBUIL
 Other info:
 $BUILD_SPEC" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
 
-if [[ ! -z $GERRIT_PATCHSET_REVISION ]] ; then
+if [[ ! -z $GERRIT_PATCHSET_REVISION && $IBUILD_MODE = patch ]] ; then
     echo -e "------------------------- $GERRIT_CHANGE_OWNER_EMAIL" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
     echo "GERRIT_CHANGE_ID: $GERRIT_CHANGE_ID" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
     if [[ -z $GERRIT_CHANGE_NUMBER ]] ; then
@@ -166,6 +166,13 @@ if [[ $IBUILD_MODE = bundle ]] ; then
     do
         echo -e "$BUNDLE_PATCH_ENTRY\n" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
     done
+fi
+
+if [[ $IBUILD_MODE = topic ]] ; then
+    export GERRIT_TOPIC=$(grep '^GERRIT_TOPIC=' $BUILD_INFO | awk -F'GERRIT_TOPIC=' {'print $2'})
+    export SUB_IBUILD_MODE="[topic][$GERRIT_TOPIC]"
+    echo -e "------------------------- topic:$GERRIT_TOPIC $GERRIT_CHANGE_OWNER_EMAIL" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
+    grep '^git fetch' >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail 
 fi
 
 [[ ! -z $IBUILD_MODE && -z $SUB_IBUILD_MODE ]] && export SUB_IBUILD_MODE="[$IBUILD_MODE]"
