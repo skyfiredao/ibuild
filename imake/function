@@ -261,7 +261,7 @@ TOPIC_BUILD()
  done
 
 echo "GERRIT_TOPIC=$GERRIT_TOPIC" >>$LOG_PATH/build_info.txt
-export REMOTE_NAME=$(grep .repo/manifests/*.xml | grep remote= | awk -F'="' {'print $2'} | awk -F'"' {'print $1'} | sort -u)
+export REMOTE_NAME=$(cat .repo/manifests/*.xml | grep remote= | awk -F'="' {'print $2'} | awk -F'"' {'print $1'} | sort -u)
 [[ -z $REMOTE_NAME ]] && export REMOTE_NAME=No_Remote_Name
 
 for TOPIC_ID in `ls /tmp/ | grep topic.I`
@@ -606,7 +606,7 @@ REPO_SYNC()
     EXPORT_MANIFEST $LOG_PATH/after_sync_manifest.xml
     LOG_STATUS $STATUS_SYNC repo_sync $LOG_PATH/$REPO_SYNC_LOG_NAME.log
     CCACHE_HOTFIX
-    find >file.list
+#    find >file.list
  fi
 
  rm -f out
