@@ -76,7 +76,7 @@ if [[ `echo $ITASK_SPEC_URL | grep '^/itask/tasks'` ]] ; then
     fi
     echo $IBUILD_PRIORITY.$ITASK_REV >>$TASK_SPACE/ispec.svn/queue/itask-$TOWEEK.list
 
-    chmod 777 -R $QUEUE_SPACE
+    chmod 755 -R $QUEUE_SPACE
 elif [[ `echo $ITASK_SPEC_URL | grep 'jobs.txt$'` ]] ; then
     $IBUILD_ROOT/ihook/mail_itask.sh $ITASK_REV
 else
