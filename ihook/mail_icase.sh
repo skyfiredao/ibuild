@@ -125,7 +125,12 @@ $DOWNLOAD_URL
 if [[ $RESULT != PASSED ]] ; then
     echo -e "Error Log:\n$DOWNLOAD_URL/log/error.log.txt" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
     rm -f $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt >/dev/null 2>&1
-    wget -q $DOWNLOAD_URL/log/error.log.txt -O $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt
+    export URL_RBS=$(echo $DOWNLOAD_URL | awk -F'/build/' {'print $2'})
+    if [[ -f /local/share/build/$URL_RBS/log/error.log.txt ]] ; then
+        cp /local/share/build/$URL_RBS/log/error.log.txt $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt
+    else
+        wget --no-proxy -q $DOWNLOAD_URL/log/error.log.txt -O $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt
+    fi
 fi
 
 echo -e "
@@ -166,7 +171,7 @@ fi
 [[ ! -z $IBUILD_MODE && -z $SUB_IBUILD_MODE ]] && export SUB_IBUILD_MODE="[$IBUILD_MODE]"
 
 if [[ -f $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt ]] ; then
-    echo -e "\n------------------------- Error log" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
+    echo -e "\n------------------------- Error log: last 50" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
     cat $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt | egrep -v '32m|0m' | tail -n50 >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
     echo -e "------------------------- End" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
 fi
