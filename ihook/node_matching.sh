@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 # Copyright (C) <2014,2015>  <Ding Wei>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -104,8 +104,8 @@ ASSIGN_JOB()
     echo "$ITASK_REV|$NODE|$NODE_IP|$ITASK_SPEC_NAME" >>$ITASK_PATH/jobs.txt
     svn ci -q $IBUILD_SVN_OPTION -m "auto: assign itask-r$ITASK_REV to $NODE" $ITASK_PATH/jobs.txt
 #    svn rm -q $IBUILD_SVN_OPTION -m "auto: remove $PRIORITY_ITASK_REV" svn://$IBUILD_SVN_SRV/itask/queue/itask/$PRIORITY_ITASK_REV
-    rm -f /local/queue/itask/$PRIORITY_ITASK_REV
-    svn up -q $IBUILD_SVN_OPTION $QUEUE_SPACE
+    rm -f $QUEUE_SPACE/*.$ITASK_REV
+#    svn up -q $IBUILD_SVN_OPTION $QUEUE_SPACE
 #    if [[ -f $QUEUE_SPACE/$PRIORITY_ITASK_REV ]] ; then
 #        rm -fr $QUEUE_SPACE
 #        svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/queue $QUEUE_SPACE
