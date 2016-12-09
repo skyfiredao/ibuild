@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 # Copyright (C) <2014,2015>  <Ding Wei>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -61,7 +61,7 @@ if [[ `echo $ITASK_SPEC_URL | grep '^/itask/tasks'` ]] ; then
 #    svn://$IBUILD_SVN_SRV/itask/queue/itask/$IBUILD_PRIORITY.$ITASK_REV
     touch $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
 #    svn up -q $IBUILD_SVN_OPTION $QUEUE_SPACE
-    [[ ! -f $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV ]] && touch $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
+#    [[ ! -f $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV ]] && touch $QUEUE_SPACE/$IBUILD_PRIORITY.$ITASK_REV
 
     if [[ -d $TASK_SPACE/ispec.svn/.svn ]] ; then
 	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/ispec.svn
@@ -95,7 +95,7 @@ do
         rm -f $LOCK_SPACE/queue_itask.lock
         exit
     fi
-    svn cleanup $QUEUE_SPACE_TOP
+#    svn cleanup $QUEUE_SPACE_TOP
     $IBUILD_ROOT/ihook/node_matching.sh $QUEUE_SPACE >/tmp/node_matching.log 2>&1
     sleep `expr $RANDOM % 3 + 1`
 done
