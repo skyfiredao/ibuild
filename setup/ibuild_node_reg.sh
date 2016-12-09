@@ -105,8 +105,8 @@ if [[ ! -d $TASK_SPACE/itask/svn/inode ]] ; then
     svn ci $IBUILD_SVN_OPTION -m "auto: add inode in $IP" $TASK_SPACE/itask/svn/inode
 fi
 
-if [[ -f /local/share/README && $IBUILD_SVN_SRV_HOSTNAME != $HOSTNAME ]] ; then
-    export DIST_FS=/local/share
+if [[ -f $DIST_FS_SHARE/README && $IBUILD_SVN_SRV_HOSTNAME != $HOSTNAME ]] ; then
+    export DIST_FS=$DIST_FS_SHARE
     export SHARE_POINT_USAGE=$(df $DIST_FS | grep dev | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
     export RM_ENTRY=$(ls $DIST_FS | head -n1)
     if [[ $SHARE_POINT_USAGE -ge 70 && ! -z $RM_ENTRY ]] ; then
@@ -177,7 +177,7 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
         fi
         if [[ $NC_CHECK_STATUS = 0 && ! -z $DIST_FS_SHARE && $CHK_HOST != $HOSTNAME ]] ; then
             [[ ! -d /local/share/DIST_FS/$CHK_HOST ]] && mkdir -p /local/share/DIST_FS/$CHK_HOST >/dev/null 2>&1
-            [[ ! -f /local/share/DIST_FS/$CHK_HOST/README && ! -z $DIST_FS ]] && sshfs -o nonempty,allow_other,sync_read,cache_timeout=7 -p 22 $CHK_HOST_IP:/local/share/ /local/share/DIST_FS/$CHK_HOST &
+            [[ ! -f /local/share/DIST_FS/$CHK_HOST/README && ! -z $DIST_FS ]] && sshfs -o nonempty,allow_other,sync_read,cache_timeout=7 -p 22 $CHK_HOST_IP:$DIST_FS_SHARE /local/share/DIST_FS/$CHK_HOST &
         fi
     done
 
