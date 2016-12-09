@@ -89,7 +89,7 @@ MATCHING()
          export NODE_IP=$(grep '^IP=' $LOCK_SPACE/inode/$NODE | awk -F'IP=' {'print $2'}) 
          export NODE_MD5=$(echo $NODE | md5sum | awk -F' ' {'print $1'})
 
-         echo $ITASK_REV | $NETCAT $NODE_IP 1234
+         echo $ITASK_REV | $NETCAT $NODE_IP 1234 >/dev/null 2>&1
          sleep 1
 
          $NETCAT $NODE_IP 4321 >$LOCK_SPACE/itask-r$ITASK_REV.jobs
