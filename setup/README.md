@@ -28,3 +28,14 @@ stand-alone tool, setup ibuild node local ref_repo for build after standard ubun
 #### sync_local_ref_repo.sh
 stand-alone tool, sync local mirror in ibuild node
 
+#### BIOS setup
+ASUS -> Advanced -> Restore AC Power loss -> Last state
+                    Power on By PCI-E/PCI -> Enable
+DELL -> Power Management -> AC Recovery -> Power on -> Last Power State
+                            Deep Sleep Control -> Disable
+                            Wake on LAN/WAN -> LAN Only
+                            Block Sleep -> Block Sleep (S3 State)
+HP -> Advanced -> Power On Options -> After Power Loss -> Previons State
+                                      REmote Wakeup Boot Source -> Remote Server
+
+
