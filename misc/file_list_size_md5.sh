@@ -39,11 +39,11 @@ echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 </head>
 <body>
 <table border="1">
-<tr><td>File Name</td><td>Size</td><td>MD5</td></tr>' >/tmp/$TARGET_PATH_NAME.list.html
+<tr><td style=width:50% align=center>File Name</td><td style=width:5% align="center">Size</td><td style=width:20% align=right>MD5</td></tr>' >/tmp/$TARGET_PATH_NAME.list.html
 
 for FILE_URL in $(find -type f | awk -F'^./' {'print $2'} | sort -u)
 do
-    echo "<tr><td>$FILE_URL</td><td>$(du -sh $FILE_URL | awk -F' ' {'print $1'})</td><td>$(md5sum $FILE_URL | awk -F' ' {'print $1'})</td></tr>" >>/tmp/$TARGET_PATH_NAME.list.html
+    echo "<tr><td align=left>$FILE_URL</td><td align=right>$(du -sh $FILE_URL | awk -F' ' {'print $1'})</td><td align=right>$(md5sum $FILE_URL | awk -F' ' {'print $1'})</td></tr>" >>/tmp/$TARGET_PATH_NAME.list.html
 done
 popd >/dev/null 2>&1
 
