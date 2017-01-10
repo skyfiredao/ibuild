@@ -131,7 +131,7 @@ tree p7zip p7zip-full splint hal vim vim-full exuberant-ctags fakeroot txt2html 
 apt-btrfs-snapshot btrfs-tools sshfs curl lsb-release openssh-server \
 tmux gnuplot dos2unix meld parted gnu-fdisk squashfs-tools mkisofs jq \
 u-boot-tools uboot-mkimage gawk xlockmore cramfsprogs lzop python-argparse \
-postfix etherwake wakeonlan ethtool
+postfix etherwake wakeonlan ethtool logwatch
 
 # install version control tool
 $DEBUG aptitude -y install git git-core tig subversion subversion-tools \
