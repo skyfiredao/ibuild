@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (C) <2014,2015,2016,2017>  <Ding Wei>
+# Copyright (C) <2014,2015>  <Ding Wei>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,12 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# Change log
 # 170127: init first version by dw
 
 export CONFIG_PATH=$1
 [[ -z $CONFIG_PATH ]] && export CONFIG_PATH=$(pwd)
 export SEED=$RANDOM
+[[ $(echo $* | grep DEBUG) ]] && export DEBUG=echo || export DEBUG=''
 
 export GERRIT_SERVER=gerrit.gm.com
 export GERRIT_CHANGE_NUMBER=$GERRIT_CHANGE_NUMBER
@@ -38,15 +38,20 @@ RANDOM_LIST()
  export PROJECT_REVIEWER_CONF=$1
  export MAX_REVIEWER_NUM=$(grep '@' $PROJECT_REVIEWER_CONF | wc -l)
  export MIN_REVIEWER_NUM=$(grep '^REVIEWER_NUM=' $PROJECT_REVIEWER_CONF | awk -F'REVIEWER_NUM=' {'print $2'})
+ cat $PROJECT_REVIEWER_CONF | grep -v REVIEWER_NUM >/tmp/reviewer_conf.$SEED.tmp
+ rm -f /tmp/reviewer.$SEED.tmp
+
  if [[ -z $MIN_REVIEWER_NUM ]] ; then
     cat $PROJECT_REVIEWER_CONF | grep -v REVIEWER_NUM >/tmp/reviewer.$SEED.tmp
  else
-    rm -f /tmp/reviewer.$SEED.tmp
     for ((i=0;i<$MIN_REVIEWER_NUM;i++))
     do
         RANDOM_LINE=$((RANDOM%$MAX_REVIEWER_NUM))
         RANDOM_LINE=$[RANDOM_LINE+1]
-        sed -n "$RANDOM_LINE"p $PROJECT_REVIEWER_CONF >>/tmp/reviewer.$SEED.tmp
+        export RANDOM_ENTRY=$(sed -n "$RANDOM_LINE"p /tmp/reviewer_conf.$SEED.tmp)
+        grep -v $RANDOM_ENTRY /tmp/reviewer_conf.$SEED.tmp >/tmp/reviewer_conf.tmp.$SEED.tmp
+        cp /tmp/reviewer_conf.tmp.$SEED.tmp /tmp/reviewer_conf.$SEED.tmp
+        echo $RANDOM_ENTRY >>/tmp/reviewer.$SEED.tmp
     done
  fi
 }
@@ -57,9 +62,9 @@ RANDOM_LIST $CONFIG_PATH/reviewer.$PROJECT_NAME
 
 for REVIEWER in $(cat /tmp/reviewer.$SEED.tmp)
 do
-    ssh -p 29418 $GERRIT_SERVER gerrit set-reviewers --project $GERRIT_PROJECT -a $REVIEWER $GERRIT_CHANGE_NUMBER
+    $DEBUG ssh -p 29418 $GERRIT_SERVER gerrit set-reviewers --project $GERRIT_PROJECT -a $REVIEWER $GERRIT_CHANGE_NUMBER
 done
 
-rm -f /tmp/reviewer.$SEED.tmp
+rm -f /tmp/reviewer*$SEED.tmp
 
 
