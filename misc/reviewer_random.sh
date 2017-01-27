@@ -53,6 +53,8 @@ RANDOM_LIST()
 
 [[ ! -f $CONFIG_PATH/reviewer.$PROJECT_NAME ]] && EXIT "Can NOT find $CONFIG_PATH/reviewer.$PROJECT_NAME"
 
+RANDOM_LIST
+
 for REVIEWER in $(cat /tmp/reviewer.$SEED.tmp)
 do
     ssh -p 29418 $GERRIT_SERVER gerrit set-reviewers --project $GERRIT_PROJECT -a $REVIEWER $GERRIT_CHANGE_NUMBER
