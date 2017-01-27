@@ -53,7 +53,7 @@ RANDOM_LIST()
 
 [[ ! -f $CONFIG_PATH/reviewer.$PROJECT_NAME ]] && EXIT "Can NOT find $CONFIG_PATH/reviewer.$PROJECT_NAME"
 
-RANDOM_LIST
+RANDOM_LIST $CONFIG_PATH/reviewer.$PROJECT_NAME
 
 for REVIEWER in $(cat /tmp/reviewer.$SEED.tmp)
 do
