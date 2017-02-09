@@ -45,6 +45,7 @@ REPO_SYNC()
  cd $1
  $CMD_REPO sync -j$JOBS >/tmp/repo_sync.log 2>&1
  if [[ ! -f /tmp/repo_git_gc.log ]] ; then
+    $CMD_REPO forall -c 'git remote update --prune' -j$JOBS >/tmp/repo_git_gc.log
     $CMD_REPO forall -c 'git gc --auto' -j$JOBS >/tmp/repo_git_gc.log
  fi
  export SYNC_STATUS=$?
