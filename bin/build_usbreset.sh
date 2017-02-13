@@ -68,10 +68,15 @@ popd
 
 echo "
 install usbutils
-lsusb -t
-Bus#  4
--Dev#   3
-sudo ./usbreset /dev/bus/usb/004/003
+
+lsusb
+Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 001 Device 005: ID 0bda:8153 Realtek Semiconductor Corp.
+Bus 001 Device 002: ID 05e3:0610 Genesys Logic, Inc. 4-port hub
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+
+sudo /usr/bin/usbreset /dev/bus/usb/$(lsusb | grep Realtek | awk -F'[ :]' {'print $2"/"$4'})
 "
 
 
