@@ -67,6 +67,7 @@ sudo cp usbreset /usr/bin
 popd
 
 echo "
+install usbutils
 lsusb -t
 Bus#  4
 -Dev#   3
