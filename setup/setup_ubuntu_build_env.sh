@@ -61,13 +61,6 @@ $DEBUG mkdir -p /local/workspace/autout/log
 $DEBUG chmod 775 /local /local/{ccache,workspace,out,ref_repo}
 $DEBUG chown ibuild -R /local
 
-cd $HOME
-bash $HOME/ibuild/bin/get_repo.sh
-bash $HOME/ibuild/bin/build_ccache.sh
-$DEBUG /bin/mv /tmp/repo /usr/bin/
-$DEBUG /bin/mv /tmp/ccache/ccache /usr/bin/ccache
-export REPO=`which repo`
-
 mkdir -p $HOME/.ssh
 echo "StrictHostKeyChecking=no" >> $HOME/.ssh/config
 
@@ -197,6 +190,13 @@ if [[ `echo $RUN_OPTION | egrep 'nomail'` ]] ; then
 fi
 
 [[ -f /usr/bin/fromdos ]] && $DEBUG ln -s /usr/bin/fromdos /usr/local/bin/dos2unix
+
+cd $HOME
+bash $HOME/ibuild/bin/get_repo.sh
+bash $HOME/ibuild/bin/build_ccache.sh
+$DEBUG /bin/mv /tmp/repo /usr/bin/
+$DEBUG /bin/mv /tmp/ccache/ccache /usr/bin/ccache
+export REPO=`which repo`
 
 echo "export LC_ALL=C
 export LC_CTYPE=C
