@@ -19,6 +19,7 @@
 source /etc/bash.bashrc >/dev/null 2>&1
 export LC_CTYPE=C
 export LC_ALL=C
+unset DISPLAY
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
