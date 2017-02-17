@@ -158,8 +158,8 @@ EXPORT_IBUILD_SPEC()
     export DISABLE_DEXPREOPT=false
     export WITH_DEXPREOPT=true
  elif [[ -z $IBUILD_ODEX ]] ; then
-    export DISABLE_DEXPREOPT=
-    export WITH_DEXPREOPT=
+    unset DISABLE_DEXPREOPT
+    unset WITH_DEXPREOPT
  fi
  export IBUILD_AOSP_JDK=$(grep '^IBUILD_AOSP_JDK=' $IBUILD_SPEC | awk -F'IBUILD_AOSP_JDK=' {'print $2'})
  export JDK_PATH=$(ls -d $JDK6_PATH $JDK7_PATH 2>/dev/null | grep $IBUILD_AOSP_JDK)
