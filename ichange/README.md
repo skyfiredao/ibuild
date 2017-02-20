@@ -6,6 +6,7 @@ stand-alone tool, tracking gerrit stream-events and save it as json in allow hos
 
 #### json2svn.sh
 non-stand-alone tool, convert gerrit stream-events json file to svn:ichange by itrack.sh
+add /tmp/DEBUG for degbug json issue in /tmp/itrack.debug
 
 #### sort_patch.sh
 stand-alone tool, list 24 hours patch from svn:ichange
