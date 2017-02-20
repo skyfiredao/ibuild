@@ -105,13 +105,15 @@ ITASK_SUBMIT()
 {
  export WATCHDOG_NUM_CONF=`echo $WATCHDOG_CONF | awk -F'.' {'print $1'}`
  export WATCHDOG_SPEC=`echo $WATCHDOG_CONF | awk -F"$WATCHDOG_NUM_CONF" {'print $2'}`
+ export ITASK_CMD=$(which itask)
+ [[ -z $ITASK_CMD ]] && export ITASK_CMD=$ISPEC_PATH/itask && echo "Use $ISPEC_PATH/itask"
  
  sleep `expr $RANDOM % 7 + 1`
  date
  for SPEC_NAME in `ls $ISPEC_PATH/spec | grep $WATCHDOG_SPEC$`
  do
 	SPEC_EXT $ISPEC_PATH/spec/$SPEC_NAME
-	[[ $WATCH_GERRIT_email != no_mail ]] && $DEBUG $ISPEC_PATH/itask $TASK_SPACE/$WATCH_TMP/$IBUILD_MODE.$SPEC_NAME
+	[[ $WATCH_GERRIT_email != no_mail ]] && $DEBUG $ITASK_CMD $TASK_SPACE/$WATCH_TMP/$IBUILD_MODE.$SPEC_NAME
 	$DEBUG mv $TASK_SPACE/$WATCH_TMP/$IBUILD_MODE.$SPEC_NAME $TASK_SPACE/$WATCH_TMP/$IBUILD_MODE.$SPEC_NAME.$RANDOM
  done
  echo $ICHANGE_REV
