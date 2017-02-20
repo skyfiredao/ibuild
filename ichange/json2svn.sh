@@ -106,15 +106,18 @@ SPLIT_LINE()
 }
 
 SPLIT_LINE 'Format json and log'
+[[ -f /tmp/DEBUG ]] && mkdir -p /tmp/itrack.debug/{orig,json}
 
 for JSON_FILE in `ls $JSON_PATH | grep json$`
 do
     if [[ `egrep 'ref-updated|Verified|comment-added|reviewer-added|change-restored|merge-failed|Code-Review' $JSON_PATH/$JSON_FILE` ]] ; then
+        [[ -f /tmp/DEBUG ]] && cp $JSON_PATH/$JSON_FILE /tmp/itrack.debug/orig/
         rm -f $JSON_PATH/$JSON_FILE
     else
         export ORDER=$(date +%y%m%d%H%M%S).$RANDOM
 
         cat $JSON_PATH/$JSON_FILE | $IBUILD_ROOT/bin${ADD_PATH}/jq '.' >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json
+        [[ -f /tmp/DEBUG ]] && cp $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json /tmp/itrack.debug/json/
         cat $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json | grep commitMessage | awk -F'"' {'print $4'} | sed 's/\\n/\n/g' >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log
         [[ $? = 0 ]] && rm -f $JSON_FILE
 
