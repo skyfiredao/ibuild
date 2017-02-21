@@ -110,7 +110,7 @@ SPLIT_LINE 'Format json and log'
 
 for JSON_FILE in `ls $JSON_PATH | grep json$`
 do
-    if [[ `egrep 'ref-updated|Verified|comment-added|reviewer-added|change-restored|merge-failed|Code-Review' $JSON_PATH/$JSON_FILE` ]] ; then
+    if [[ `egrep 'ref-updated|draft-published|Verified|comment-added|reviewer-added|change-restored|merge-failed|Code-Review' $JSON_PATH/$JSON_FILE` ]] ; then
         [[ -f /tmp/DEBUG ]] && cp $JSON_PATH/$JSON_FILE /tmp/itrack.debug/orig/
         rm -f $JSON_PATH/$JSON_FILE
     else
