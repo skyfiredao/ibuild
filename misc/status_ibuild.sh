@@ -24,8 +24,7 @@ export SEED=$RANDOM
 export LASTWEEK=$(date +%yw%W)
 export TOWEEK=$(date +%yw%V)
 if [[ $LASTWEEK = $TOWEEK ]] ; then
-    export LASTWEEK=$(date +%yw)$(echo $(date +%V) - 1 | bc)
-    [[ $(date +%V) -lt 10 ]] && export LASTWEEK=$(date +%yw)0$(echo $(date +%V) - 1 | bc)
+    export LASTWEEK=$(date -d last-week +%yw%W)
 fi
 export TOYEAR=$(date +%Y)
 export TASK_SPACE=/dev/shm
