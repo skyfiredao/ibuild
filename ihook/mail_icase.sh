@@ -148,7 +148,8 @@ if [[ ! -z $GERRIT_PATCHSET_REVISION && $IBUILD_MODE = patch ]] ; then
         export MAIL_REPO_CMD="repo download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER"
     fi
     echo "$MAIL_REPO_CMD" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
-    export SUB_IBUILD_MODE="[patch][$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER]"
+    [[ -z $GERRIT_CHANGE_NUMBER && ! -z $GERRIT_PATCHSET_NUMBER ]] && export PATCH_INFO=merged || export PATCH_INFO="$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER"
+    export SUB_IBUILD_MODE="[patch][$PATCH_INFO]"
 fi
 
 if [[ $IBUILD_MODE = bundle ]] ; then
