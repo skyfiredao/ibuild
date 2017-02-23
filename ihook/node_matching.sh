@@ -129,38 +129,39 @@ export TODAY=$(date +%y%m%d)
 
 for PRIORITY_ITASK_REV in `ls $QUEUE_SPACE`
 do
-	export IBUILD_PRIORITY=$(echo $PRIORITY_ITASK_REV | awk -F'.' {'print $1'})
-	export ITASK_REV=$(echo $PRIORITY_ITASK_REV | awk -F'.' {'print $2'})
-	[[ -f /tmp/EXIT ]] && EXIT
-	echo $ITASK_REV >$LOCK_SPACE/queue_itask.lock
-	chmod 777 $LOCK_SPACE/queue_itask.lock
+    export IBUILD_PRIORITY=$(echo $PRIORITY_ITASK_REV | awk -F'.' {'print $1'})
+    export ITASK_REV=$(echo $PRIORITY_ITASK_REV | awk -F'.' {'print $2'})
+    [[ -f /tmp/EXIT ]] && EXIT
+    echo $ITASK_REV >$LOCK_SPACE/queue_itask.lock
+    chmod 777 $LOCK_SPACE/queue_itask.lock
 
-	if [[ -f $TASK_SPACE/itask/itask.svn.$TODAY.lock && -d $TASK_SPACE/itask/itask.svn/.svn ]] ; then
-		svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/itask.lock
-	else
-		mkdir -p $TASK_SPACE/itask 
-		rm -fr $TASK_SPACE/itask/itask.svn*
-		touch $TASK_SPACE/itask/itask.svn.$TODAY.lock
-		svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask/itask.svn
-	fi
-	chmod 777 -R $TASK_SPACE/itask
-	export ITASK_PATH=$TASK_SPACE/itask/itask.svn
+    if [[ -f $TASK_SPACE/itask/itask.svn.$TODAY.lock && -d $TASK_SPACE/itask/itask.svn/.svn ]] ; then
+        svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/itask.lock
+    else
+        mkdir -p $TASK_SPACE/itask 
+        rm -fr $TASK_SPACE/itask/itask.svn*
+        touch $TASK_SPACE/itask/itask.svn.$TODAY.lock
+        svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/itask/itask.svn
+    fi
+    chmod 777 -R $TASK_SPACE/itask
+    export ITASK_PATH=$TASK_SPACE/itask/itask.svn
 
-	export ITASK_REV_MD5=$(echo $ITASK_REV | md5sum | awk -F' ' {'print $1'})
-	export ITASK_SPEC_URL=$(svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
-	export ITASK_SPEC_NAME=$(basename $ITASK_SPEC_URL)
+    export ITASK_REV_MD5=$(echo $ITASK_REV | md5sum | awk -F' ' {'print $1'})
+    export ITASK_SPEC_URL=$(svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
+    export ITASK_SPEC_NAME=$(basename $ITASK_SPEC_URL)
 
-	rm -f $LOCK_SPACE/itask-r$ITASK_REV.lock
-	svn export -q -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/$ITASK_SPEC_URL $LOCK_SPACE/itask-r$ITASK_REV.lock
-	[[ -z $IBUILD_PRIORITY ]] && export IBUILD_PRIORITY=$(grep '^IBUILD_PRIORITY=' $LOCK_SPACE/itask-r$ITASK_REV.lock | awk -F'IBUILD_PRIORITY=' {'print $2'})
-	if [[ $IBUILD_PRIORITY = x ]] ; then
-		export IBUILD_PRIORITY=2-9
-	elif [[ -z $IBUILD_PRIORITY ]] ; then
-		export IBUILD_PRIORITY=1-9
-	fi
-	export LEVEL_NUMBER=$IBUILD_PRIORITY
+    rm -f $LOCK_SPACE/itask-r$ITASK_REV.lock
+    svn export -q -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/$ITASK_SPEC_URL $LOCK_SPACE/itask-r$ITASK_REV.lock
+    [[ -z $IBUILD_PRIORITY ]] && export IBUILD_PRIORITY=$(grep '^IBUILD_PRIORITY=' $LOCK_SPACE/itask-r$ITASK_REV.lock | awk -F'IBUILD_PRIORITY=' {'print $2'})
+    if [[ $IBUILD_PRIORITY = x ]] ; then
+        export IBUILD_PRIORITY='2-9'
+    elif [[ -z $IBUILD_PRIORITY ]] ; then
+        export IBUILD_PRIORITY='1-9'
+    fi
+    echo $IBUILD_PRIORITY
+    export LEVEL_NUMBER=$IBUILD_PRIORITY
 
-	MATCHING $LEVEL_NUMBER
+    MATCHING $LEVEL_NUMBER
 done
 
 EXIT
