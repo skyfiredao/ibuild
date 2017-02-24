@@ -109,9 +109,9 @@ if [[ -f $DIST_FS_SHARE/README && $IBUILD_SVN_SRV_HOSTNAME != $HOSTNAME ]] ; the
     export DIST_FS=$DIST_FS_SHARE
     export SHARE_POINT_USAGE=$(df $DIST_FS | grep dev | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
     export RM_ENTRY=$(ls $DIST_FS | head -n1)
-    if [[ $SHARE_POINT_USAGE -ge 70 && ! -z $RM_ENTRY ]] ; then
-        echo "rm -fr $SHARE_POINT/$RM_ENTRY" >>/tmp/clean_share.log 2>&1
-        sudo rm -fr $SHARE_POINT/$RM_ENTRY >>/tmp/clean_share.log 2>&1
+    if [[ $SHARE_POINT_USAGE -ge 50 && ! -z $RM_ENTRY ]] ; then
+        echo "rm -fr $DIST_FS/$RM_ENTRY" >>/tmp/clean_share.log 2>&1
+        sudo rm -fr $DIST_FS/$RM_ENTRY >>/tmp/clean_share.log 2>&1
     fi
 else
     export DIST_FS=''
