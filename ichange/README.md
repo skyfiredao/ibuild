@@ -11,7 +11,12 @@ add /tmp/DEBUG for degbug json issue in /tmp/itrack.debug
 #### sort_patch.sh
 stand-alone tool, list 24 hours patch from svn:ichange
 
-Usage: sort_patch.sh YYYYMMDD gerrit_server_doamin_name project/branch
+Usage: sort_patch.sh YYYYMMDD gerrit_server_doamin_name branch
+
+#### url2patch.sh
+stand-alone tool, convert gerrit URL to patch
+
+Usage: url2patch.sh URL_list_file
 
 #### conf/HOSTNAME.conf
 config file for itrack: 

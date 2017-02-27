@@ -32,7 +32,9 @@ do
     export ICHANGE_PATH=$(find | grep $URL_SRV | awk -F"$URL_SRV" {'print $1'} | sort -u | tail -n1)
     cd $ICHANGE_LOC/$ICHANGE_PATH
     export ICHANGE_ENTRY=$(grep -R $URL_ID $URL_SRV | tail -n1 | awk -F':' {'print $2'})
-    echo 'git fetch ssh://'"$URL_SRV"/"$(echo $ICHANGE_ENTRY | awk -F'|' {'print $5" "$9'})"' && git cherry-pick FETCH_HEAD' >>~/patch.list
+    export REMOTE_ENTRY=$(grep 'remote=' $(find | grep manifest$ | sort -u | tail -n1)/* | tail -n1 | awk -F'="' {'print $2'} | awk -F'"' {'print $1'})
+    [[ ! -z $REMOTE_ENTRY ]] && export REMOTE_PATH="$REMOTE_ENTRY/" || export REMOTE_PATH=''
+    echo 'git fetch ssh://'"$URL_SRV"/"$REMOTE_PATH$(echo $ICHANGE_ENTRY | awk -F'|' {'print $5" "$9'})"' && git cherry-pick FETCH_HEAD' >>~/patch.list
 done
 
 cat ~/patch.list
