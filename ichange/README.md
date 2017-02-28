@@ -18,6 +18,11 @@ stand-alone tool, convert gerrit URL to patch
 
 Usage: url2patch.sh URL_list_file
 
+#### rev2patch.sh
+stand-alone tool, convert revision to patch
+
+Usage: rev2patch.sh revision
+
 #### conf/HOSTNAME.conf
 config file for itrack: 
 
