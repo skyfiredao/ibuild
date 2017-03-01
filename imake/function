@@ -257,7 +257,7 @@ TOPIC_BUILD()
 
  $REPO_CMD list >/tmp/repo.list
 
- ssh $IBUILD_GRTSRV gerrit query --patch-sets topic:{$GERRIT_TOPIC} is:open >/tmp/topic.$TODAY.$SEED.tmp
+ ssh $IBUILD_GRTSRV gerrit query --patch-sets topic:{\"$GERRIT_TOPIC\"} is:open >/tmp/topic.$TODAY.$SEED.tmp
 
  cat /tmp/topic.$TODAY.$SEED.tmp | while read line
  do
