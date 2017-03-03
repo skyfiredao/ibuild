@@ -40,6 +40,7 @@ export NOW=$(date +%y%m%d%H%M%S)
 export TOYEAR=$(date +%Y)
 export TOWEEK=$(date +%yw%V)
 export TODAY=$(date +%y%m%d)
+export TOHOUR=$(date +%y%m%d%H)
 
 export HOSTNAME=$(hostname)
 if [[ ! -f $ITRACK_PATH/conf/$HOSTNAME.conf ]] ; then
@@ -67,7 +68,7 @@ if [[ ! `svn ls $ICHANGE_SVN_OPTION $ICHANGE_SVN_SRV/ | grep $TOYEAR` ]] ; then
     svn mkdir -q $ICHANGE_SVN_OPTION $ICHANGE_SVN_SRV/$TOYEAR -m "auto: create $TOYEAR"
 fi
 
-if [[ ! -f $TASK_SPACE/itrack/svn.$TODAY.lock ]] ; then
+if [[ ! -f $TASK_SPACE/itrack/svn.$TOHOUR.lock ]] ; then
     rm -fr $TASK_SPACE/itrack/svn
 fi
 
@@ -83,7 +84,7 @@ else
     svn co $ICHANGE_SVN_OPTION -q $ICHANGE_SVN_SRV/$TOYEAR $TASK_SPACE/itrack/svn
 fi
 rm -f $TASK_SPACE/itrack/svn.*.lock
-touch $TASK_SPACE/itrack/svn.$TODAY.lock
+touch $TASK_SPACE/itrack/svn.$TOHOUR.lock
 
 UPDATE_XML()
 {
