@@ -274,7 +274,7 @@ do
     export REAL_GERRIT_PROJECT=$(cat /tmp/$TOPIC_ID | sort -u | grep '^project: ' | sed "s/$REMOTE_NAME\///g" | awk -F': ' {'print $2'})
     export GERRIT_PROJECT=$(cat /tmp/$TOPIC_ID | sort -u | grep '^project: ' | awk -F': ' {'print $2'})
     export LOCAL_PROJECT_PATH=$(cat /tmp/repo.list | egrep ": $REAL_GERRIT_PROJECT$" | awk -F':' {'print $1'} | head -n1)
-    export GERRIT_REFSPEC=$(cat /tmp/$TOPIC_ID | sort -u | grep '^ref: ' | tail -n1 | awk -F': ' {'print $2'})
+    export GERRIT_REFSPEC=$(cat /tmp/$TOPIC_ID | grep '^ref: ' | tail -n1 | awk -F': ' {'print $2'})
 
     if [[ $(echo $REAL_GERRIT_PROJECT | grep manifest) ]] ; then
         export LOCAL_PROJECT_PATH=.repo/manifests
