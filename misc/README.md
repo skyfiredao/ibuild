@@ -25,3 +25,5 @@ stand-alone tool, get diff log from manifest repo git:tag
 #### diff_xml2git.sh
 stand-alone tool, get diff log from manifest xml
 
+#### convert_ascii2hex.sh
+convert ascii to hex for proxy password in env
