@@ -25,23 +25,35 @@ export TOWEEK=`date +%yw%V`
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
+REBOOT_STEP()
+{
+ nc 127.0.0.1 1234
+ sync
+ sudo reboot
+}
+
 touch $LOCK_SPACE/count
 
 if [[ `date +%u` = 1 && ! -f $LOCK_SPACE/update-$TOWEEK ]] ; then
-	sudo aptitude update
-	sudo aptitude -y full-upgrade
-	rm -f $LOCK_SPACE/update-*
-	touch $LOCK_SPACE/update-$TOWEEK
-	echo "full-upgrade: "`date` >>$LOCK_SPACE/count
+    sudo aptitude update
+    sudo aptitude -y full-upgrade
+    rm -f $LOCK_SPACE/update-*
+    touch $LOCK_SPACE/update-$TOWEEK
+    echo "full-upgrade: "`date` >>$LOCK_SPACE/count
 fi
 
 if [[ `cat $LOCK_SPACE/count | wc -l` -ge 50 ]] ; then
-	touch $TASK_SPACE/reboot
+    touch $TASK_SPACE/reboot
 fi
 
 if [[ -f $TASK_SPACE/reboot && ! -f $TASK_SPACE/spec.build && ! `hostname | grep ibuild` ]] ; then
-	nc 127.0.0.1 1234
-	sync
-	sudo reboot
+    REBOOT_STEP
 fi
+
+if [[ -f /dev/shm/spec.build ]] ; then
+    export SPEC_TIME=$(stat /dev/shm/spec.build | grep Modify | awk -F' ' {'print $2'} | awk -F'-' {'print $3'})
+    export LOAD_NOW=$(w | grep average | awk -F' ' {'print $8'} | awk -F'.' {'print $1'})
+    [[ $(echo $(date +%d) - $SPEC_TIME | bc) -ge 1 && $LOAD_NOW -le 3 ]] && REBOOT_STEP
+fi
+
 
