@@ -93,7 +93,7 @@ MATCHING()
          sleep 1
 
          $NETCAT $NODE_IP 4321 >$LOCK_SPACE/itask-r$ITASK_REV.jobs
-         [[ `grep $ITASK_REV_MD5 $LOCK_SPACE/itask-r$ITASK_REV.jobs` ]] && ASSIGN_JOB
+         [[ `grep $ITASK_REV_MD5 $LOCK_SPACE/itask-r$ITASK_REV.jobs` ]] && ASSIGN_JOB || rm -f $LOCK_SPACE/inode/$NODE
      fi
  done
 }
