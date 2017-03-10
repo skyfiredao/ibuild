@@ -142,6 +142,7 @@ do
     export g_id=$(cat $ORDER.json | egrep '"id":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
     export g_type=$(cat $ORDER.json | egrep '"type":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
     export g_newRev=$(cat $ORDER.json | egrep '"newRev":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
+    export g_oldRev=$(cat $ORDER.json | egrep '"oldRev":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
     export g_refName=$(cat $ORDER.json | egrep '"refName":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
     export g_ref=$(cat $ORDER.json | egrep '"ref":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
     export g_username=$(cat $ORDER.json | egrep '"username":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
@@ -156,6 +157,7 @@ do
     done
     [[ -z $g_email ]] && export g_email=$g_username
     [[ -z $g_revision ]] && export g_revision=$g_newRev
+    [[ -z $g_id ]] && export g_id=$g_oldRev
         
     export g_path=''
     [[ ! `ls $TASK_SPACE/itrack/svn/manifest | grep xml` ]] && UPDATE_XML
