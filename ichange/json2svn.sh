@@ -58,6 +58,7 @@ export GERRIT_SERVER=$GERRIT_ROBOT@$GERRIT_SRV.$DOMAIN_NAME
 
 export ICHANGE_SVN_SRV=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_SVN_SRV=' | awk -F'ICHANGE_SVN_SRV=' {'print $2'})
 export ICHANGE_SVN_OPTION=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_SVN_OPTION=' | awk -F'ICHANGE_SVN_OPTION=' {'print $2'})
+export ICHANGE_IGNORE_EVENTS=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_IGNORE_EVENTS=' | awk -F'ICHANGE_IGNORE_EVENTS=' {'print $2'})
 
 [[ ! -d $JSON_PATH || -z $GERRIT_SRV ]] && exit 0
 [[ -f $TASK_SPACE/itrack/json2svn.lock ]] && exit 0
@@ -111,7 +112,7 @@ SPLIT_LINE 'Format json and log'
 
 for JSON_FILE in `ls $JSON_PATH | grep json$`
 do
-    if [[ `egrep 'ref-updated|draft-published|Verified|comment-added|reviewer-added|change-restored|merge-failed|Code-Review' $JSON_PATH/$JSON_FILE` ]] ; then
+    if [[ $(egrep "$ICHANGE_IGNORE_EVENTS" $JSON_PATH/$JSON_FILE) ]] ; then
         [[ -f /tmp/DEBUG ]] && cp $JSON_PATH/$JSON_FILE /tmp/itrack.debug/orig/
         rm -f $JSON_PATH/$JSON_FILE
     else
