@@ -156,8 +156,8 @@ do
         export g_value="$value,$g_value"
     done
     [[ -z $g_email ]] && export g_email=$g_username
-    [[ -z $g_revision ]] && export g_revision=$g_newRev
-    [[ -z $g_id ]] && export g_id=$g_oldRev
+    [[ -z $g_revision ]] && export g_revision=newRev:$g_newRev
+    [[ -z $g_id ]] && export g_id=oldRev:$g_oldRev
         
     export g_path=''
     [[ ! `ls $TASK_SPACE/itrack/svn/manifest | grep xml` ]] && UPDATE_XML
