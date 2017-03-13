@@ -27,3 +27,6 @@ stand-alone tool, get diff log from manifest xml
 
 #### convert_ascii2hex.sh
 convert ascii to hex for proxy password in env
+
+#### purge_kernel.sh
+clean useless kernel from boot
