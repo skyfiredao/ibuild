@@ -124,7 +124,7 @@ fi
 
 echo -e "All of log and packages download URL:
 $DOWNLOAD_URL
-" >$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
+" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
 
 [[ ! -z $DOWNLOAD_PKG_NAME ]] && echo -e "wget $DOWNLOAD_URL/$DOWNLOAD_PKG_NAME" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
 if [[ $RESULT != PASSED ]] ; then
