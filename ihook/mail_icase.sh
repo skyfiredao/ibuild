@@ -121,6 +121,10 @@ All of log and packages download URL:
 $DOWNLOAD_URL
 " >$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
 
+if [[ ! -z $GERRIT_CHANGE_NUMBER ]] ; then
+    echo -e "Patch URL:\nhttps://$IBUILD_GRTSRV/gerrit/$GERRIT_CHANGE_NUMBER\n" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
+fi
+
 [[ ! -z $DOWNLOAD_PKG_NAME ]] && echo -e "wget $DOWNLOAD_URL/$DOWNLOAD_PKG_NAME" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
 if [[ $RESULT != PASSED ]] ; then
     echo -e "Error Log:\n$DOWNLOAD_URL/log/error.log.txt" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
