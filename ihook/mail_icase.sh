@@ -116,14 +116,15 @@ fi
 echo -e "Hi, $GERRIT_CHANGE_OWNER_NAME
 
 After ${BUILD_TIME_MIN}min, node $SLAVE_HOST ($SLAVE_IP) build $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT $RESULT
-
-All of log and packages download URL:
-$DOWNLOAD_URL
 " >$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
 
 if [[ ! -z $GERRIT_CHANGE_NUMBER ]] ; then
     echo -e "Patch URL:\nhttps://$IBUILD_GRTSRV/gerrit/$GERRIT_CHANGE_NUMBER\n" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
 fi
+
+echo -e "All of log and packages download URL:
+$DOWNLOAD_URL
+" >$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
 
 [[ ! -z $DOWNLOAD_PKG_NAME ]] && echo -e "wget $DOWNLOAD_URL/$DOWNLOAD_PKG_NAME" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
 if [[ $RESULT != PASSED ]] ; then
