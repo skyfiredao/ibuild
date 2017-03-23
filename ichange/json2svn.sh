@@ -99,6 +99,7 @@ UPDATE_XML()
      svn -q add $TASK_SPACE/itrack/svn/manifest
      svn -q add $TASK_SPACE/itrack/svn/manifest/*
      svn ci $ICHANGE_SVN_OPTION -q -m 'auto update manifest' $TASK_SPACE/itrack/svn/manifest
+     sleep 1
  fi
 }
 
@@ -178,6 +179,7 @@ do
         svn add -q $SVN_ADD
     done
     svn cleanup $TASK_SPACE/itrack/svn
+    sleep 1
     svn ci $ICHANGE_SVN_OPTION -q -F $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log $TASK_SPACE/itrack/svn
     [[ $? = 0 ]] && rm -f $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.{json,log}
     if [[ `ps aux | grep blame | wc -l` -ge 20 ]] ; then
