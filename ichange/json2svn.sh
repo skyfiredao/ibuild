@@ -184,6 +184,7 @@ do
     [[ $? = 0 ]] && rm -f $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.{json,log}
     if [[ `ps aux | grep blame | wc -l` -ge 20 ]] ; then
         export SLEEP=$(expr $(ps aux | grep blame | wc -l) % 7)
+        [[ -z $SLEEP ]] && export SLEEP=7
         sleep $SLEEP
     fi
 done
