@@ -99,7 +99,7 @@ UPDATE_XML()
      svn -q add $TASK_SPACE/itrack/svn/manifest
      svn -q add $TASK_SPACE/itrack/svn/manifest/*
      svn ci $ICHANGE_SVN_OPTION -q -m 'auto update manifest' $TASK_SPACE/itrack/svn/manifest
-     sleep 0.5
+     sleep 0.7
  fi
 }
 
