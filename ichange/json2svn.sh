@@ -179,9 +179,10 @@ do
         svn add -q $SVN_ADD >/dev/null 2>&1
     done
     svn cleanup $TASK_SPACE/itrack/svn
-    sleep 1
+    sleep 0.7
     svn ci $ICHANGE_SVN_OPTION -q -F $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log $TASK_SPACE/itrack/svn
     [[ $? = 0 ]] && rm -f $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.{json,log}
+    sleep 0.7
     if [[ `ps aux | grep blame | wc -l` -ge 20 ]] ; then
         export SLEEP=$(expr $(ps aux | grep blame | wc -l) % 7)
         [[ -z $SLEEP ]] && export SLEEP=7
