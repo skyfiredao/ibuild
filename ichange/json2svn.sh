@@ -220,3 +220,7 @@ done
 rm -f /tmp/CLEAN_DUP.tmp
 svn cleanup $TASK_SPACE/itrack/svn
 
+if [[ $(grep E155004 /tmp/json2svn.log) ]] ; then
+    rm -fr $TASK_SPACE/itrack/svn*
+fi
+
