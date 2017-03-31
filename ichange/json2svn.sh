@@ -97,7 +97,9 @@ UPDATE_XML()
      git checkout $GERRIT_BRANCH
      cp $TASK_SPACE/itrack/manifest/*.xml $TASK_SPACE/itrack/svn/manifest/
      svn -q add $TASK_SPACE/itrack/svn/manifest >/dev/null 2>&1
+     sleep 0.7
      svn -q add $TASK_SPACE/itrack/svn/manifest/* >/dev/null 2>&1
+     sleep 0.7
      svn ci $ICHANGE_SVN_OPTION -q -m 'auto update manifest' $TASK_SPACE/itrack/svn/manifest
      sleep 0.7
  fi
