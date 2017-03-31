@@ -31,5 +31,5 @@ export TODAY=$(date +%y%m%d)
 # echo $IHOOK_REPOS $IHOOK_REV `date` >>/tmp/ihook-ichange.log
 [[ -f /tmp/debug-$TODAY ]] && export STOP_WATCH=stopwatch
 
-$IBUILD_ROOT/ihook/watch.sh $IHOOK_REV $STOP_WATCH >>/tmp/watch.log 2>&1 &
+$IBUILD_ROOT/ihook/watch.sh $IHOOK_REV $STOP_WATCH >>/tmp/watch-$(date +%y%m%d).log 2>&1 &
 

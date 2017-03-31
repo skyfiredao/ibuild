@@ -29,7 +29,7 @@ source /etc/bash.bashrc
 # echo --------------------------------------- >>/tmp/ihook-icase.log
 # echo $IHOOK_REPOS $IHOOK_REV `date` >>/tmp/ihook-icase.log
 
-$IBUILD_ROOT/ihook/mail_icase.sh $IHOOK_REV >>/tmp/mail_icase.log 2>&1 &
+$IBUILD_ROOT/ihook/mail_icase.sh $IHOOK_REV >>/tmp/mail_icase-$(date +%y%m%d).log 2>&1 &
 
-$IBUILD_ROOT/ihook/queue_icase.sh $IHOOK_REV >>/tmp/queue_icase.log 2>&1 &
+$IBUILD_ROOT/ihook/queue_icase.sh $IHOOK_REV >>/tmp/queue_icase-$(date +%y%m%d).log 2>&1 &
 
