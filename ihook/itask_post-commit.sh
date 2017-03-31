@@ -30,5 +30,5 @@ source /etc/bash.bashrc
 # echo --------------------------------------- >>/tmp/ihook-itask.log 2>&1
 # echo $IHOOK_REPOS $IHOOK_REV `date` >>/tmp/ihook-itask.log 2>&1
 
-$IBUILD_ROOT/ihook/queue_itask.sh $IHOOK_REV >>/tmp/queue_itask.log 2>&1 &
+$IBUILD_ROOT/ihook/queue_itask.sh $IHOOK_REV >>/tmp/queue_itask-$(date +%y%m%d).log 2>&1 &
 
