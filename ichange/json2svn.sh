@@ -163,7 +163,7 @@ do
     [[ -z $g_id ]] && export g_id=oldRev:$g_oldRev
         
     export g_path=''
-    [[ ! `ls $TASK_SPACE/itrack/svn/manifest | grep xml` ]] && UPDATE_XML
+    [[ ! $(ls $TASK_SPACE/itrack/svn/manifest/* | grep xml) ]] && UPDATE_XML
     [[ ! -z $g_project ]] && export g_path=$(grep $g_project $TASK_SPACE/itrack/svn/manifest/*.xml | awk -F'path="' {'print $2'} | awk -F'" name=' {'print $1'} | awk -F'"' {'print $1'} | grep -v ^$ | sort -u | head -n1)
     if [[ ! -z $g_project && -z $g_path ]] ; then
         export remote_name=$(echo $g_project | awk -F'/' {'print $1'})
@@ -171,10 +171,10 @@ do
         export g_path=$(grep $g_project $TASK_SPACE/itrack/svn/manifest/*.xml | awk -F'path="' {'print $2'} | awk -F'" name=' {'print $1'} | awk -F'"' {'print $1'} | grep -v ^$ | sort -u | head -n1)
     fi
 
-    if [[ ! -z $g_revision ]] ; then
+    if [[ ! -z $g_revision && ! -z $g_type ]] ; then
         mkdir -p $TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch
         echo "$g_revision|$g_id|$g_email|$g_path|$g_project|$g_change_number|$g_patchSet_number|$g_value|$g_ref" >>$TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch/$TOWEEK.$g_type
-        echo "$g_revision|$g_id|$g_email|$g_path|$g_project|$g_change_number|$g_patchSet_number|$g_value|$g_ref" >>$TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch/$TOWEEK.all-change
+        [[ $g_type != ref-updated ]] && echo "$g_revision|$g_id|$g_email|$g_path|$g_project|$g_change_number|$g_patchSet_number|$g_value|$g_ref" >>$TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch/$TOWEEK.all-change
     fi
 
     svn cleanup $TASK_SPACE/itrack/svn
@@ -197,8 +197,12 @@ do
     fi
 done
 
-[[ `date +%H%M` = 1200 ]] && UPDATE_XML
-rm -f $TASK_SPACE/itrack/json2svn.lock
+[[ $(date +%H%M) = 1200 ]] && UPDATE_XML
+svn cleanup $TASK_SPACE/itrack/svn
+
+if [[ $(grep E155004 /tmp/json2svn.log) ]] ; then
+    rm -fr $TASK_SPACE/itrack/svn*
+fi
 
 cd $TASK_SPACE/itrack/$GERRIT_SRV.tmp
 SPLIT_LINE 'Clean same file'
@@ -217,10 +221,7 @@ do
             done
     fi
 done
-rm -f /tmp/CLEAN_DUP.tmp
-svn cleanup $TASK_SPACE/itrack/svn
 
-if [[ $(grep E155004 /tmp/json2svn.log) ]] ; then
-    rm -fr $TASK_SPACE/itrack/svn*
-fi
+rm -f /tmp/CLEAN_DUP.tmp
+rm -f $TASK_SPACE/itrack/json2svn.lock
 
