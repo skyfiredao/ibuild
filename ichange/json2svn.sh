@@ -61,7 +61,7 @@ export ICHANGE_SVN_OPTION=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE
 export ICHANGE_IGNORE_EVENTS=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_IGNORE_EVENTS=' | awk -F'ICHANGE_IGNORE_EVENTS=' {'print $2'})
 
 [[ ! -d $JSON_PATH || -z $GERRIT_SRV ]] && exit 0
-[[ -f $TASK_SPACE/itrack/json2svn.lock || $(ps aux | grep itrack | grep json2svn.sh) ]] && exit 0
+[[ -f $TASK_SPACE/itrack/json2svn.lock ]] && exit 0
 touch $TASK_SPACE/itrack/json2svn.lock
 mkdir -p $TASK_SPACE/itrack/$GERRIT_SRV.tmp >/dev/null 2>&1
 
