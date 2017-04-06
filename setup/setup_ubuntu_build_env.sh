@@ -198,7 +198,16 @@ $DEBUG /bin/mv /tmp/repo /usr/bin/
 $DEBUG /bin/mv /tmp/ccache/ccache /usr/bin/ccache
 export REPO=`which repo`
 
-echo "export LC_ALL=C
+echo "
+>>>>>>>> Add to /etc/rc.local
+/usr/bin/distccd --daemon --user ibuild --allow 192.168.0.0/24 --jobs 8 --nice 10
+"
+
+echo "
+export DISTCC_HOSTS='IP'
+export DISTCC_VERBOSE=1
+export DISTCC_LOG=/tmp/distcc.log
+export LC_ALL=C
 export LC_CTYPE=C
 export PATH=/usr/local/jdk/bin:\$PATH:
 export CLASSPATH=/usr/local/jdk/lib:.
