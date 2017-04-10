@@ -1,4 +1,4 @@
-FROM phusion/baseimage:0.9.16
+FROM phusion/baseimage:0.9.19
 MAINTAINER Ding Wei, daviding924
 
 # setup openssh server and Restricted Shell
