@@ -200,7 +200,7 @@ export REPO=`which repo`
 
 echo "
 >>>>>>>> Add to /etc/rc.local
-/usr/bin/distccd --daemon --user ibuild --allow 192.168.0.0/24 --jobs 8 --nice 10
+/usr/bin/distccd --daemon --allow 192.168.0.0/24 --jobs 8 --nice 5 --user ibuild
 "
 
 echo "

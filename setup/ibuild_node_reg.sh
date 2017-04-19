@@ -185,12 +185,12 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
         svn ci $IBUILD_SVN_OPTION -m "auto: clean" $TASK_SPACE/itask/svn/inode/
     fi
 
-    if [[ ! -f $LOCK_SPACE/ganglia-$(date +%p) ]] ; then
-        rm -f $LOCK_SPACE/ganglia-*
-        touch $LOCK_SPACE/ganglia-$(date +%p)
-        sudo /etc/init.d/gmetad restart
-        sudo /etc/init.d/ganglia-monitor restart
-    fi
+#    if [[ ! -f $LOCK_SPACE/ganglia-$(date +%p) ]] ; then
+#        rm -f $LOCK_SPACE/ganglia-*
+#        touch $LOCK_SPACE/ganglia-$(date +%p)
+#        sudo /etc/init.d/gmetad restart
+#        sudo /etc/init.d/ganglia-monitor restart
+#    fi
 
     export SHARE_POINT=$(df | grep local | grep share | grep upload | awk -F' ' {'print $6'})
     [[ $(df | grep local | grep share | grep sshfs | grep upload) ]] && export SHARE_POINT=$(df | grep local | grep share | grep upload | awk -F':' {'print $2'} | awk -F' ' {'print $1'})
