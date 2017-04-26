@@ -29,8 +29,8 @@ export TOWEEK=`date +%yw%V`
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
-	echo -e "Please put ibuild in your $HOME"
-	exit 0
+    echo -e "Please put ibuild in your $HOME"
+    exit 0
 fi
 
 export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
@@ -66,7 +66,7 @@ export ICHANGE_ENTRY=`tail -n1 $TASK_SPACE/$WATCH_TMP/svn.blame | awk -F' ' {'pr
 export WATCH_GERRIT_revision=`echo $ICHANGE_ENTRY | awk -F'|' {'print $1'}`
 export WATCH_GERRIT_id=`echo $ICHANGE_ENTRY | awk -F'|' {'print $2'}`
 export WATCH_GERRIT_email=`echo $ICHANGE_ENTRY | awk -F'|' {'print $3'}`
-	[[ -z $WATCH_GERRIT_email ]] && export WATCH_GERRIT_email=no_mail
+    [[ -z $WATCH_GERRIT_email ]] && export WATCH_GERRIT_email=no_mail
 export WATCH_GERRIT_PATH=`echo $ICHANGE_ENTRY | awk -F'|' {'print $4'}`
 export WATCH_GERRIT_PROJECT=`echo $ICHANGE_ENTRY | awk -F'|' {'print $5'}`
 export WATCH_GERRIT_change_number=`echo $ICHANGE_ENTRY | awk -F'|' {'print $6'}`
@@ -93,9 +93,9 @@ IBUILD_PRIORITY=3
 _EOF_
 
  if [[ `echo $WATCH_GERRIT_STAGE | grep 'change-merged'` ]] ; then
-	cat $TASK_SPACE/$WATCH_TMP/$SPEC_EXT_NAME | egrep -v 'GERRIT_CHANGE_NUMBER' >$TASK_SPACE/$WATCH_TMP/$SPEC_EXT_NAME.tmp
-	echo "GERRIT_CHANGE_STATUS=change-merged $WATCH_GERRIT_change_number" >>$TASK_SPACE/$WATCH_TMP/$SPEC_EXT_NAME.tmp
-	cp $TASK_SPACE/$WATCH_TMP/$SPEC_EXT_NAME.tmp $TASK_SPACE/$WATCH_TMP/$SPEC_EXT_NAME
+    cat $TASK_SPACE/$WATCH_TMP/$SPEC_EXT_NAME | egrep -v 'GERRIT_CHANGE_NUMBER' >$TASK_SPACE/$WATCH_TMP/$SPEC_EXT_NAME.tmp
+    echo "GERRIT_CHANGE_STATUS=change-merged $WATCH_GERRIT_change_number" >>$TASK_SPACE/$WATCH_TMP/$SPEC_EXT_NAME.tmp
+    cp $TASK_SPACE/$WATCH_TMP/$SPEC_EXT_NAME.tmp $TASK_SPACE/$WATCH_TMP/$SPEC_EXT_NAME
  fi
 
  md5sum $TASK_SPACE/$WATCH_TMP/$SPEC_EXT_NAME
@@ -107,14 +107,16 @@ ITASK_SUBMIT()
  export WATCHDOG_SPEC=`echo $WATCHDOG_CONF | awk -F"$WATCHDOG_NUM_CONF" {'print $2'}`
  export ITASK_CMD=$(which itask)
  [[ -z $ITASK_CMD ]] && export ITASK_CMD=$ISPEC_PATH/itask && echo "Use $ISPEC_PATH/itask"
+
+ [[ ! -z $WATCH_GERRIT_PROJECT && $(grep ^$WATCH_GERRIT_PROJECT$ $ISPEC_PATH/spec/conf/ignore.conf) ]] && export WATCH_GERRIT_email=no_mail
  
  sleep `expr $RANDOM % 7 + 1`
  date
  for SPEC_NAME in `ls $ISPEC_PATH/spec | grep $WATCHDOG_SPEC$`
  do
-	SPEC_EXT $ISPEC_PATH/spec/$SPEC_NAME
-	[[ $WATCH_GERRIT_email != no_mail ]] && $DEBUG $ITASK_CMD $TASK_SPACE/$WATCH_TMP/$IBUILD_MODE.$SPEC_NAME
-	$DEBUG mv $TASK_SPACE/$WATCH_TMP/$IBUILD_MODE.$SPEC_NAME $TASK_SPACE/$WATCH_TMP/$IBUILD_MODE.$SPEC_NAME.$RANDOM
+    SPEC_EXT $ISPEC_PATH/spec/$SPEC_NAME
+    [[ $WATCH_GERRIT_email != no_mail ]] && $DEBUG $ITASK_CMD $TASK_SPACE/$WATCH_TMP/$IBUILD_MODE.$SPEC_NAME
+    $DEBUG mv $TASK_SPACE/$WATCH_TMP/$IBUILD_MODE.$SPEC_NAME $TASK_SPACE/$WATCH_TMP/$IBUILD_MODE.$SPEC_NAME.$RANDOM
  done
  echo $ICHANGE_REV
  echo $ICHANGE_ENTRY 
@@ -123,14 +125,14 @@ ITASK_SUBMIT()
 MAIL_MATCHING()
 {
  if [[ `grep $WATCH_GERRIT_email $ISPEC_PATH/conf/mail.conf` ]] ; then
-	ITASK_SUBMIT
+    ITASK_SUBMIT
  fi
 }
 
 PROJECT_MATCHING()
 {
  if [[ `grep $WATCH_GERRIT_PROJECT$ $ISPEC_PATH/conf/project.conf` ]] ; then
-	ITASK_SUBMIT
+    ITASK_SUBMIT
  fi
 }
 
@@ -139,13 +141,13 @@ VALUE_MATCHING()
  export VALUE_MATCHING_CHK=''
  for VALUE in `echo $WATCH_GERRIT_value | sed 's/,/ /g'`
  do
-	if [[ ! `grep "^deny:$VALUE" $ISPEC_PATH/conf/value.conf` ]] ; then
-		export VALUE_MATCHING_CHK=yes
-	elif [[ `grep "^allow:$VALUE" $ISPEC_PATH/conf/value.conf` ]] ; then
-		export VALUE_MATCHING_CHK=yes
-	else
-		export VALUE_MATCHING_CHK=
-	fi
+    if [[ ! `grep "^deny:$VALUE" $ISPEC_PATH/conf/value.conf` ]] ; then
+        export VALUE_MATCHING_CHK=yes
+    elif [[ `grep "^allow:$VALUE" $ISPEC_PATH/conf/value.conf` ]] ; then
+        export VALUE_MATCHING_CHK=yes
+    else
+        export VALUE_MATCHING_CHK=
+    fi
  done
  [[ ! -z $VALUE_MATCHING_CHK ]] && ITASK_SUBMIT
 }
@@ -159,13 +161,13 @@ ITASK_MATCHING()
  export WATCHDOG_GERRIT_change_merged=`grep 'IF_change-merged=' $WATCHDOG_CONF | awk -F'IF_change-merged=' {'print $2'}`
 
  if [[ `grep '=debug$' $WATCHDOG_CONF` ]] ; then
-	ITASK_SUBMIT
+    ITASK_SUBMIT
  elif [[ ! -z $WATCHDOG_GERRIT_PROJECT ]] ; then
-	PROJECT_MATCHING
+    PROJECT_MATCHING
  elif [[ ! -z $WATCHDOG_GERRIT_email ]] ; then
-	EMAIL_MATCHING
+    EMAIL_MATCHING
  elif [[ ! -z $WATCHDOG_GERRIT_CodeReview && ! -z $WATCHDOG_GERRIT_value ]] ; then
-	VALUE_MATCHING
+    VALUE_MATCHING
  fi
 }
 
@@ -173,10 +175,10 @@ cd $WATCHDOG_PATH
 touch tmp
 for WATCHDOG_CONF in `grep $WATCH_GERRIT_SERVER * | awk -F':' {'print $1'}`
 do
-	if [[ `grep $WATCH_GERRIT_BRANCH $WATCHDOG_CONF` ]] ; then
-		export WATCHDOG_GERRIT_STAGE=`grep $WATCH_GERRIT_STAGE $WATCHDOG_CONF | awk -F"IF_$WATCH_GERRIT_STAGE=" {'print $2'}`
-		[[ ! -z $WATCHDOG_GERRIT_STAGE ]] && ITASK_MATCHING
-	fi
+    if [[ `grep $WATCH_GERRIT_BRANCH $WATCHDOG_CONF` ]] ; then
+        export WATCHDOG_GERRIT_STAGE=`grep $WATCH_GERRIT_STAGE $WATCHDOG_CONF | awk -F"IF_$WATCH_GERRIT_STAGE=" {'print $2'}`
+        [[ ! -z $WATCHDOG_GERRIT_STAGE ]] && ITASK_MATCHING
+    fi
 done
 
 rm -f $WATCHDOG_PATH/tmp
