@@ -108,7 +108,7 @@ ITASK_SUBMIT()
  export ITASK_CMD=$(which itask)
  [[ -z $ITASK_CMD ]] && export ITASK_CMD=$ISPEC_PATH/itask && echo "Use $ISPEC_PATH/itask"
 
- [[ ! -z $WATCH_GERRIT_PROJECT && $(grep ^$WATCH_GERRIT_PROJECT$ $ISPEC_PATH/spec/conf/ignore.conf) ]] && export WATCH_GERRIT_email=no_mail
+ [[ ! -z $WATCH_GERRIT_PROJECT && $(grep ^$WATCH_GERRIT_PROJECT$ $ISPEC_PATH/conf/ignore.conf) ]] && export WATCH_GERRIT_email=no_mail
  
  sleep `expr $RANDOM % 7 + 1`
  date
