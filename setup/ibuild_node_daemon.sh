@@ -17,6 +17,7 @@
 # Change log
 # 150119 Create by Ding Wei
 source /etc/bash.bashrc
+source /etc/bash.ibuild.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
 export USER=`whoami`
