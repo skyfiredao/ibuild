@@ -17,6 +17,7 @@
 # Change log
 # 150120 Create by Ding Wei
 source /etc/bash.bashrc >/dev/null 2>&1
+source /etc/bash.ibuild.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
 unset DISPLAY
