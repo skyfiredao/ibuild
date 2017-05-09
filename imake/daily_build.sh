@@ -72,7 +72,7 @@ if [[ -f $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec.bundle ]] ; then
 	cp $TASK_SPACE/tmp.ispec.$SEED/spec/$SPEC_NAME $TASK_SPACE/tmp.ispec.$SEED/bundle.$SPEC_NAME
 	echo "IBUILD_MODE=bundle" >>$TASK_SPACE/tmp.ispec.$SEED/bundle.$SPEC_NAME
 	echo $BEFORE_TOYMD $IBUILD_GRTSRV $IBUILD_GRTSRV_BRANCH
-	$IBUILD_ROOT/ichange/sort_patch.sh $BEFORE_TOYMD $IBUILD_GRTSRV $IBUILD_GRTSRV_BRANCH | while read PATCH
+	$IBUILD_ROOT/ichange/sort_24h_patch.sh $BEFORE_TOYMD $IBUILD_GRTSRV:$IBUILD_GRTSRV_BRANCH | while read PATCH
 	do
 		echo BUNDLE_PATCH=$PATCH >>$TASK_SPACE/tmp.ispec.$SEED/bundle.$SPEC_NAME
 	done
