@@ -54,6 +54,9 @@ EXPORT_MANIFEST $LOG_PATH/before_build_manifest.xml
 
 [[ ! -z $IBUILD_ADD_STEP_1 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_1"
 
+# hotfix
+bash $IBUILD_ROOT/hotfix/hotfix.sh
+
 [[ -z $BUILD_NUMBER && ! -z $IVERSION ]] && export BUILD_NUMBER=$IVERSION
 SPLIT_LINE envsetup
 time source build/envsetup.sh >$LOG_PATH/envsetup.log 2>&1
