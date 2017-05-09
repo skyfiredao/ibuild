@@ -22,13 +22,14 @@ export LC_ALL=C
 export TASK_SPACE=/run/shm
 export SEED=$RANDOM
 export NOW=`date +%y%m%d%H%M%S`
-export SORT_DATE=$1
-export SORT_GERRIT_SRV=$2
+export SORT_GERRIT_SRV=$1
+export SORT_DATE=$2
 export SORT_GERRIT_BRANCH=$3
+    [[ -z $SORT_GERRIT_BRANCH ]] && export SORT_GERRIT_BRANCH='ichange'
 export SORT_ONE_DAY_AGO=$(date +%Y%m%d --date="$SORT_DATE 1 days ago")
 if [[ -z $SORT_DATE ]] ; then
-	echo -e "$0 DATE GERRIT_SERVER BRANCH"
-	echo -e "For example: $0 20150210 gerritX.Domain_name.XXX main/dev"
+	echo -e "$0 <GERRIT_SERVER> <DATE> [BRANCH]"
+	echo -e "For example: $0 gerritX.Domain_name.XXX 20150210 main/dev"
 	exit 0
 fi
 export COMMIT_ACCOUNT=ibuild
@@ -89,15 +90,31 @@ done
 for PATCH_ENTARY in `cat $TASK_SPACE/tmp.isort.$SEED/ichange.log`
 do
     GET_ICHANGE_STRING $PATCH_ENTARY
-    export LAST_STRING_GERRIT_change_number=`grep $STRING_GERRIT_id $TASK_SPACE/tmp.isort.$SEED/ichange.log | tail -n1 | awk -F'|' {'print $6'}`
-    export LAST_STRING_GERRIT_patchSet_number=`grep $STRING_GERRIT_id $TASK_SPACE/tmp.isort.$SEED/ichange.log | tail -n1 | awk -F'|' {'print $7'}`
+    export LAST_STRING_GERRIT_change_number=$(grep $STRING_GERRIT_id $TASK_SPACE/tmp.isort.$SEED/ichange.log | tail -n1 | awk -F'|' {'print $6'})
+    export LAST_STRING_GERRIT_patchSet_number=$(grep $STRING_GERRIT_id $TASK_SPACE/tmp.isort.$SEED/ichange.log | tail -n1 | awk -F'|' {'print $7'})
+    export LAST_STRING_GERRIT_Cherry_Pick=$(grep $STRING_GERRIT_id $TASK_SPACE/tmp.isort.$SEED/ichange.log | tail -n1 | awk -F'|' {'print $9'})
 
     if [[ $LAST_STRING_GERRIT_patchSet_number = $STRING_GERRIT_patchSet_number && ! `grep $STRING_GERRIT_revision $TASK_SPACE/tmp.isort.$SEED/*{change-abandoned,change-merged}` ]] ; then
         echo "$STRING_GERRIT_email|$STRING_GERRIT_PROJECT $STRING_GERRIT_change_number/$STRING_GERRIT_patchSet_number" >>$TASK_SPACE/tmp.isort.$SEED/all_repo_download.txt
+        echo "$STRING_GERRIT_email|$STRING_GERRIT_PROJECT $LAST_STRING_GERRIT_Cherry_Pick" >>$TASK_SPACE/tmp.isort.$SEED/all_cherry_pick.txt
     fi
 done
 
-touch $TASK_SPACE/tmp.isort.$SEED/all_repo_download.txt
+touch $TASK_SPACE/tmp.isort.$SEED/{all_,}repo_download.txt
+touch $TASK_SPACE/tmp.isort.$SEED/{all_,}cherry_pick.txt
+
+cat $TASK_SPACE/tmp.isort.$SEED/all_cherry_pick.txt | while read CHERRY_PICK_ENTRY
+do
+    export CHERRY_PICK_ENTRY_EMAIL=`echo $CHERRY_PICK_ENTRY | awk -F'|' {'print $1'}`
+    export CHERRY_PICK_ENTRY_PROJECT=`echo $CHERRY_PICK_ENTRY | awk -F'|' {'print $2'} | awk -F' ' {'print $1'}`
+    if [[ `cat $TASK_SPACE/tmp.isort.$SEED/ispec.conf/ignore.conf | egrep "$CHERRY_PICK_ENTRY_EMAIL|$CHERRY_PICK_ENTRY_PROJECT"` ]] ; then
+        cat $TASK_SPACE/tmp.isort.$SEED/ispec.conf/ignore.conf | egrep "$CHERRY_PICK_ENTRY_EMAIL|$CHERRY_PICK_ENTRY_PROJECT" >>$TASK_SPACE/tmp.isort.$SEED/ignore.txt
+    elif [[ `grep $CHERRY_PICK_ENTRY_EMAIL $TASK_SPACE/tmp.isort.$SEED/ispec.conf/mail.conf` ]] ; then
+        echo $CHERRY_PICK_ENTRY >>$TASK_SPACE/tmp.isort.$SEED/cherry_pick.txt
+    elif [[ `grep $CHERRY_PICK_ENTRY_PROJECT$ $TASK_SPACE/tmp.isort.$SEED/ispec.conf/project.conf` ]] ; then
+        echo $CHERRY_PICK_ENTRY >>$TASK_SPACE/tmp.isort.$SEED/cherry_pick.txt
+    fi
+done
 
 cat $TASK_SPACE/tmp.isort.$SEED/all_repo_download.txt | while read REPO_DOWNLOAD_ENTRY
 do
@@ -112,7 +129,7 @@ do
     fi 
 done
 
-cat $TASK_SPACE/tmp.isort.$SEED/repo_download.txt
+cat $TASK_SPACE/tmp.isort.$SEED/cherry_pick.txt
 rm -fr $TASK_SPACE/tmp.isort.$SEED
 
 
