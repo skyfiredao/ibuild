@@ -56,10 +56,10 @@ export ITASK_CMD=$(which itask)
 [[ -z $ITASK_CMD ]] && export ITASK_CMD=$TASK_SPACE/tmp/$SEED/ispec/itask && echo "Use $TASK_SPACE/tmp/$SEED/ispec/itask"
 
 export IBUILD_TARGET_PRODUCT=$(grep '^IBUILD_TARGET_PRODUCT=' $BUILD_INFO | awk -F'IBUILD_TARGET_PRODUCT=' {'print $2'})
-export IBUILD_GRTSRV_BRANCH=$(grep '^IBUILD_GRTSRV_BRANCH=' $BUILD_INFO | awk -F'IBUILD_GRTSRV_BRANCH=' {'print $2'})
+export IBUILD_GRTSRV_MANIFEST_BRANCH=$(grep '^IBUILD_GRTSRV_MANIFEST_BRANCH=' $BUILD_INFO | awk -F'IBUILD_GRTSRV_MANIFEST_BRANCH=' {'print $2'})
 export IBUILD_GRTSRV_MANIFEST=$(grep '^IBUILD_GRTSRV_MANIFEST=' $BUILD_INFO | awk -F'IBUILD_GRTSRV_MANIFEST=' {'print $2'} | sed 's/.xml//g')
 
-for SPEC in $(ls $TASK_SPACE/tmp/$SEED/ispec/spec | grep -v itest | grep $IBUILD_GRTSRV_BRANCH.$IBUILD_GRTSRV_MANIFEST)
+for SPEC in $(ls $TASK_SPACE/tmp/$SEED/ispec/spec | grep -v itest | grep $IBUILD_GRTSRV_MANIFEST_BRANCH.$IBUILD_GRTSRV_MANIFEST)
 do
     cp $SPEC $TASK_SPACE/tmp/$SEED/$SPEC
     echo IVERSION=$IVER >>$TASK_SPACE/tmp/$SEED/$SPEC

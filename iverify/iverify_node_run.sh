@@ -140,14 +140,14 @@ RUN_hostrunner()
  export BUILD_INFO=$1
  export IVERIFY_hostrunner_serial=$2
 
- export IBUILD_GRTSRV_BRANCH=$(grep '^IBUILD_GRTSRV_BRANCH=' $BUILD_INFO | awk -F'IBUILD_GRTSRV_BRANCH=' {'print $2'})
+ export IBUILD_GRTSRV_PROJECT_BRANCH=$(grep '^IBUILD_GRTSRV_PROJECT_BRANCH=' $BUILD_INFO | awk -F'IBUILD_GRTSRV_PROJECT_BRANCH=' {'print $2'})
  export IBUILD_TARGET_BUILD_VARIANT=$(grep '^IBUILD_TARGET_BUILD_VARIANT=' $BUILD_INFO | awk -F'IBUILD_TARGET_BUILD_VARIANT=' {'print $2'})
  export IBUILD_TARGET_PRODUCT=$(grep '^IBUILD_TARGET_PRODUCT=' $BUILD_INFO | awk -F'IBUILD_TARGET_PRODUCT=' {'print $2'})
  export DOWNLOAD_URL=$(grep '^DOWNLOAD_URL=' $BUILD_INFO | awk -F'DOWNLOAD_URL=' {'print $2'} | head -n1)
  export DOWNLOAD_PKG_NAME=$(grep '^DOWNLOAD_PKG_NAME=' $BUILD_INFO | awk -F'DOWNLOAD_PKG_NAME=' {'print $2'} | head -n1)
  export IVERIFY_hostrunner_variant=$IBUILD_TARGET_BUILD_VARIANT
- export IBUILD_GRTSRV_BRANCH_TOP=$(echo $IBUILD_GRTSRV_BRANCH | awk -F'/' {'print $1'})
- export IVERIFY_hostrunner_project=${IBUILD_TARGET_PRODUCT}$(echo $IBUILD_GRTSRV_BRANCH | awk -F"$IBUILD_GRTSRV_BRANCH_TOP" {'print $2'} | sed 's/\//_/g')
+ export IBUILD_GRTSRV_PROJECT_BRANCH_TOP=$(echo $IBUILD_GRTSRV_PROJECT_BRANCH | awk -F'/' {'print $1'})
+ export IVERIFY_hostrunner_project=${IBUILD_TARGET_PRODUCT}$(echo $IBUILD_GRTSRV_PROJECT_BRANCH | awk -F"$IBUILD_GRTSRV_PROJECT_BRANCH_TOP" {'print $2'} | sed 's/\//_/g')
  export IVERIFY_FOUNDER_EMAIL=$(grep '^IVERIFY_FOUNDER_EMAIL=' $IVERIFY_CONF | awk -F'IVERIFY_FOUNDER_EMAIL=' {'print $2'})
  export EMAIL_TMP=$(grep '^EMAIL_TMP=' $BUILD_INFO | awk -F'EMAIL_TMP=' {'print $2'} | head -n1)
 
