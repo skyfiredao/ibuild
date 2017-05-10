@@ -39,27 +39,25 @@ export ISPEC_SVN_SRV=$(grep '^ISPEC_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | aw
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
-if [[ `cat $LOCK_SPACE/daily_build.lock` != $TOHOUR ]] ; then
-	echo $TOHOUR >$LOCK_SPACE/daily_build.lock
+if [[ `cat $LOCK_SPACE/daily_bundle_build.lock` != $TOHOUR ]] ; then
+	echo $TOHOUR >$LOCK_SPACE/daily_bundle_build.lock
 else
 	exit
 fi
 
 svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec $TASK_SPACE/tmp.ispec.$SEED
 
-if [[ -f $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec ]] ; then
-  for SPEC_FILTER in `cat $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec | sort -u`
-  do
-    for SPEC_NAME in `ls $TASK_SPACE/tmp.ispec.$SEED/spec | grep $SPEC_FILTER`
-    do
-	cp $TASK_SPACE/tmp.ispec.$SEED/spec/$SPEC_NAME $TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME
-
-	[[ ! $(grep 'IBUILD_MODE=' $TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME) ]] && echo "IBUILD_MODE=normal" >>$TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME
-
-	$IBUILD_ROOT/imake/add_task.sh $TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME
-    done
-  done
-fi
+# if [[ -f $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec ]] ; then
+#   for SPEC_FILTER in `cat $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec | sort -u`
+#   do
+#     for SPEC_NAME in `ls $TASK_SPACE/tmp.ispec.$SEED/spec | grep $SPEC_FILTER`
+#     do
+# 	cp $TASK_SPACE/tmp.ispec.$SEED/spec/$SPEC_NAME $TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME
+# 	[[ ! $(grep 'IBUILD_MODE=' $TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME) ]] && echo "IBUILD_MODE=normal" >>$TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME
+# 	$IBUILD_ROOT/imake/add_task.sh $TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME
+#     done
+#   done
+# fi
 
 if [[ -f $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec.bundle ]] ; then
   for SPEC_FILTER in `cat $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec.bundle | sort -u`
