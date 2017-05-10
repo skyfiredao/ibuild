@@ -187,8 +187,9 @@ fi
 [[ ! -z $IBUILD_MODE && -z $SUB_IBUILD_MODE ]] && export SUB_IBUILD_MODE="[$IBUILD_MODE]"
 
 if [[ -f $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt ]] ; then
-    echo -e "\n------------------------- Error log: last 50" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
-    cat $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt | egrep -v '32m|0m' | tail -n50 >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
+     export ERROR_FILTER='cannot | failed |error: package |duplicate annotation|cannot find symbol|ERROR Resource entry|No resource found that matches the giv'
+    echo -e "\n------------------------- Error log:\n" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
+    cat $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt | egrep -v '32m|0m' | egrep -3 "$ERROR_FILTER" | tail -n30 >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
     echo -e "------------------------- End" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
 fi
 
