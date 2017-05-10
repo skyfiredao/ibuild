@@ -980,7 +980,7 @@ BUILD_ERROR()
 
  if [[ `echo $CHECK_LOG | grep full_build` ]] ; then
     if [[ `cat $CHECK_LOG | wc -l` -ge 100 ]] ; then
-        cat $CHECK_LOG | grep -v -i warning | egrep -v '^:|Note: |^$|BUILD SUCCESSFUL' | uniq >>$LOG_PATH/error.log
+        cat $CHECK_LOG | grep -v -i warning | egrep -v '^:|^Note: |^Notice file: |^Copying: |^Install: |^INFO: |^target |^$|BUILD SUCCESSFUL' | uniq >>$LOG_PATH/error.log
     else
         cat $CHECK_LOG >>$LOG_PATH/error.log
     fi
