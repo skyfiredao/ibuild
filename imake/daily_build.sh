@@ -67,12 +67,13 @@ if [[ -f $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec.bundle ]] ; then
       for SPEC_NAME in `ls $TASK_SPACE/tmp.ispec.$SEED/spec | grep $SPEC_FILTER`
       do
 	export IBUILD_GRTSRV=$(grep '^IBUILD_GRTSRV=' $TASK_SPACE/tmp.ispec.$SEED/spec/$SPEC_NAME | awk -F'IBUILD_GRTSRV=' {'print $2'} | awk -F':' {'print $1'})
-	export IBUILD_GRTSRV_BRANCH=$(grep '^IBUILD_GRTSRV_BRANCH=' $TASK_SPACE/tmp.ispec.$SEED/spec/$SPEC_NAME | awk -F'IBUILD_GRTSRV_BRANCH=' {'print $2'})
+	export IBUILD_GRTSRV_PROJECT_BRANCH=$(grep '^IBUILD_GRTSRV_PROJECT_BRANCH=' $TASK_SPACE/tmp.ispec.$SEED/spec/$SPEC_NAME | awk -F'IBUILD_GRTSRV_PROJECT_BRANCH=' {'print $2'})
+        export SORT_BUNDLE_GRTSRV_INFO="$IBUILD_GRTSRV:$IBUILD_GRTSRV_PROJECT_BRANCH"
 
 	cp $TASK_SPACE/tmp.ispec.$SEED/spec/$SPEC_NAME $TASK_SPACE/tmp.ispec.$SEED/bundle.$SPEC_NAME
 	echo "IBUILD_MODE=bundle" >>$TASK_SPACE/tmp.ispec.$SEED/bundle.$SPEC_NAME
-	echo $BEFORE_TOYMD $IBUILD_GRTSRV $IBUILD_GRTSRV_BRANCH
-	$IBUILD_ROOT/ichange/sort_24h_patch.sh $BEFORE_TOYMD $IBUILD_GRTSRV:$IBUILD_GRTSRV_BRANCH | while read PATCH
+	echo $BEFORE_TOYMD $SORT_BUNDLE_GRTSRV_INFO
+	$IBUILD_ROOT/ichange/sort_24h_patch.sh $BEFORE_TOYMD $SORT_BUNDLE_GRTSRV_INFO | while read PATCH
 	do
 		echo BUNDLE_PATCH=$PATCH >>$TASK_SPACE/tmp.ispec.$SEED/bundle.$SPEC_NAME
 	done
