@@ -45,7 +45,7 @@ fi
 export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
 export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
 export ITASK_SVN_OPTION=$(grep '^ITASK_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'ITASK_SVN_OPTION=' {'print $2'})
-    [[ -z $ITASK_SVN_OPTION ]] && export ITASK_SVN_OPTION=$IBUILD_SVN_SRV
+    [[ -z $ITASK_SVN_SRV ]] && export ITASK_SVN_SRV=$IBUILD_SVN_SRV
 
 if [[ ! -f $SPEC_URL ]] ; then
 	echo -e "cat not find $SPEC_URL"
