@@ -160,13 +160,13 @@ fi
 if [[ $IBUILD_MODE = bundle ]] ; then
     grep '^BUNDLE_PATCH=' $BUILD_INFO | awk -F'BUNDLE_PATCH=' {'print $2'} | while read BUNDLE_PATCH_ENTRY
     do
-        echo "$BUNDLE_PATCH_ENTRY" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
+        echo -e "$BUNDLE_PATCH_ENTRY\n" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
     done
     grep '^repo download' $BUILD_INFO | awk -F'download' {'print $2'} | while read BUNDLE_PATCH_ENTRY
     do
         export BUNDLE_PATCH_ENTRY_NUMBER=$(echo $BUNDLE_PATCH_ENTRY | awk -F' ' {'print $2'} | awk -F'/' {'print $1'})
-        echo "https://$IBUILD_GRTSRV_DOMAIN_NAME/gerrit/$BUNDLE_PATCH_ENTRY_NUMBER" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
-        echo "$EMAIL_TMP|$BUNDLE_PATCH_ENTRY" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
+        echo -e "https://$IBUILD_GRTSRV_DOMAIN_NAME/gerrit/$BUNDLE_PATCH_ENTRY_NUMBER\n" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
+        echo -e "$EMAIL_TMP|$BUNDLE_PATCH_ENTRY\n" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
     done
     grep '^IBUILD_FETCH_HEAD=' $BUILD_INFO | awk -F'IBUILD_FETCH_HEAD=' {'print $2'} | while read BUNDLE_PATCH_ENTRY
     do
