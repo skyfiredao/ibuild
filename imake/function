@@ -975,21 +975,23 @@ BUILD_ERROR()
 
  export CHECK_LOG=$1
  export CHECK_LOG_NAME=`basename $CHECK_LOG`
- export ERROR_FILTER='cannot |not |No |no |failed|Error |error:|lost|duplicate annotation|unreported|illegal |expected|duplicate attribute|has private access|uses or overrides|expected constructor|undefined reference|duplicate case label|unqualified enumeration|die|incompatible types|incompatible types|already defined|has private access|overrides|illegal start of expression|doesn|This attribute must be localized|unbound prefix|cannot find symbol|ERROR Resource entry|No resource found that matches the given name|Link to hidden class|Parameter of hidden type|too many initializers|Resource is not public|illegal start of expression|make: ***|Stop'
+# export ERROR_FILTER='cannot |not |No |no |failed|Error |error:|lost|duplicate annotation|unreported|illegal |expected|duplicate attribute|has private access|uses or overrides|expected constructor|undefined reference|duplicate case label|unqualified enumeration|die|incompatible types|incompatible types|already defined|has private access|overrides|illegal start of expression|doesn|This attribute must be localized|unbound prefix|cannot find symbol|ERROR Resource entry|No resource found that matches the given name|Link to hidden class|Parameter of hidden type|too many initializers|Resource is not public|illegal start of expression|make: ***|Stop'
+  export ERROR_FILTER='cannot | failed |error: package |duplicate annotation|cannot find symbol|ERROR Resource entry|No resource found that matches the given name|make: ***'
 
  if [[ `echo $CHECK_LOG | grep full_build` ]] ; then
-	if [[ `cat $CHECK_LOG | wc -l` -ge 100 ]] ; then
-		cat $CHECK_LOG | grep -v -i warning | uniq >>$LOG_PATH/error.log
-	else
-		cat $CHECK_LOG >>$LOG_PATH/error.log
-	fi
+    if [[ `cat $CHECK_LOG | wc -l` -ge 100 ]] ; then
+        cat $CHECK_LOG | grep -v -i warning | egrep -v '^:|Note: |^$|BUILD SUCCESSFUL' | uniq >>$LOG_PATH/error.log
+    else
+        cat $CHECK_LOG >>$LOG_PATH/error.log
+    fi
  elif [[ -f $CHECK_LOG ]] ; then
-	tail -n 50 $CHECK_LOG
-	cp $CHECK_LOG $LOG_PATH/error.log
+    tail -n 50 $CHECK_LOG
+    cp $CHECK_LOG $LOG_PATH/error.log
  else
-	echo "$CHECK_LOG does not exist" >>$LOG_PATH/error.log
+    echo "$CHECK_LOG does not exist" >>$LOG_PATH/error.log
  fi
- tail -n30 $LOG_PATH/error.log
+# tail -n30 $LOG_PATH/error.log
+ cat $LOG_PATH/error.log | egrep -3 "$ERROR_FILTER" | tail -n30
 }
 
 CLEAN_EXIT()
