@@ -976,7 +976,7 @@ BUILD_ERROR()
  export CHECK_LOG=$1
  export CHECK_LOG_NAME=`basename $CHECK_LOG`
 # export ERROR_FILTER='cannot |not |No |no |failed|Error |error:|lost|duplicate annotation|unreported|illegal |expected|duplicate attribute|has private access|uses or overrides|expected constructor|undefined reference|duplicate case label|unqualified enumeration|die|incompatible types|incompatible types|already defined|has private access|overrides|illegal start of expression|doesn|This attribute must be localized|unbound prefix|cannot find symbol|ERROR Resource entry|No resource found that matches the given name|Link to hidden class|Parameter of hidden type|too many initializers|Resource is not public|illegal start of expression|make: ***|Stop'
-  export ERROR_FILTER='cannot | failed |error: package |duplicate annotation|cannot find symbol|ERROR Resource entry|No resource found that matches the given name|make: ***|fatal error: |file not found|Errot 41|Error 1'
+  export ERROR_FILTER='cannot | failed |error: package |duplicate annotation|cannot find symbol|ERROR Resource entry|No resource found that matches the given name|make: ***|fatal error: |file not found|Errot 41|Error 1|error: method does not override or implement a method from a supertype'
 
  if [[ `echo $CHECK_LOG | grep full_build` ]] ; then
     if [[ `cat $CHECK_LOG | wc -l` -ge 100 ]] ; then
