@@ -74,6 +74,7 @@ echo "make -j$JOBS $IBUILD_MAKE_OPTION" >$LOG_PATH/full_build.log
 time make -j$JOBS $IBUILD_MAKE_OPTION >>$LOG_PATH/full_build.log 2>&1
 export STATUS_MAKE=$?
 LOG_STATUS $STATUS_MAKE make_j$JOBS $LOG_PATH/full_build.log
+find >file.list
 
 [[ ! -z $IBUILD_ADD_STEP_2 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_2"
 cp $OUT/system/build.prop $BUILD_PATH_TOP/autout/ >/dev/null 2>&1

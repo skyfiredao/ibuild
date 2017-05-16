@@ -605,7 +605,6 @@ REPO_SYNC()
     EXPORT_MANIFEST $LOG_PATH/after_sync_manifest.xml
     LOG_STATUS $STATUS_SYNC repo_sync $LOG_PATH/$REPO_SYNC_LOG_NAME.log
     CCACHE_HOTFIX
-#    find >file.list
  fi
 
  rm -f out
