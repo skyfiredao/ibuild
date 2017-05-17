@@ -28,5 +28,8 @@ stand-alone tool, get diff log from manifest xml
 #### convert_ascii2hex.sh
 convert ascii to hex for proxy password in env
 
+#### convert_repo2subtree.sh
+convert repo manifest to git subtree
+
 #### purge_kernel.sh
 clean useless kernel from boot
