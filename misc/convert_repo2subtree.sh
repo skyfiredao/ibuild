@@ -34,20 +34,20 @@ export LOCAL_GIT=$2
 export GERRIT_SRV=$(cat $LOCAL_REPO/.repo/manifest.xml | grep review= | awk -F'="https://' {'print $2'} | awk -F'"' {'print $1'})
 export REMOTE_NAME=$(cat $LOCAL_REPO/.repo/manifest.xml | grep remote= | awk -F'remote="' {'print $2'} | awk -F'"' {'print $1'} | sort -u | head -n1)
 
-pushd $LOCAL_REPO
+pushd $LOCAL_REPO >/dev/null 2>&1
 repo manifest -r -o snapshot.xml
 repo list >project.list
 
-pushd $LOCAL_REPO/.repo/manifests/.git
+pushd $LOCAL_REPO/.repo/manifests/.git >/dev/null 2>&1
 export BRANCH_NAME=$(basename $(grep 'merge =' $LOCAL_REPO/.repo/manifests/.git/config | awk -F'=' {'print $2'}))
 [[ -z $BRANCH_NAME ]] && export BRANCH_NAME=subtree
-popd
+popd >/dev/null 2>&1
 
-pushd $LOCAL_GIT
+pushd $LOCAL_GIT >/dev/null 2>&1
 git checkout master
 git branch $BRANCH_NAME
 git checkout $BRANCH_NAME
-popd
+popd >/dev/null 2>&1
 
 for PROJECT in $(cat project.list | awk -F':' {'print $1'} | sort -u)
 do
@@ -56,34 +56,35 @@ do
     export PROJECT_PATH=$(dirname $PROJECT)
     echo -e "----------------------------- $PROJECT $PROJECT_REV"
 
-    pushd /tmp
+    pushd /tmp >/dev/null 2>&1
     rm -fr /tmp/$PROJECT_NAME
-    echo "--- git clone ssh://$GERRIT_SRV:29418/$REMOTE_NAME/$PROJECT"
+    echo ": git clone ssh://$GERRIT_SRV:29418/$REMOTE_NAME/$PROJECT"
     git clone ssh://$GERRIT_SRV:29418/$REMOTE_NAME/$PROJECT
-    pushd /tmp/$PROJECT_NAME
-    echo "--- git checkout -b $BRANCH_NAME $PROJECT_REV"
+    pushd /tmp/$PROJECT_NAME >/dev/null 2>&1
+    echo ": git checkout -b $BRANCH_NAME $PROJECT_REV"
     git checkout -b $BRANCH_NAME $PROJECT_REV
     [[ ! $(git branch -a | grep 'remotes/' | grep -v '/archive/' | grep "/$BRANCH_NAME$") ]] && git push -u origin $BRANCH_NAME
-    popd
+    popd >/dev/null 2>&1
     rm -fr /tmp/$PROJECT_NAME
-    popd
+    popd >/dev/null 2>&1
 
-    pushd $LOCAL_GIT
+    pushd $LOCAL_GIT >/dev/null 2>&1
     mkdir -p $LOCAL_GIT/$PROJECT_PATH
     if [[ -d $PROJECT ]] ; then
-        rm -fr $PROJECT
+        echo $PROJECT >>$LOCAL_REPO/issue.list
         echo -e "\n>>>>>>>>>> Duplicate $PROJECT\n"
     fi
-    echo "--- git subtree add --prefix=$PROJECT ssh://$GERRIT_SRV:29418/$REMOTE_NAME/$PROJECT $BRANCH_NAME"
+    echo ": git subtree add --prefix=$PROJECT ssh://$GERRIT_SRV:29418/$REMOTE_NAME/$PROJECT $BRANCH_NAME"
     git subtree add --prefix=$PROJECT ssh://$GERRIT_SRV:29418/$REMOTE_NAME/$PROJECT $BRANCH_NAME
-    popd
+    popd >/dev/null 2>&1
     echo -e '-----------------------------\n'
 done
-popd
+popd >/dev/null 2>&1
 
-mv $LOCAL_REPO/{snapshot.xml,project.list} /tmp/
+[[ -f $LOCAL_REPO/issue.list ]] && cat $LOCAL_REPO/issue.list
+mv $LOCAL_REPO/{snapshot.xml,project.list,issue.list} /tmp/
 rsync -a --exclude ".git" --exclude ".repo" $LOCAL_REPO/ $LOCAL_GIT/
-
+git status
 
 
 
