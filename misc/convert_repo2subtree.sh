@@ -42,6 +42,11 @@ export BRANCH_NAME=$(basename $(grep 'merge =' $LOCAL_REPO/.repo/manifests/.git/
 [[ -z $BRANCH_NAME ]] && export BRANCH_NAME=subtree
 popd
 
+pushd $LOCAL_GIT
+git checkout master
+git checkout -b $BRANCH_NAME
+popd
+
 for PROJECT in $(cat project.list | awk -F':' {'print $1'} | sort -u)
 do
     export PROJECT_REV=$(cat snapshot.xml | grep '"'$PROJECT'"' | awk -F'revision="' {'print $2'} | awk -F'"' {'print $1'})
