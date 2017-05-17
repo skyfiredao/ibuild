@@ -42,7 +42,7 @@ export BRANCH_NAME=$(basename $(grep 'merge =' $LOCAL_REPO/.repo/manifests/.git/
 [[ -z $BRANCH_NAME ]] && export BRANCH_NAME=subtree
 popd
 
-for PROJECT in $(cat project.list | awk -F':' {'print $1'} | sort -u | egrep -v 'vip/global-a/package')
+for PROJECT in $(cat project.list | awk -F':' {'print $1'} | sort -u)
 do
     export PROJECT_REV=$(cat snapshot.xml | grep '"'$PROJECT'"' | awk -F'revision="' {'print $2'} | awk -F'"' {'print $1'})
     export PROJECT_NAME=$(basename $PROJECT)
@@ -63,14 +63,17 @@ do
 
     pushd $LOCAL_GIT
     mkdir -p $LOCAL_GIT/$PROJECT_PATH
+    if [[ -d $PROJECT ]] ; then
+        rm -fr $PROJECT
+        echo -e "\n>>>>>>>>>> Duplicate $PROJECT\n"
+    fi
     echo "------- git subtree add --prefix=$PROJECT ssh://$GERRIT_SRV:29418/$REMOTE_NAME/$PROJECT $BRANCH_NAME"
     git subtree add --prefix=$PROJECT ssh://$GERRIT_SRV:29418/$REMOTE_NAME/$PROJECT $BRANCH_NAME
-    [[ $? != 0 ]] && echo -e "\n>>>>>>>>>> cannot subtree in $PROJECT\n"
     popd
 done
 popd
 
-
+rsync -av --exclude ".git" --exclude ".repo" $LOCAL_REPO/ $LOCAL_GIT/
 
 
 
