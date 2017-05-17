@@ -24,7 +24,8 @@ export LC_ALL=C
 export SEED=$RANDOM
 export PWD=$(pwd)
 
-echo "$0 <LOCAL_REPO> <LOCAL_GIT>"
+echo -e "$0 <LOCAL_REPO> <LOCAL_GIT>"
+echo -e '-----------------------------\n'
 export LOCAL_REPO=$1
 [[ ! $(ls $LOCAL_REPO/.repo | grep manifests) ]] && exit 1
 export LOCAL_GIT=$2
@@ -57,10 +58,10 @@ do
 
     pushd /tmp
     rm -fr /tmp/$PROJECT_NAME
-    echo "------- git clone ssh://$GERRIT_SRV:29418/$REMOTE_NAME/$PROJECT"
+    echo "--- git clone ssh://$GERRIT_SRV:29418/$REMOTE_NAME/$PROJECT"
     git clone ssh://$GERRIT_SRV:29418/$REMOTE_NAME/$PROJECT
     pushd /tmp/$PROJECT_NAME
-    echo "------- git checkout -b $BRANCH_NAME $PROJECT_REV"
+    echo "--- git checkout -b $BRANCH_NAME $PROJECT_REV"
     git checkout -b $BRANCH_NAME $PROJECT_REV
     [[ ! $(git branch -a | grep 'remotes/' | grep -v '/archive/' | grep "/$BRANCH_NAME$") ]] && git push -u origin $BRANCH_NAME
     popd
@@ -73,13 +74,15 @@ do
         rm -fr $PROJECT
         echo -e "\n>>>>>>>>>> Duplicate $PROJECT\n"
     fi
-    echo "------- git subtree add --prefix=$PROJECT ssh://$GERRIT_SRV:29418/$REMOTE_NAME/$PROJECT $BRANCH_NAME"
+    echo "--- git subtree add --prefix=$PROJECT ssh://$GERRIT_SRV:29418/$REMOTE_NAME/$PROJECT $BRANCH_NAME"
     git subtree add --prefix=$PROJECT ssh://$GERRIT_SRV:29418/$REMOTE_NAME/$PROJECT $BRANCH_NAME
     popd
+    echo -e '-----------------------------\n'
 done
 popd
 
-rsync -av --exclude ".git" --exclude ".repo" $LOCAL_REPO/ $LOCAL_GIT/
+mv $LOCAL_REPO/{snapshot.xml,project.list} /tmp/
+rsync -a --exclude ".git" --exclude ".repo" $LOCAL_REPO/ $LOCAL_GIT/
 
 
 
