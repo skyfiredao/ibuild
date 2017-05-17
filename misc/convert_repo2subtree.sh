@@ -73,6 +73,8 @@ do
     if [[ -d $PROJECT ]] ; then
         echo $PROJECT >>$LOCAL_REPO/issue.list
         echo -e "\n>>>>>>>>>> Duplicate $PROJECT\n"
+        git rm -r $PROJECT
+        git commit -am "dw: clean Duplicate folder $PROJECT"
     fi
     echo ": git subtree add --prefix=$PROJECT ssh://$GERRIT_SRV:29418/$REMOTE_NAME/$PROJECT $BRANCH_NAME"
     git subtree add --prefix=$PROJECT ssh://$GERRIT_SRV:29418/$REMOTE_NAME/$PROJECT $BRANCH_NAME
