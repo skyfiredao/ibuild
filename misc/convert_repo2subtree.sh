@@ -44,7 +44,8 @@ popd
 
 pushd $LOCAL_GIT
 git checkout master
-git checkout -b $BRANCH_NAME
+git branch $BRANCH_NAME
+git checkout $BRANCH_NAME
 popd
 
 for PROJECT in $(cat project.list | awk -F':' {'print $1'} | sort -u)
