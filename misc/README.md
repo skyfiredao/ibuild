@@ -31,5 +31,8 @@ convert ascii to hex for proxy password in env
 #### convert_repo2subtree.sh
 convert repo manifest to git subtree
 
+#### rebase_from_xml.sh
+rebase list project branch with snapshot manifest.xml
+
 #### purge_kernel.sh
 clean useless kernel from boot
