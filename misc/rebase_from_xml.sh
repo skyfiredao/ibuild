@@ -66,8 +66,8 @@ do
     done
 done
 
-echo -e ": repo abandon $REMOTE_NAME"
-repo abandon $REMOTE_NAME
+echo -e ": repo abandon $BRANCH_NAME"
+repo abandon $BRANCH_NAME
 echo -e ": repo abandon rebase-$SEED"
 repo abandon rebase-$SEED
 
