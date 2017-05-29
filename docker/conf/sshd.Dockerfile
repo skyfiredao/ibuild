@@ -1,9 +1,9 @@
-FROM phusion/baseimage:0.9.19
+FROM phusion/baseimage:0.9.22
 MAINTAINER Ding Wei, daviding924
 
 # setup openssh server and Restricted Shell
-RUN apt-get update -qq \
-&& apt-get install -y rssh openssh-server
+RUN apt-get update -qq
+RUN apt-get install -y rssh openssh-server
 
 # create account for sshfs disable password login and use Restricted Shell for sshfs only
 RUN addgroup --gid 1000 --system ibuild \
