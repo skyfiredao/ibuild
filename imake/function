@@ -172,21 +172,22 @@ EXPORT_IBUILD_SPEC()
  export ITASK_ORDER=$(grep '^ITASK_ORDER=' $IBUILD_SPEC | awk -F'ITASK_ORDER=' {'print $2'} | head -n1)
      [[ -z $ITASK_ORDER && ! -z $ITASK_TMP ]] && export ITASK_ORDER=$ITASK_TMP
  export IVERSION=$(grep '^IVERSION=' $IBUILD_SPEC | awk -F'IVERSION=' {'print $2'})
- export IBUILD_SUBV_REPO=$(grep '^IBUILD_SUBV_REPO=' $IBUILD_SPEC | awk -F'IBUILD_SUBV_REPO=' {'print $2'}) 
- export IBUILD_ADD_STEP_1=`grep '^IBUILD_ADD_STEP_1=' $IBUILD_SPEC | awk -F'IBUILD_ADD_STEP_1=' {'print $2'}`
- export IBUILD_ADD_STEP_2=`grep '^IBUILD_ADD_STEP_2=' $IBUILD_SPEC | awk -F'IBUILD_ADD_STEP_2=' {'print $2'}`
- export GERRIT_CHANGE_NUMBER=`grep '^GERRIT_CHANGE_NUMBER=' $IBUILD_SPEC | awk -F'GERRIT_CHANGE_NUMBER=' {'print $2'}`
- export GERRIT_CHANGE_ID=`grep '^GERRIT_CHANGE_ID=' $IBUILD_SPEC | awk -F'GERRIT_CHANGE_ID=' {'print $2'}`
- export GERRIT_CHANGE_URL=`grep '^GERRIT_CHANGE_URL=' $IBUILD_SPEC | awk -F'GERRIT_CHANGE_URL=' {'print $2'}`
- export GERRIT_CHANGE_OWNER_EMAIL=`grep '^GERRIT_CHANGE_OWNER_EMAIL=' $IBUILD_SPEC | awk -F'GERRIT_CHANGE_OWNER_EMAIL=' {'print $2'}`
- export GERRIT_CHANGE_OWNER_NAME=`grep '^GERRIT_CHANGE_OWNER_NAME=' $IBUILD_SPEC | awk -F'GERRIT_CHANGE_OWNER_NAME=' {'print $2'}`
- export GERRIT_PATCHSET_NUMBER=`grep '^GERRIT_PATCHSET_NUMBER=' $IBUILD_SPEC | awk -F'GERRIT_PATCHSET_NUMBER=' {'print $2'}`
- export GERRIT_PATCHSET_REVISION=`grep '^GERRIT_PATCHSET_REVISION=' $IBUILD_SPEC | awk -F'GERRIT_PATCHSET_REVISION=' {'print $2'}`
- export GERRIT_PROJECT=`grep '^GERRIT_PROJECT=' $IBUILD_SPEC | awk -F'GERRIT_PROJECT=' {'print $2'}`
+ export IBUILD_SUBV_REPO=$(grep '^IBUILD_SUBV_REPO=' $IBUILD_SPEC | awk -F'IBUILD_SUBV_REPO=' {'print $2'})
+ export IBUILD_ADD_STEP_1=$(grep '^IBUILD_ADD_STEP_1=' $IBUILD_SPEC | awk -F'IBUILD_ADD_STEP_1=' {'print $2'})
+ export IBUILD_ADD_STEP_2=$(grep '^IBUILD_ADD_STEP_2=' $IBUILD_SPEC | awk -F'IBUILD_ADD_STEP_2=' {'print $2'})
+ export GERRIT_CHANGE_NUMBER=$(grep '^GERRIT_CHANGE_NUMBER=' $IBUILD_SPEC | awk -F'GERRIT_CHANGE_NUMBER=' {'print $2'})
+ export GERRIT_CHANGE_ID=$(grep '^GERRIT_CHANGE_ID=' $IBUILD_SPEC | awk -F'GERRIT_CHANGE_ID=' {'print $2'})
+ export GERRIT_CHANGE_URL=$(grep '^GERRIT_CHANGE_URL=' $IBUILD_SPEC | awk -F'GERRIT_CHANGE_URL=' {'print $2'})
+ export GERRIT_CHANGE_OWNER_EMAIL=$(grep '^GERRIT_CHANGE_OWNER_EMAIL=' $IBUILD_SPEC | awk -F'GERRIT_CHANGE_OWNER_EMAIL=' {'print $2'})
+ export GERRIT_CHANGE_OWNER_NAME=$(grep '^GERRIT_CHANGE_OWNER_NAME=' $IBUILD_SPEC | awk -F'GERRIT_CHANGE_OWNER_NAME=' {'print $2'})
+ export GERRIT_PATCHSET_NUMBER=$(grep '^GERRIT_PATCHSET_NUMBER=' $IBUILD_SPEC | awk -F'GERRIT_PATCHSET_NUMBER=' {'print $2'})
+ export GERRIT_PATCHSET_REVISION=$(grep '^GERRIT_PATCHSET_REVISION=' $IBUILD_SPEC | awk -F'GERRIT_PATCHSET_REVISION=' {'print $2'})
+ export GERRIT_PROJECT=$(grep '^GERRIT_PROJECT=' $IBUILD_SPEC | awk -F'GERRIT_PROJECT=' {'print $2'})
 # export =`grep '^=' $IBUILD_SPEC | awk -F'=' {'print $2'}`
  [[ ! -z $IBUILD_GRTSRV_MANIFEST_BRANCH ]] && export IBUILD_GRTSRV_MANIFEST_BRANCH_TOP=$(echo $IBUILD_GRTSRV_MANIFEST_BRANCH | awk -F'/' {'print $1'})
+ export GERRIT_REFSPEC=$(grep '^GERRIT_REFSPEC=' $IBUILD_SPEC | awk -F'GERRIT_REFSPEC=' {'print $2'})
 
- export SPEC_NAME=`basename $IBUILD_SPEC`
+ export SPEC_NAME=$(basename $IBUILD_SPEC)
  export AUTOUT_PATH=$LOC_WORKSPACE/autout
  export AUTOUT_UPLOAD_PATH=$LOC_WORKSPACE/upload
 # [[ $(echo $SPEC_NAME | grep patch.spec.build) ]] && export PATCH_SPEC='patch.' || export PATCH_SPEC=''
@@ -1043,6 +1044,17 @@ REPO_DOWNLOAD()
  time $REPO_CMD download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER >>$LOG_PATH/repo_download.log 2>&1
  export STATUS_REPO=$?
  LOG_STATUS $STATUS_REPO repo_download $LOG_PATH/repo_download.log
+}
+
+GIT_CHERRY_PICK()
+{
+ SPLIT_LINE "git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC && git cherry-pick FETCH_HEAD" 
+ time git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/git_cherry-pick.log 2>&1
+ export STATUS_REPO=$?
+ LOG_STATUS $STATUS_REPO git_fetch $LOG_PATH/git_cherry-pick.log
+ git cherry-pick FETCH_HEAD >>$LOG_PATH/git_cherry-pick.log 2>&1
+ export STATUS_REPO=$?
+ LOG_STATUS $STATUS_REPO git_cherry-pick $LOG_PATH/git_cherry-pick.log
 }
 
 GET_ICHANGE_STRING()
