@@ -72,6 +72,7 @@ export WATCH_GERRIT_PROJECT=`echo $ICHANGE_ENTRY | awk -F'|' {'print $5'}`
 export WATCH_GERRIT_change_number=`echo $ICHANGE_ENTRY | awk -F'|' {'print $6'}`
 export WATCH_GERRIT_patchSet_number=`echo $ICHANGE_ENTRY | awk -F'|' {'print $7'}`
 export WATCH_GERRIT_value=`echo $ICHANGE_ENTRY | awk -F'|' {'print $8'}`
+export WATCH_GERRIT_REFSPEC=$(echo $ICHANGE_ENTRY awk -F'|' {'print $9'})
 
 SPEC_EXT()
 {
@@ -88,6 +89,7 @@ GERRIT_CHANGE_OWNER_NAME=`echo $WATCH_GERRIT_email | awk -F'@' {'print $1'}`
 GERRIT_PATCHSET_NUMBER=$WATCH_GERRIT_patchSet_number
 GERRIT_PATCHSET_REVISION=$WATCH_GERRIT_revision
 GERRIT_PROJECT=$WATCH_GERRIT_PROJECT
+GERRIT_REFSPEC=$WATCH_GERRIT_REFSPEC
 IBUILD_MODE=$IBUILD_MODE
 IBUILD_PRIORITY=3
 _EOF_
