@@ -72,7 +72,7 @@ export WATCH_GERRIT_PROJECT=`echo $ICHANGE_ENTRY | awk -F'|' {'print $5'}`
 export WATCH_GERRIT_change_number=`echo $ICHANGE_ENTRY | awk -F'|' {'print $6'}`
 export WATCH_GERRIT_patchSet_number=`echo $ICHANGE_ENTRY | awk -F'|' {'print $7'}`
 export WATCH_GERRIT_value=`echo $ICHANGE_ENTRY | awk -F'|' {'print $8'}`
-export WATCH_GERRIT_REFSPEC=$(echo $ICHANGE_ENTRY awk -F'|' {'print $9'})
+export WATCH_GERRIT_REFSPEC=$(echo $ICHANGE_ENTRY | awk -F'|' {'print $9'})
 
 SPEC_EXT()
 {
