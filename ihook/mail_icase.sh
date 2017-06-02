@@ -111,6 +111,7 @@ elif [[ ! -z $STATUS_MAKE || ! -z $DOWNLOAD_PKG_NAME ]] ; then
     [[ ! -z $EMAIL_PM ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_PM"
     [[ ! -z $EMAIL_REL ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_REL"
     [[ ! -z $EMAIL_PATCH_OWNER ]] && export MAIL_LIST="$MAIL_LIST,$EMAIL_PATCH_OWNER"
+    [[ $(grep $OWNER_EMAIL $TASK_SPACE/tmp/icase.mail.$SEED/ispec/conf/mail-passed.conf) ]] && export MAIL_LIST="$MAIL_LIST,$OWNER_EMAIL"
 fi
 
 echo -e "Hi, $GERRIT_CHANGE_OWNER_NAME
