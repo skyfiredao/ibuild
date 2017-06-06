@@ -1,0 +1,151 @@
+#!/bin/bash
+# Copyright (C) <2017>  <Ding Wei>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Change log
+# 170606 Create by Ding Wei
+source /etc/bash.bashrc
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH
+export LC_CTYPE=C
+export LC_ALL=C
+
+export BS_OPTION=$1
+
+BS_pull()
+{
+ echo $1
+}
+
+BS_push()
+{
+ echo $1
+}
+
+BS_status()
+{
+ echo $1
+}
+
+BS_track()
+{
+ echo $1
+}
+
+BS_untrack()
+{
+ echo $1
+}
+
+BS_update()
+{
+ echo $1
+}
+
+BS_version()
+{
+ echo $1
+}
+
+BS_env()
+{
+ echo $1
+}
+
+BS_checkout()
+{
+ echo $1
+}
+
+BS_clone()
+{
+ echo $1
+}
+
+BS_help()
+{
+ echo '
+git-bs/0.0.1 ()
+git bs <command> [<args>]
+
+Git BS is a system for managing and versioning binary files in
+association with a Git repository.  Instead of storing the binary files
+within the Git repository as blobs, Git BS stores special "pointer
+files" in the repository, while storing the actual file contents on a
+Git BS server.  The contents of the binary file are downloaded
+automatically when needed, for example when a Git branch containing
+the binary file is checked out.
+
+Commands
+--------
+
+* git bs env:
+    Display the Git BS environment.
+* git bs checkout:
+    Populate working copy with real content from Git BS files
+* git bs clone:
+    Efficiently clone a Git BS-enabled repository
+* git bs fetch:
+    Download git BS files from a remote
+* git bs fsck:
+    Check GIT BS files for consistency.
+* git bs install:
+    Install Git BS configuration.
+* git bs logs:
+    Show errors from the git-bs command.
+* git bs ls-files:
+    Show information about Git BS files in the index and working tree.
+* git bs pull:
+    Fetch BS changes from the remote & checkout any required working tree files
+* git bs push:
+    Push queued binary files to the Git BS endpoint.
+* git bs status:
+    Show the status of Git BS files in the working tree.
+* git bs track:
+    View or add Git BS paths to Git attributes.
+* git bs untrack:
+    Remove Git BS paths from Git Attributes.
+* git bs update:
+    Update Git hooks for the current Git repository.
+* git bs version:
+    Report the version number.
+'
+
+}
+
+
+if [[ $BS_OPTION = pull ]] ; then
+    BS_pull
+elif [[ $BS_OPTION = push ]] ; then
+    BS_push
+elif [[ $BS_OPTION = status ]] ; then
+    BS_status
+elif [[ $BS_OPTION = track ]] ; then
+    BS_track
+elif [[ $BS_OPTION = untrack ]] ; then
+    BS_untrack
+elif [[ $BS_OPTION = update ]] ; then
+    BS_update
+elif [[ $BS_OPTION = version ]] ; then
+    BS_version
+elif [[ $BS_OPTION = env ]] ; then
+    BS_env
+elif [[ $BS_OPTION = chekout ]] ; then
+    BS_checkout
+elif [[ $BS_OPTION = clone ]] ; then
+    BS_clone
+else
+    BS_help
+fi
+
