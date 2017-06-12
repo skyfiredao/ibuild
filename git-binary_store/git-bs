@@ -118,28 +118,6 @@ git config git-bs.filter.clean = '$(git config --global filter.git-bs.clean)'
 git config git-bs.filter.smudge = '$(git config --global filter.git-bs.smudge)'
 git config git-bs.filter.process = '$(git config --global filter.git-bs.process)'
 git config git-bs.filter.required = '$(git config --global filter.git-bs.required)'
-
-LocalWorkingDir=
-LocalGitDir=
-LocalGitStorageDir=
-LocalMediaDir=
-LocalReferenceDir=
-TempDir=/tmp/git-lfs
-ConcurrentTransfers=3
-TusTransfers=false
-BasicTransfersOnly=false
-SkipDownloadErrors=false
-FetchRecentAlways=false
-FetchRecentRefsDays=7
-FetchRecentCommitsDays=0
-FetchRecentRefsIncludeRemotes=true
-PruneOffsetDays=3
-PruneVerifyRemoteAlways=false
-PruneRemoteName=origin
-AccessDownload=none
-AccessUpload=none
-DownloadTransfers=basic
-UploadTransfers=basic
 " 
 }
 
