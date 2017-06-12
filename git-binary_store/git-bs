@@ -208,6 +208,13 @@ else
     export BS_SERVER_PASSWORD=$(git config --global git-bs.password)
 fi
 
+if [[ -z $(git config --global filter.git-bs.required) ]] ; then
+    git config --global filter.git-bs.clean "git-bs clean -- %f"
+    git config --global filter.git-bs.smudge "git-bs smudge -- %f"
+    git config --global filter.git-bs.process "git-bs filter-process"
+    git config --global filter.git-bs.required true
+fi
+
 export BS_SERVER_OPTION="--non-interactive --no-auth-cache --username $BS_SERVER_USERNAME --password $BS_SERVER_PASSWORD"
 
 if [[ $BS_OPTION = pull ]] ; then
@@ -230,6 +237,12 @@ elif [[ $BS_OPTION = chekout ]] ; then
     BS_checkout
 elif [[ $BS_OPTION = clone ]] ; then
     BS_clone
+elif [[ $BS_OPTION = clean ]] ; then
+    BS_clean
+elif [[ $BS_OPTION = smudge ]] ; then
+    BS_smudge
+elif [[ $BS_OPTION = "filter-process" ]] ; then
+    BS_process
 else
     BS_help
 fi
