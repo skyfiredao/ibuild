@@ -23,13 +23,14 @@ export LC_ALL=C
 
 export BS_VER=0.0.1
 export BS_OPTION=$1
+export BS_TARGET=$2
 
 BS_pull()
 {
- if [[ -d .git/git-bs ]] ; then
-    svn up -q $BS_SERVER_OPTION .git/git-bs
+ if [[ -d $GIT_TOP/.git/git-bs ]] ; then
+    svn up -q $BS_SERVER_OPTION $GIT_TOP/.git/git-bs
  else
-    svn co -q $BS_SERVER_OPTION $BS_SERVER .git/git-bs
+    svn co -q $BS_SERVER_OPTION $BS_SERVER $GIT_TOP/.git/git-bs
  fi
 }
 
@@ -49,7 +50,7 @@ BS_track()
  export BS_track_UTL=$(dirname $BS_track_TARGET)
  export BS_track_OBJ=$(basename $BS_track_TARGET)
 
- if [[ ! -d .git/git-bs ]] ; then
+ if [[ ! -d $GIT_TOP/.git/git-bs ]] ; then
     SPLIT_LINE "Please 'git bs pull' first"
     EXIT 1
  fi
@@ -75,7 +76,7 @@ BS_untrack()
  export BS_track_UTL=$(dirname $BS_track_TARGET)
  export BS_track_OBJ=$(basename $BS_track_TARGET)
 
- if [[ ! -d .git/git-bs ]] ; then
+ if [[ ! -d $GIT_TOP/.git/git-bs ]] ; then
     SPLIT_LINE "Please 'git bs pull' first"
     EXIT 1
  fi
@@ -194,9 +195,9 @@ EXIT()
  exit $1
 }
 
-export GIT_TOP=$(git rev-parse --git-dir)
+export GIT_TOP=$(git rev-parse --show-toplevel)
 
-if [[ -z $GIT_TOP || ! -d $GIT_TOP ]] ; then
+if [[ -z $GIT_TOP || ! -d $GIT_TOP/.git ]] ; then
     BS_help
     SPLIT_LINE "You need to run this command from the toplevel of the working tree."
     exit 1
@@ -248,7 +249,7 @@ elif [[ $BS_OPTION = push ]] ; then
 elif [[ $BS_OPTION = status ]] ; then
     BS_status
 elif [[ $BS_OPTION = track ]] ; then
-    BS_track
+    BS_track $BS_TARGET
 elif [[ $BS_OPTION = untrack ]] ; then
     BS_untrack
 elif [[ $BS_OPTION = update ]] ; then
