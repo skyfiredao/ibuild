@@ -21,6 +21,7 @@ export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH
 export LC_CTYPE=C
 export LC_ALL=C
 
+export BS_VER=0.0.1
 export BS_OPTION=$1
 
 BS_pull()
@@ -50,19 +51,19 @@ BS_track()
 
  if [[ ! -d .git/git-bs ]] ; then
     SPLIT_LINE "Please 'git bs pull' first"
-    exit 1
+    EXIT 1
  fi
  if [[ ! -d .git ]] ; then
     SPLIT_LINE "You need to run this command from the toplevel of the working tree."
-    exit 1
+    EXIT 1
  fi
  if [[ ! $(ls $BS_track_UTL/$BS_track_OBJ) ]] ; then
     SPLIT_LINE "Cannot find $BS_track_TARGET"
-    exit 1
+    EXIT 1
  fi
  if [[ -f .gitattributes && $(grep "^$BS_track_TARGET filter=bs" .gitattributes) ]] ; then
     SPLIT_LINE "$BS_track_TARGET in track list already"
-    exit 0
+    EXIT 0
  fi
  echo "$BS_track_TARGET filter=bs diff=bs merge=bs -text" >>.gitattributes
  git add .gitattributes
@@ -76,22 +77,22 @@ BS_untrack()
 
  if [[ ! -d .git/git-bs ]] ; then
     SPLIT_LINE "Please 'git bs pull' first"
-    exit 1
+    EXIT 1
  fi
  if [[ ! -d .git ]] ; then
     SPLIT_LINE "You need to run this command from the toplevel of the working tree."
-    exit 1
+    EXIT 1
  fi
  if [[ ! $(ls $BS_track_UTL/$BS_track_OBJ) ]] ; then
     SPLIT_LINE "Cannot find $BS_track_TARGET"
-    exit 1
+    EXIT 1
  fi
  if [[ -f .gitattributes && $(grep "^$BS_track_TARGET filter=bs" .gitattributes) ]] ; then
     grep -v "^$BS_track_TARGET filter=bs" .gitattributes >.git/.gitattributes.tmp
     cp .git/.gitattributes.tmp .gitattributes
  else
     SPLIT_LINE "No $BS_track_TARGET in track list"
-    exit 1
+    EXIT 1
  fi
 }
 
@@ -102,12 +103,44 @@ BS_update()
 
 BS_version()
 {
- echo $1
+ echo git-bs/$BS_VER
 }
 
 BS_env()
 {
- echo $1
+ BS_version
+ $(git version)
+ echo "
+git config git-bs.url = '$(git config --global git-bs.url)'
+git config git-bs.username = '$(git config --global git-bs.username)'
+git config git-bs.password = '$(git config --global git-bs.password)'
+git config git-bs.filter.clean = '$(git config --global filter.git-bs.clean)'
+git config git-bs.filter.smudge = '$(git config --global filter.git-bs.smudge)'
+git config git-bs.filter.process = '$(git config --global filter.git-bs.process)'
+git config git-bs.filter.required = '$(git config --global filter.git-bs.required)'
+
+LocalWorkingDir=
+LocalGitDir=
+LocalGitStorageDir=
+LocalMediaDir=
+LocalReferenceDir=
+TempDir=/tmp/git-lfs
+ConcurrentTransfers=3
+TusTransfers=false
+BasicTransfersOnly=false
+SkipDownloadErrors=false
+FetchRecentAlways=false
+FetchRecentRefsDays=7
+FetchRecentCommitsDays=0
+FetchRecentRefsIncludeRemotes=true
+PruneOffsetDays=3
+PruneVerifyRemoteAlways=false
+PruneRemoteName=origin
+AccessDownload=none
+AccessUpload=none
+DownloadTransfers=basic
+UploadTransfers=basic
+" 
 }
 
 BS_checkout()
@@ -122,14 +155,14 @@ BS_clone()
 
 BS_help()
 {
- echo '
-git-bs/0.0.1 ()
+ echo "
+git-bs/$BS_VER ()
 git bs <command> [<args>]
 
 Git BS is a system for managing and versioning binary files in
 association with a Git repository.  Instead of storing the binary files
-within the Git repository as blobs, Git BS stores special "pointer
-files" in the repository, while storing the actual file contents on a
+within the Git repository as blobs, Git BS stores special 'pointer
+files' in the repository, while storing the actual file contents on a
 Git BS server.  The contents of the binary file are downloaded
 automatically when needed, for example when a Git branch containing
 the binary file is checked out.
@@ -167,8 +200,7 @@ Commands
     Update Git hooks for the current Git repository.
 * git bs version:
     Report the version number.
-'
-
+"
 }
 
 SPLIT_LINE()
@@ -178,16 +210,26 @@ SPLIT_LINE()
  echo '========================================'
 }
 
-if [[ ! -d .git ]] ; then
+EXIT()
+{
+ popd >/dev/null 2>&1
+ exit $1
+}
+
+export GIT_TOP=$(git rev-parse --git-dir)
+
+if [[ -z $GIT_TOP || ! -d $GIT_TOP ]] ; then
     BS_help
     SPLIT_LINE "You need to run this command from the toplevel of the working tree."
     exit 1
 fi
 
+pushd $GIT_TOP >/dev/null 2>&1
+
 if [[ ! $(git config --global git-bs.url) ]] ; then
     BS_help
     SPLIT_LINE "You need define git-bs.url by 'git config --global git-bs.url LOCAL_BS_SERVER_URL'."
-    exit 1
+    EXIT 1
 else
     export BS_SERVER=$(git config --global git-bs.url)
 fi
@@ -195,7 +237,7 @@ fi
 if [[ ! $(git config --global git-bs.username) ]] ; then
     BS_help
     SPLIT_LINE "You need define git-bs.url by 'git config --global git-bs.username LOCAL_BS_SERVER_USERNAME'."
-    exit 1
+    EXIT 1
 else
     export BS_SERVER_USERNAME=$(git config --global git-bs.username)
 fi
@@ -203,7 +245,7 @@ fi
 if [[ ! $(git config --global git-bs.password) ]] ; then
     BS_help
     SPLIT_LINE "You need define git-bs.password by 'git config --global git-bs.password LOCAL_BS_SERVER_PASSWORD'."
-    exit 1
+    EXIT 1
 else
     export BS_SERVER_PASSWORD=$(git config --global git-bs.password)
 fi
@@ -216,9 +258,9 @@ if [[ -z $(git config --global filter.git-bs.required) ]] ; then
 fi
 
 export BS_SERVER_OPTION="--non-interactive --no-auth-cache --username $BS_SERVER_USERNAME --password $BS_SERVER_PASSWORD"
-if [[ ! $(which hexdiff) || ! $(which svn) || ! $(which rsync) ]] ; then
-    SPLIT_LINE "Please setup hexdiff, subversion and rsync"
-    exit 1
+if [[ ! $(which vbindiff) || ! $(which svn) || ! $(which rsync) ]] ; then
+    SPLIT_LINE "Please setup vbindiff, subversion and rsync"
+    EXIT 1
 fi
 
 if [[ $BS_OPTION = pull ]] ; then
