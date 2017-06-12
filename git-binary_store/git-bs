@@ -64,7 +64,7 @@ BS_track()
     SPLIT_LINE "$BS_track_TARGET in track list already"
     exit 0
  fi
- echo "$BS_track_TARGET filter=bs diff=lfs merge=lfs -text" >>.gitattributes
+ echo "$BS_track_TARGET filter=bs diff=bs merge=bs -text" >>.gitattributes
  git add .gitattributes
 }
 
@@ -216,6 +216,10 @@ if [[ -z $(git config --global filter.git-bs.required) ]] ; then
 fi
 
 export BS_SERVER_OPTION="--non-interactive --no-auth-cache --username $BS_SERVER_USERNAME --password $BS_SERVER_PASSWORD"
+if [[ ! $(which hexdiff) || ! $(which svn) || ! $(which rsync) ]] ; then
+    SPLIT_LINE "Please setup hexdiff, subversion and rsync"
+    exit 1
+fi
 
 if [[ $BS_OPTION = pull ]] ; then
     BS_pull
