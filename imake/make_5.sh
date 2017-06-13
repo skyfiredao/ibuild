@@ -44,7 +44,13 @@ REPO_INFO
 SETUP_BUILD_REPO
 
 [[ $IBUILD_MODE = bundle ]] && BUNDLE_BUILD
-[[ $IBUILD_MODE = topic ]] && TOPIC_BUILD
+if [[ ! -z $(ssh $IBUILD_GRTSRV gerrit query commit:$GERRIT_PATCHSET_REVISION | grep 'topic:' | awk -F': ' {'print $2'}) && $IBUILD_MODE = topic ]] ; then
+    TOPIC_BUILD
+elif [[ ! -z $GERRIT_CHANGE_NUMBER ]] ; then
+    SPLIT_LINE "No topic, Switch to patch build"
+    REPO_DOWNLOAD
+fi
+
 [[ ! -z $GERRIT_CHANGE_NUMBER && $IBUILD_MODE = patch ]] && REPO_DOWNLOAD
 [[ $(echo $IBUILD_NOTE | egrep "itest") ]] && DIFF_MANIFEST
 [[ -f $LOG_PATH/nobuild ]] && exit 0
