@@ -25,13 +25,116 @@ export BS_VER=0.0.1
 export BS_OPTION=$1
 export BS_TARGET=$2
 
-BS_pull()
+BS_help()
+{
+ echo "
+git-bs/$BS_VER ()
+git bs <command> [<args>]
+
+Git BS is a system for managing and versioning binary files in
+association with a Git repository.  Instead of storing the binary files
+within the Git repository as blobs, Git BS stores special 'pointer
+files' in the repository, while storing the actual file contents on a
+Git BS server.  The contents of the binary file are downloaded
+automatically when needed, for example when a Git branch containing
+the binary file is checked out.
+
+Commands
+--------
+
+* git bs env:
+    Display the Git BS environment.
+* git bs checkout:
+    Populate working copy with real content from Git BS files
+* git bs clone:
+    Efficiently clone a Git BS-enabled repository
+* git bs fetch:
+    Download git BS files from a remote
+* git bs fsck:
+    Check GIT BS files for consistency.
+* git bs install:
+    Install Git BS configuration.
+* git bs logs:
+    Show errors from the git-bs command.
+* git bs ls-files:
+    Show information about Git BS files in the index and working tree.
+* git bs pull:
+    Fetch BS changes from the remote & checkout any required working tree files
+* git bs push:
+    Push queued binary files to the Git BS endpoint.
+* git bs status:
+    Show the status of Git BS files in the working tree.
+* git bs track:
+    View or add Git BS paths to Git attributes.
+* git bs untrack:
+    Remove Git BS paths from Git Attributes.
+* git bs update:
+    Update Git hooks for the current Git repository.
+* git bs version:
+    Report the version number.
+"
+}
+
+BS_version()
+{
+ echo git-bs/$BS_VER
+}
+
+BS_env()
+{
+ BS_version
+ $(git version)
+ echo "
+git config git-bs.url = '$(git config --global git-bs.url)'
+git config git-bs.username = '$(git config --global git-bs.username)'
+git config git-bs.password = '$(git config --global git-bs.password)'
+git config git-bs.filter.clean = '$(git config --global filter.git-bs.clean)'
+git config git-bs.filter.smudge = '$(git config --global filter.git-bs.smudge)'
+git config git-bs.filter.process = '$(git config --global filter.git-bs.process)'
+git config git-bs.filter.required = '$(git config --global filter.git-bs.required)'
+"
+}
+
+SPLIT_LINE()
+{
+ echo '========================================'
+ echo "$1"
+ echo '========================================'
+}
+
+EXIT()
+{
+ popd >/dev/null 2>&1
+ exit $1
+}
+
+BS_clone()
+{
+ if [[ -d $GIT_TOP/.git/git-bs ]] ; then
+    SPLIT_LINE "Local git-binary_store already clone, please update it"
+ else
+    svn co -q $BS_SERVER_OPTION $BS_SERVER $GIT_TOP/.git/git-bs
+ fi
+}
+
+BS_update()
 {
  if [[ -d $GIT_TOP/.git/git-bs ]] ; then
     svn up -q $BS_SERVER_OPTION $GIT_TOP/.git/git-bs
  else
-    svn co -q $BS_SERVER_OPTION $BS_SERVER $GIT_TOP/.git/git-bs
+    SPLIT_LINE "Cannot find local git-binary_store, please clone it!"
  fi
+}
+
+BS_checkout()
+{
+ echo $1
+}
+
+BS_pull()
+{
+ BS_clone
+ BS_checkout
 }
 
 BS_push()
@@ -97,102 +200,19 @@ BS_untrack()
  fi
 }
 
-BS_update()
+BS_clean()
 {
  echo $1
 }
 
-BS_version()
-{
- echo git-bs/$BS_VER
-}
-
-BS_env()
-{
- BS_version
- $(git version)
- echo "
-git config git-bs.url = '$(git config --global git-bs.url)'
-git config git-bs.username = '$(git config --global git-bs.username)'
-git config git-bs.password = '$(git config --global git-bs.password)'
-git config git-bs.filter.clean = '$(git config --global filter.git-bs.clean)'
-git config git-bs.filter.smudge = '$(git config --global filter.git-bs.smudge)'
-git config git-bs.filter.process = '$(git config --global filter.git-bs.process)'
-git config git-bs.filter.required = '$(git config --global filter.git-bs.required)'
-" 
-}
-
-BS_checkout()
+BS_smudge()
 {
  echo $1
 }
 
-BS_clone()
+BS_process()
 {
  echo $1
-}
-
-BS_help()
-{
- echo "
-git-bs/$BS_VER ()
-git bs <command> [<args>]
-
-Git BS is a system for managing and versioning binary files in
-association with a Git repository.  Instead of storing the binary files
-within the Git repository as blobs, Git BS stores special 'pointer
-files' in the repository, while storing the actual file contents on a
-Git BS server.  The contents of the binary file are downloaded
-automatically when needed, for example when a Git branch containing
-the binary file is checked out.
-
-Commands
---------
-
-* git bs env:
-    Display the Git BS environment.
-* git bs checkout:
-    Populate working copy with real content from Git BS files
-* git bs clone:
-    Efficiently clone a Git BS-enabled repository
-* git bs fetch:
-    Download git BS files from a remote
-* git bs fsck:
-    Check GIT BS files for consistency.
-* git bs install:
-    Install Git BS configuration.
-* git bs logs:
-    Show errors from the git-bs command.
-* git bs ls-files:
-    Show information about Git BS files in the index and working tree.
-* git bs pull:
-    Fetch BS changes from the remote & checkout any required working tree files
-* git bs push:
-    Push queued binary files to the Git BS endpoint.
-* git bs status:
-    Show the status of Git BS files in the working tree.
-* git bs track:
-    View or add Git BS paths to Git attributes.
-* git bs untrack:
-    Remove Git BS paths from Git Attributes.
-* git bs update:
-    Update Git hooks for the current Git repository.
-* git bs version:
-    Report the version number.
-"
-}
-
-SPLIT_LINE()
-{
- echo '========================================'
- echo "$1"
- echo '========================================'
-}
-
-EXIT()
-{
- popd >/dev/null 2>&1
- exit $1
 }
 
 export GIT_TOP=$(git rev-parse --show-toplevel)
