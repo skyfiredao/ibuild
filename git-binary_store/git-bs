@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 # Copyright (C) <2017>  <Ding Wei>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@ export LC_ALL=C
 
 export BS_VER=0.0.1
 export BS_OPTION=$1
-export BS_TARGET=$2
+export BS_TARGET=$(echo $* | sed "s/$BS_OPTION //g")
 
 BS_help()
 {
@@ -95,6 +95,49 @@ git config git-bs.filter.required = '$(git config --global filter.git-bs.require
 "
 }
 
+BS_CHECK_ENV()
+{
+ if [[ -z $GIT_TOP || ! -d $GIT_TOP/.git ]] ; then
+     BS_help
+     EXIT 1 "You need to run this command from the toplevel of the working tree."
+ fi
+
+ if [[ ! $(git config --global git-bs.url) ]] ; then
+     BS_help
+     EXIT 1 "You need define git-bs.url by 'git config --global git-bs.url LOCAL_BS_SERVER_URL'."
+ else
+     export BS_SERVER=$(git config --global git-bs.url)
+ fi
+
+ if [[ ! $(git config --global git-bs.username) ]] ; then
+     BS_help
+     EXIT 1 "You need define git-bs.url by 'git config --global git-bs.username LOCAL_BS_SERVER_USERNAME'."
+ else
+     export BS_SERVER_USERNAME=$(git config --global git-bs.username)
+ fi
+
+ if [[ ! $(git config --global git-bs.password) ]] ; then
+     BS_help
+     EXIT 1 "You need define git-bs.password by 'git config --global git-bs.password LOCAL_BS_SERVER_PASSWORD'."
+ else
+     export BS_SERVER_PASSWORD=$(git config --global git-bs.password)
+ fi
+
+ if [[ -z $(git config --global filter.git-bs.required) ]] ; then
+     git config --global filter.git-bs.clean "git-bs clean -- %f"
+     git config --global filter.git-bs.smudge "git-bs smudge -- %f"
+     git config --global filter.git-bs.process "git-bs filter-process"
+     git config --global filter.git-bs.required true
+ fi
+
+ if [[ ! $(which vbindiff) || ! $(which svn) || ! $(which rsync) ]] ; then
+     EXIT 1 "Please setup vbindiff, subversion and rsync"
+ fi
+ if [[ ! -d $GIT_TOP/.git/git-bs ]] ; then
+     BS_clone
+ fi
+}
+
 SPLIT_LINE()
 {
  echo '========================================'
@@ -150,23 +193,17 @@ BS_status()
 
 BS_track()
 {
- export BS_track_TARGET=$1
- export BS_track_URL=$(dirname $BS_track_TARGET)
- export BS_track_OBJ=$(basename $BS_track_TARGET)
+ export BS_track_INPUT=$1
+ for BS_track_TARGET in $(ls $BS_track_INPUT)
+ do
+    export BS_track_URL=$(dirname $BS_track_TARGET)
+    export BS_track_OBJ=$(basename $BS_track_TARGET)
 
- if [[ ! -d $GIT_TOP/.git/git-bs ]] ; then
-    EXIT 1 "Please 'git bs pull' first"
- fi
- if [[ ! -d .git ]] ; then
-    EXIT 1 "You need to run this command from the toplevel of the working tree."
- fi
- if [[ ! $(ls $BS_track_URL/$BS_track_OBJ) ]] ; then
-    EXIT 1 "Cannot find $BS_track_TARGET"
- fi
- if [[ -f .gitattributes && $(grep "^$BS_track_TARGET filter=bs" .gitattributes) ]] ; then
-    EXIT 0 "$BS_track_TARGET in track list already"
- fi
- echo "$BS_track_TARGET filter=bs diff=bs merge=bs -text" >>.gitattributes
+    if [[ -f .gitattributes && $(grep "^$BS_track_TARGET filter=bs" .gitattributes) ]] ; then
+       EXIT 0 "$BS_track_TARGET in track list already"
+    fi
+    echo "$BS_track_TARGET filter=bs diff=bs merge=bs -text" >>.gitattributes
+ done
  git add .gitattributes
 }
 
@@ -208,8 +245,10 @@ BS_smudge()
 
  cat .gitattributes | while read BS_track_ENTRY
  do
-    export BS_track_MD5=$(echo $BS_track_ENTRY | md5sum | awk -F' ' {'print $1'})
-    
+    for BS_track_MD5 in $(ls $BS_track_ENTRY | md5sum | awk -F' ' {'print $1'})
+    do
+        export BS_METADATA_NAME=$BS_track_MD5
+    done
 
  done
 
@@ -221,47 +260,10 @@ BS_process()
 }
 
 export GIT_TOP=$(git rev-parse --show-toplevel)
-
-if [[ -z $GIT_TOP || ! -d $GIT_TOP/.git ]] ; then
-    BS_help
-    SPLIT_LINE "You need to run this command from the toplevel of the working tree."
-    exit 1
-fi
+BS_CHECK_ENV
+export BS_SERVER_OPTION="--non-interactive --no-auth-cache --username $BS_SERVER_USERNAME --password $BS_SERVER_PASSWORD"
 
 pushd $GIT_TOP >/dev/null 2>&1
-
-if [[ ! $(git config --global git-bs.url) ]] ; then
-    BS_help
-    EXIT 1 "You need define git-bs.url by 'git config --global git-bs.url LOCAL_BS_SERVER_URL'."
-else
-    export BS_SERVER=$(git config --global git-bs.url)
-fi
-
-if [[ ! $(git config --global git-bs.username) ]] ; then
-    BS_help
-    EXIT 1 "You need define git-bs.url by 'git config --global git-bs.username LOCAL_BS_SERVER_USERNAME'."
-else
-    export BS_SERVER_USERNAME=$(git config --global git-bs.username)
-fi
-
-if [[ ! $(git config --global git-bs.password) ]] ; then
-    BS_help
-    EXIT 1 "You need define git-bs.password by 'git config --global git-bs.password LOCAL_BS_SERVER_PASSWORD'."
-else
-    export BS_SERVER_PASSWORD=$(git config --global git-bs.password)
-fi
-
-if [[ -z $(git config --global filter.git-bs.required) ]] ; then
-    git config --global filter.git-bs.clean "git-bs clean -- %f"
-    git config --global filter.git-bs.smudge "git-bs smudge -- %f"
-    git config --global filter.git-bs.process "git-bs filter-process"
-    git config --global filter.git-bs.required true
-fi
-
-export BS_SERVER_OPTION="--non-interactive --no-auth-cache --username $BS_SERVER_USERNAME --password $BS_SERVER_PASSWORD"
-if [[ ! $(which vbindiff) || ! $(which svn) || ! $(which rsync) ]] ; then
-    EXIT 1 "Please setup vbindiff, subversion and rsync"
-fi
 
 if [[ $BS_OPTION = pull ]] ; then
     BS_pull
@@ -270,7 +272,7 @@ elif [[ $BS_OPTION = push ]] ; then
 elif [[ $BS_OPTION = status ]] ; then
     BS_status
 elif [[ $BS_OPTION = track ]] ; then
-    BS_track $BS_TARGET
+    BS_track "$BS_TARGET"
 elif [[ $BS_OPTION = untrack ]] ; then
     BS_untrack
 elif [[ $BS_OPTION = update ]] ; then
