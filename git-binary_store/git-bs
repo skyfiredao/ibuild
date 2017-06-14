@@ -199,12 +199,15 @@ BS_track()
     export BS_track_URL=$(dirname $BS_track_TARGET)
     export BS_track_OBJ=$(basename $BS_track_TARGET)
 
-    if [[ -f .gitattributes && $(grep "^$BS_track_TARGET filter=bs" .gitattributes) ]] ; then
-       EXIT 0 "$BS_track_TARGET in track list already"
+    if [[ ! $(grep "^$BS_track_TARGET filter=bs" .gitattributes) ]] ; then
+        echo "$BS_track_TARGET filter=bs diff=bs merge=bs -text" >>.gitattributes
+    else
+        SPLIT_LINE "$BS_track_TARGET in track list already"
     fi
-    echo "$BS_track_TARGET filter=bs diff=bs merge=bs -text" >>.gitattributes
  done
  git add .gitattributes
+ SPLIT_LINE "Current .gitattributes"
+ cat .gitattributes
 }
 
 BS_untrack()
