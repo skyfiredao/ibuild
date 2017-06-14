@@ -98,26 +98,22 @@ git config git-bs.filter.required = '$(git config --global filter.git-bs.require
 BS_CHECK_ENV()
 {
  if [[ -z $GIT_TOP || ! -d $GIT_TOP/.git ]] ; then
-     BS_help
      EXIT 1 "You need to run this command from the toplevel of the working tree."
  fi
 
  if [[ ! $(git config --global git-bs.url) ]] ; then
-     BS_help
      EXIT 1 "You need define git-bs.url by 'git config --global git-bs.url LOCAL_BS_SERVER_URL'."
  else
      export BS_SERVER=$(git config --global git-bs.url)
  fi
 
  if [[ ! $(git config --global git-bs.username) ]] ; then
-     BS_help
      EXIT 1 "You need define git-bs.url by 'git config --global git-bs.username LOCAL_BS_SERVER_USERNAME'."
  else
      export BS_SERVER_USERNAME=$(git config --global git-bs.username)
  fi
 
  if [[ ! $(git config --global git-bs.password) ]] ; then
-     BS_help
      EXIT 1 "You need define git-bs.password by 'git config --global git-bs.password LOCAL_BS_SERVER_PASSWORD'."
  else
      export BS_SERVER_PASSWORD=$(git config --global git-bs.password)
@@ -212,25 +208,22 @@ BS_track()
 
 BS_untrack()
 {
- export BS_track_TARGET=$1
- export BS_track_URL=$(dirname $BS_track_TARGET)
- export BS_track_OBJ=$(basename $BS_track_TARGET)
+ export BS_track_INPUT=$1
+ for BS_track_TARGET in $(ls $BS_track_INPUT)
+ do
+    export BS_track_URL=$(dirname $BS_track_TARGET)
+    export BS_track_OBJ=$(basename $BS_track_TARGET)
 
- if [[ ! -d $GIT_TOP/.git/git-bs ]] ; then
-    EXIT 1 "Please 'git bs clone' first"
- fi
- if [[ ! -d .git ]] ; then
-    EXIT 1 "You need to run this command from the toplevel of the working tree."
- fi
- if [[ ! $(ls $BS_track_URL/$BS_track_OBJ) ]] ; then
-    EXIT 1 "Cannot find $BS_track_TARGET"
- fi
- if [[ -f .gitattributes && $(grep "^$BS_track_TARGET filter=bs" .gitattributes) ]] ; then
-    grep -v "^$BS_track_TARGET filter=bs" .gitattributes >.git/.gitattributes.tmp
-    cp .git/.gitattributes.tmp .gitattributes
- else
-    EXIT 1 "No $BS_track_TARGET in track list"
- fi
+    if [[ $(grep "^$BS_track_TARGET filter=bs" .gitattributes) ]] ; then
+        grep -v "^$BS_track_TARGET filter=bs" .gitattributes >.git/.gitattributes.tmp
+        cp .git/.gitattributes.tmp .gitattributes
+    else
+        SPLIT_LINE "$BS_track_TARGET NOT in track list"
+    fi
+ done
+ git add .gitattributes
+ SPLIT_LINE "Current .gitattributes"
+ cat .gitattributes
 }
 
 BS_clean()
@@ -277,7 +270,7 @@ elif [[ $BS_OPTION = status ]] ; then
 elif [[ $BS_OPTION = track ]] ; then
     BS_track "$BS_TARGET"
 elif [[ $BS_OPTION = untrack ]] ; then
-    BS_untrack
+    BS_untrack "$BS_TARGET"
 elif [[ $BS_OPTION = update ]] ; then
     BS_update
 elif [[ $BS_OPTION = version ]] ; then
