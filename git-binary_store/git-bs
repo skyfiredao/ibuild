@@ -120,8 +120,8 @@ BS_CHECK_ENV()
  fi
 
  if [[ -z $(git config --global filter.git-bs.required) ]] ; then
-     git config --global filter.git-bs.clean "git-bs clean -- %f"
-     git config --global filter.git-bs.smudge "git-bs smudge -- %f"
+     git config --global filter.git-bs.clean "git-bs clean %f"
+     git config --global filter.git-bs.smudge "git-bs smudge %f"
      git config --global filter.git-bs.process "git-bs filter-process"
      git config --global filter.git-bs.required true
  fi
@@ -151,7 +151,7 @@ EXIT()
 BS_clone()
 {
  if [[ -d $GIT_TOP/.git/git-bs ]] ; then
-    SPLIT_LINE "Local git-binary_store already clone, please update it"
+    SPLIT_LINE ":Local git-binary_store clone ready"
  else
     svn co -q $BS_SERVER_OPTION $BS_SERVER $GIT_TOP/.git/git-bs
  fi
@@ -195,8 +195,8 @@ BS_track()
     export BS_track_URL=$(dirname $BS_track_TARGET)
     export BS_track_OBJ=$(basename $BS_track_TARGET)
 
-    if [[ ! $(grep "^$BS_track_TARGET filter=bs" .gitattributes) ]] ; then
-        echo "$BS_track_TARGET filter=bs diff=bs merge=bs -text" >>.gitattributes
+    if [[ ! $(grep "^$BS_track_TARGET filter=git-bs" .gitattributes) ]] ; then
+        echo "$BS_track_TARGET filter=git-bs diff=git-bs merge=git-bs -text" >>.gitattributes
     else
         SPLIT_LINE "$BS_track_TARGET in track list already"
     fi
@@ -214,8 +214,8 @@ BS_untrack()
     export BS_track_URL=$(dirname $BS_track_TARGET)
     export BS_track_OBJ=$(basename $BS_track_TARGET)
 
-    if [[ $(grep "^$BS_track_TARGET filter=bs" .gitattributes) ]] ; then
-        grep -v "^$BS_track_TARGET filter=bs" .gitattributes >.git/.gitattributes.tmp
+    if [[ $(grep "^$BS_track_TARGET filter=git-bs" .gitattributes) ]] ; then
+        grep -v "^$BS_track_TARGET filter=git-bs" .gitattributes >.git/.gitattributes.tmp
         cp .git/.gitattributes.tmp .gitattributes
     else
         SPLIT_LINE "$BS_track_TARGET NOT in track list"
@@ -235,19 +235,27 @@ BS_clean()
 BS_smudge()
 {
  pushd $GIT_TOP >/dev/null 2>&1
- if [[ ! -f .gitattributes ]] ; then
-    EXIT 1 "Cannot find .gitattributes"
- fi
-
- cat .gitattributes | while read BS_track_ENTRY
+ export BS_smudge_INPUT=$1
+ for BS_smudge_TARGET in $(ls $BS_smudge_INPUT)
  do
-    for BS_track_MD5 in $(ls $BS_track_ENTRY | md5sum | awk -F' ' {'print $1'})
+    export BS_smudge_URL=$(dirname $BS_smudge_TARGET)
+    export BS_smudge_OBJ=$(basename $BS_smudge_TARGET)
+
+    cat .gitattributes | while read BS_track_ENTRY
     do
-        export BS_METADATA_NAME=$BS_track_MD5
+       export BS_track_SOURCE=$(echo $BS_track_ENTRY | awk -F' ' {'print $1'})
+       if [[ ! -f $BS_track_SOURCE ]] ; then
+           EXIT 1 "Cannot find $BS_track_SOURCE"
+       fi
+       for BS_track_MD5 in $(ls $BS_track_SOURCE | md5sum | awk -F' ' {'print $1'})
+       do
+           export BS_METADATA_NAME=$BS_track_MD5
+           mkdir -p $GIT_TOP/.git/git-bs/metadata
+           cp $BS_track_SOURCE $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME
+           svn add -q $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME
+      done
     done
-
- done
-
+done
 }
 
 BS_process()
@@ -284,7 +292,7 @@ elif [[ $BS_OPTION = clone ]] ; then
 elif [[ $BS_OPTION = clean ]] ; then
     BS_clean
 elif [[ $BS_OPTION = smudge ]] ; then
-    BS_smudge
+    BS_smudge "$BS_TARGET"
 elif [[ $BS_OPTION = "filter-process" ]] ; then
     BS_process
 else
