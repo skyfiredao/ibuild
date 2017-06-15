@@ -22,8 +22,6 @@ export LC_CTYPE=C
 export LC_ALL=C
 
 export BS_VER=0.0.1
-export BS_OPTION=$1
-export BS_TARGET=$(echo $* | sed "s/$BS_OPTION //g")
 
 BS_help()
 {
@@ -72,6 +70,14 @@ Commands
     Update Git hooks for the current Git repository.
 * git bs version:
     Report the version number.
+
+Low level commands
+-------------------
+
+* git bs clean:
+    Git clean filter that converts large files to pointers.
+* git bs smudge:
+    Git smudge filter that converts pointer in blobs to the actual content.
 "
 }
 
@@ -88,10 +94,10 @@ BS_env()
 git config git-bs.url = '$(git config --global git-bs.url)'
 git config git-bs.username = '$(git config --global git-bs.username)'
 git config git-bs.password = '$(git config --global git-bs.password)'
-git config git-bs.filter.clean = '$(git config --global filter.git-bs.clean)'
-git config git-bs.filter.smudge = '$(git config --global filter.git-bs.smudge)'
-git config git-bs.filter.process = '$(git config --global filter.git-bs.process)'
-git config git-bs.filter.required = '$(git config --global filter.git-bs.required)'
+git config bs.filter.clean = '$(git config --global filter.bs.clean)'
+git config bs.filter.smudge = '$(git config --global filter.bs.smudge)'
+git config bs.filter.process = '$(git config --global filter.bs.process)'
+git config bs.filter.required = '$(git config --global filter.bs.required)'
 "
 }
 
@@ -119,16 +125,19 @@ BS_CHECK_ENV()
      export BS_SERVER_PASSWORD=$(git config --global git-bs.password)
  fi
 
- if [[ -z $(git config --global filter.git-bs.required) ]] ; then
-     git config --global filter.git-bs.clean "git-bs clean %f"
-     git config --global filter.git-bs.smudge "git-bs smudge %f"
-     git config --global filter.git-bs.process "git-bs filter-process"
-     git config --global filter.git-bs.required true
+ if [[ -z $(git config --global filter.bs.required) ]] ; then
+     git config --global filter.bs.clean "git-bs clean %f"
+     git config --global filter.bs.smudge "git-bs smudge %f"
+     git config --global filter.bs.process "git-bs filter-process"
+     git config --global filter.bs.required true
  fi
 
  if [[ ! $(which vbindiff) || ! $(which svn) || ! $(which rsync) ]] ; then
      EXIT 1 "Please setup vbindiff, subversion and rsync"
  fi
+
+ export BS_SERVER_OPTION="--non-interactive --no-auth-cache --username $BS_SERVER_USERNAME --password $BS_SERVER_PASSWORD"
+
  if [[ ! -d $GIT_TOP/.git/git-bs ]] ; then
      BS_clone
  fi
@@ -143,18 +152,18 @@ SPLIT_LINE()
 
 EXIT()
 {
- popd >/dev/null 2>&1
- SPLIT_LINE "$2"
+ popd >>/tmp/git-bs.log 2>&1
+ [[ $1 != 0 ]] && SPLIT_LINE "$2"
  exit $1
 }
 
 BS_clone()
 {
- if [[ -d $GIT_TOP/.git/git-bs ]] ; then
-    SPLIT_LINE ":Local git-binary_store clone ready"
- else
-    svn co -q $BS_SERVER_OPTION $BS_SERVER $GIT_TOP/.git/git-bs
+ if [[ ! -d $GIT_TOP/.git/git-bs ]] ; then
+    svn mkdir $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5 -q -m "auto: create $GIT_URL_MD5" >>/tmp/git-bs.log 2>&1
+    svn co -q $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5 $GIT_TOP/.git/git-bs >>/tmp/git-bs.log 2>&1
  fi
+ SPLIT_LINE ":Local git-binary_store clone ready"
 }
 
 BS_update()
@@ -195,8 +204,8 @@ BS_track()
     export BS_track_URL=$(dirname $BS_track_TARGET)
     export BS_track_OBJ=$(basename $BS_track_TARGET)
 
-    if [[ ! $(grep "^$BS_track_TARGET filter=git-bs" .gitattributes) ]] ; then
-        echo "$BS_track_TARGET filter=git-bs diff=git-bs merge=git-bs -text" >>.gitattributes
+    if [[ ! $(grep "^$BS_track_TARGET filter=bs" .gitattributes) ]] ; then
+        echo "$BS_track_TARGET filter=bs diff=bs merge=bs -text" >>.gitattributes
     else
         SPLIT_LINE "$BS_track_TARGET in track list already"
     fi
@@ -214,8 +223,8 @@ BS_untrack()
     export BS_track_URL=$(dirname $BS_track_TARGET)
     export BS_track_OBJ=$(basename $BS_track_TARGET)
 
-    if [[ $(grep "^$BS_track_TARGET filter=git-bs" .gitattributes) ]] ; then
-        grep -v "^$BS_track_TARGET filter=git-bs" .gitattributes >.git/.gitattributes.tmp
+    if [[ $(grep "^$BS_track_TARGET filter=bs" .gitattributes) ]] ; then
+        grep -v "^$BS_track_TARGET filter=bs" .gitattributes >.git/.gitattributes.tmp
         cp .git/.gitattributes.tmp .gitattributes
     else
         SPLIT_LINE "$BS_track_TARGET NOT in track list"
@@ -226,36 +235,44 @@ BS_untrack()
  cat .gitattributes
 }
 
-BS_clean()
+BS_reset()
 {
  rm -fr $GIT_TOP/.git/git-bs
- EXIT 0 "Please clone before use local git-binary_store"
+ rm -f /tmp/git-bs.log
+ BS_clone
 }
 
 BS_smudge()
 {
- pushd $GIT_TOP >/dev/null 2>&1
- export BS_smudge_INPUT=$1
- for BS_smudge_TARGET in $(ls $BS_smudge_INPUT)
- do
-    export BS_smudge_URL=$(dirname $BS_smudge_TARGET)
-    export BS_smudge_OBJ=$(basename $BS_smudge_TARGET)
+ echo $1
+}
 
-    cat .gitattributes | while read BS_track_ENTRY
-    do
-       export BS_track_SOURCE=$(echo $BS_track_ENTRY | awk -F' ' {'print $1'})
-       if [[ ! -f $BS_track_SOURCE ]] ; then
-           EXIT 1 "Cannot find $BS_track_SOURCE"
-       fi
-       for BS_track_MD5 in $(ls $BS_track_SOURCE | md5sum | awk -F' ' {'print $1'})
-       do
-           export BS_METADATA_NAME=$BS_track_MD5
-           mkdir -p $GIT_TOP/.git/git-bs/metadata
-           cp $BS_track_SOURCE $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME
-           svn add -q $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME
-      done
-    done
-done
+BS_clean()
+{
+ pushd $GIT_TOP >>/tmp/git-bs.log 2>&1
+ export BS_INPUT=$1
+ [[ -z $BS_INPUT || ! $( cat .gitattributes | grep $BS_INPUT) ]] && EXIT 0
+
+ mkdir -p $GIT_TOP/.git/git-bs/metadata >>/tmp/git-bs.log 2>&1
+ svn add -q $GIT_TOP/.git/git-bs/metadata >>/tmp/git-bs.log 2>&1
+ svn ci $BS_SERVER_OPTION -q -m "auto: create metadata folder" $GIT_TOP/.git/git-bs/metadata >>/tmp/git-bs.log 2>&1
+
+ for BS_TARGET in $(ls $BS_INPUT)
+ do
+    if [[ $(file $BS_TARGET | grep ASCII) ]] ; then
+        export $BS_TARGET_REV=$(head -n1 $BS_TARGET)
+    fi
+    export BS_METADATA_NAME=$(ls $(dirname $BS_TARGET)/$(basename $BS_TARGET) | md5sum | awk -F' ' {'print $1'})
+    export BS_METADATA_REV=$(svn info $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME | grep Rev | grep Last | awk -F': ' {'print $2'})
+    if [[ $BS_TARGET_REV != $BS_METADATA_REV ]] ; then
+        cp $BS_TARGET $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME >>/tmp/git-bs.log 2>&1
+        svn add -q $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME >>/tmp/git-bs.log 2>&1
+        svn ci $BS_SERVER_OPTION -q -m "auto: update $BS_METADATA_NAME:$BS_TARGET" $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME >>/tmp/git-bs.log 2>&1
+        export BS_METADATA_REV=$(svn info $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME | grep Rev | grep Last | awk -F': ' {'print $2'})
+        echo $BS_METADATA_REV >$BS_TARGET
+    fi
+ done
+ EXIT 0
 }
 
 BS_process()
@@ -263,39 +280,61 @@ BS_process()
  echo $1
 }
 
+export BS_ARG=$1
+[[ -z $BS_ARG ]] && exit 1
+export BS_TARGET=$(echo $* | sed "s/$BS_ARG//g")
+
 export GIT_TOP=$(git rev-parse --show-toplevel)
+export GIT_URL_MD5=$(cat $GIT_TOP/.git/config | grep 'url =' | md5sum | awk -F' ' {'print $1'})
+
 BS_CHECK_ENV
-export BS_SERVER_OPTION="--non-interactive --no-auth-cache --username $BS_SERVER_USERNAME --password $BS_SERVER_PASSWORD"
 
-pushd $GIT_TOP >/dev/null 2>&1
-
-if [[ $BS_OPTION = pull ]] ; then
-    BS_pull
-elif [[ $BS_OPTION = push ]] ; then
-    BS_push
-elif [[ $BS_OPTION = status ]] ; then
-    BS_status
-elif [[ $BS_OPTION = track ]] ; then
-    BS_track "$BS_TARGET"
-elif [[ $BS_OPTION = untrack ]] ; then
-    BS_untrack "$BS_TARGET"
-elif [[ $BS_OPTION = update ]] ; then
-    BS_update
-elif [[ $BS_OPTION = version ]] ; then
-    BS_version
-elif [[ $BS_OPTION = env ]] ; then
-    BS_env
-elif [[ $BS_OPTION = chekout ]] ; then
-    BS_checkout
-elif [[ $BS_OPTION = clone ]] ; then
-    BS_clone
-elif [[ $BS_OPTION = clean ]] ; then
-    BS_clean
-elif [[ $BS_OPTION = smudge ]] ; then
-    BS_smudge "$BS_TARGET"
-elif [[ $BS_OPTION = "filter-process" ]] ; then
-    BS_process
-else
-    BS_help
-fi
+pushd $GIT_TOP >>/tmp/git-bs.log 2>&1
+case ${BS_ARG} in
+    pull)
+        BS_pull
+    ;;
+    push)
+        BS_push
+    ;;
+    status)
+        BS_status
+    ;;
+    track)
+        BS_track "$BS_TARGET"
+    ;;
+    untrack)
+        BS_untrack "$BS_TARGET" 
+    ;;
+    update)
+        BS_update
+    ;;
+    version)
+        BS_version
+    ;;
+    env)
+        BS_env
+    ;;
+    chekout)
+        BS_checkout
+    ;;
+    clone)
+        BS_clone
+    ;;
+    reset)
+        BS_reset
+    ;;
+    clean)
+        BS_clean "$BS_TARGET"
+    ;;
+    smudge)
+        BS_smudge "$BS_TARGET"
+    ;;
+    filter-process)
+        BS_process
+    ;;
+    *)
+        BS_help
+    ;;
+esac
 
