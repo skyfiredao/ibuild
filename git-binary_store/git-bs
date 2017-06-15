@@ -99,6 +99,8 @@ git config bs.filter.smudge = '$(git config --global filter.bs.smudge)'
 git config bs.filter.process = '$(git config --global filter.bs.process)'
 git config bs.filter.required = '$(git config --global filter.bs.required)'
 "
+ cat $GIT_TOP/.gitattributes
+ BS_clone
 }
 
 BS_CHECK_ENV()
@@ -137,10 +139,6 @@ BS_CHECK_ENV()
  fi
 
  export BS_SERVER_OPTION="--non-interactive --no-auth-cache --username $BS_SERVER_USERNAME --password $BS_SERVER_PASSWORD"
-
- if [[ ! -d $GIT_TOP/.git/git-bs ]] ; then
-     BS_clone
- fi
 }
 
 SPLIT_LINE()
@@ -163,7 +161,6 @@ BS_clone()
     svn mkdir $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5 -q -m "auto: create $GIT_URL_MD5" >>/tmp/git-bs.log 2>&1
     svn co -q $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5 $GIT_TOP/.git/git-bs >>/tmp/git-bs.log 2>&1
  fi
- SPLIT_LINE ":Local git-binary_store clone ready"
 }
 
 BS_update()
@@ -171,13 +168,13 @@ BS_update()
  if [[ -d $GIT_TOP/.git/git-bs ]] ; then
     svn up -q $BS_SERVER_OPTION $GIT_TOP/.git/git-bs
  else
-    SPLIT_LINE "Cannot find local git-binary_store, please clone it!"
+    BS_clone
  fi
 }
 
 BS_checkout()
 {
- echo $1
+ BS_clone
 }
 
 BS_pull()
@@ -188,16 +185,19 @@ BS_pull()
 
 BS_push()
 {
+ BS_clone
  echo $1
 }
 
 BS_status()
 {
+ BS_clone
  echo $1
 }
 
 BS_track()
 {
+ BS_clone
  export BS_track_INPUT=$1
  for BS_track_TARGET in $(ls $BS_track_INPUT)
  do
@@ -206,17 +206,14 @@ BS_track()
 
     if [[ ! $(grep "^$BS_track_TARGET filter=bs" .gitattributes) ]] ; then
         echo "$BS_track_TARGET filter=bs diff=bs merge=bs -text" >>.gitattributes
-    else
-        SPLIT_LINE "$BS_track_TARGET in track list already"
     fi
  done
  git add .gitattributes
- SPLIT_LINE "Current .gitattributes"
- cat .gitattributes
 }
 
 BS_untrack()
 {
+ BS_clone
  export BS_track_INPUT=$1
  for BS_track_TARGET in $(ls $BS_track_INPUT)
  do
@@ -226,13 +223,9 @@ BS_untrack()
     if [[ $(grep "^$BS_track_TARGET filter=bs" .gitattributes) ]] ; then
         grep -v "^$BS_track_TARGET filter=bs" .gitattributes >.git/.gitattributes.tmp
         cp .git/.gitattributes.tmp .gitattributes
-    else
-        SPLIT_LINE "$BS_track_TARGET NOT in track list"
     fi
  done
  git add .gitattributes
- SPLIT_LINE "Current .gitattributes"
- cat .gitattributes
 }
 
 BS_reset()
@@ -244,18 +237,20 @@ BS_reset()
 
 BS_smudge()
 {
- echo $1
+ echo
 }
 
 BS_clean()
 {
  pushd $GIT_TOP >>/tmp/git-bs.log 2>&1
  export BS_INPUT=$1
- [[ -z $BS_INPUT || ! $( cat .gitattributes | grep $BS_INPUT) ]] && EXIT 0
+ [[ -z $BS_INPUT || ! -f $GIT_TOP/.gitattributes || ! -d $GIT_TOP/.git/git-bs ]] && EXIT 0
 
- mkdir -p $GIT_TOP/.git/git-bs/metadata >>/tmp/git-bs.log 2>&1
- svn add -q $GIT_TOP/.git/git-bs/metadata >>/tmp/git-bs.log 2>&1
- svn ci $BS_SERVER_OPTION -q -m "auto: create metadata folder" $GIT_TOP/.git/git-bs/metadata >>/tmp/git-bs.log 2>&1
+ if [[ -d $GIT_TOP/.git/git-bs/metadata ]] ; then
+    mkdir -p $GIT_TOP/.git/git-bs/metadata >>/tmp/git-bs.log 2>&1
+    svn add -q $GIT_TOP/.git/git-bs/metadata >>/tmp/git-bs.log 2>&1
+    svn ci $BS_SERVER_OPTION -q -m "auto: create metadata folder" $GIT_TOP/.git/git-bs/metadata >>/tmp/git-bs.log 2>&1
+ fi
 
  for BS_TARGET in $(ls $BS_INPUT)
  do
@@ -264,10 +259,10 @@ BS_clean()
     fi
     export BS_METADATA_NAME=$(ls $(dirname $BS_TARGET)/$(basename $BS_TARGET) | md5sum | awk -F' ' {'print $1'})
     export BS_METADATA_REV=$(svn info $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME | grep Rev | grep Last | awk -F': ' {'print $2'})
-    if [[ $BS_TARGET_REV != $BS_METADATA_REV ]] ; then
+    if [[ $(grep $BS_TARGET $GIT_TOP/.gitattributes) && $BS_TARGET_REV != $BS_METADATA_REV ]] ; then
         cp $BS_TARGET $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME >>/tmp/git-bs.log 2>&1
         svn add -q $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME >>/tmp/git-bs.log 2>&1
-        svn ci $BS_SERVER_OPTION -q -m "auto: update $BS_METADATA_NAME:$BS_TARGET" $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME >>/tmp/git-bs.log 2>&1
+        svn ci $BS_SERVER_OPTION -q -m "auto: $BS_METADATA_NAME:$BS_TARGET" $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME >>/tmp/git-bs.log 2>&1
         export BS_METADATA_REV=$(svn info $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME | grep Rev | grep Last | awk -F': ' {'print $2'})
         echo $BS_METADATA_REV >$BS_TARGET
     fi
@@ -277,6 +272,7 @@ BS_clean()
 
 BS_process()
 {
+ BS_clone
  echo $1
 }
 
