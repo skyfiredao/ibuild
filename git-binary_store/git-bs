@@ -149,6 +149,7 @@ SPLIT_LINE()
 
 EXIT()
 {
+ rm -f /tmp/BS_TARGET_REV.$BS_SEED >/dev/null 2>&1
  popd >>/tmp/git-bs.log 2>&1
  [[ $1 != 0 ]] && SPLIT_LINE "$2"
  exit $1
@@ -156,19 +157,22 @@ EXIT()
 
 BS_clone()
 {
- if [[ ! -d $GIT_TOP/.git/git-bs ]] ; then
+ if [[ $(svn ls $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5/metadata >/dev/null 2>&1) ]] ; then
     svn mkdir $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5 -q -m "auto: create $GIT_URL_MD5" >>/tmp/git-bs.log 2>&1
-    svn co -q $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5 $GIT_TOP/.git/git-bs >>/tmp/git-bs.log 2>&1
+    svn mkdir $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5/metadata -q -m "auto: create metadata" >>/tmp/git-bs.log 2>&1
+ fi
+ if [[ ! -d $GIT_TOP/.git/git-bs ]] ; then
+    svn co -q -r1 $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5 $GIT_TOP/.git/git-bs >>/tmp/git-bs.log 2>&1
  fi
 }
 
 BS_update()
 {
- if [[ -d $GIT_TOP/.git/git-bs ]] ; then
-    svn up -q $BS_SERVER_OPTION $GIT_TOP/.git/git-bs
- else
+ export BS_update_TARGET=$1
+ if [[ ! -d $GIT_TOP/.git/git-bs ]] ; then
     BS_clone
  fi
+ svn up -q $BS_SERVER_OPTION $GIT_TOP/.git/git-bs/metadata/$BS_update_TARGET
 }
 
 BS_checkout()
@@ -196,7 +200,7 @@ BS_track()
 {
  BS_clone
  export BS_track_INPUT=$1
- export BS_track_TARGE=$TBS_track_INPUT
+ export BS_track_TARGET=$BS_track_INPUT
  export BS_track_URL=$(dirname $BS_track_TARGET)
  export BS_track_OBJ=$(basename $BS_track_TARGET)
 
@@ -233,10 +237,12 @@ BS_smudge()
  pushd $GIT_TOP >>/tmp/git-bs.log 2>&1
  export BS_INPUT=$1
  [[ -z $BS_INPUT || ! -f $GIT_TOP/.gitattributes || ! -d $GIT_TOP/.git/git-bs ]] && EXIT 0
- BS_update
 
  export BS_TARGET=$BS_INPUT
  export BS_METADATA_NAME=$(echo $(dirname $BS_TARGET)/$(basename $BS_TARGET) | md5sum | awk -F' ' {'print $1'})
+ BS_update $BS_METADATA_NAME
+ export BS_METADATA_REV=$(svn info $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME | grep Rev | grep Last | awk -F': ' {'print $2'})
+
  if [[ $(grep $BS_TARGET $GIT_TOP/.gitattributes) ]] ; then
     cat $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME
  fi
@@ -248,7 +254,6 @@ BS_clean()
  pushd $GIT_TOP >>/tmp/git-bs.log 2>&1
  export BS_INPUT=$1
  [[ -z $BS_INPUT || ! -f $GIT_TOP/.gitattributes || ! -d $GIT_TOP/.git/git-bs ]] && EXIT 0
- BS_update
 
  if [[ ! -d $GIT_TOP/.git/git-bs/metadata ]] ; then
     mkdir -p $GIT_TOP/.git/git-bs/metadata >>/tmp/git-bs.log 2>&1
@@ -257,13 +262,17 @@ BS_clean()
  fi
 
  export BS_TARGET=$BS_INPUT
- export BS_METADATA_MD5=$(md5sum $BS_TARGET | awk -F' ' {'print $1'})
+ export BS_TARGET_REV=$(head -n1 /tmp/BS_TARGET_REV.$BS_SEED)
  export BS_METADATA_NAME=$(echo $(dirname $BS_TARGET)/$(basename $BS_TARGET) | md5sum | awk -F' ' {'print $1'})
+ BS_update $BS_METADATA_NAME
+ export BS_METADATA_REV=$(svn info $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME | grep Rev | grep Last | awk -F': ' {'print $2'})
+
  if [[ $(grep $BS_TARGET $GIT_TOP/.gitattributes) ]] ; then
     cp $BS_TARGET $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME >>/tmp/git-bs.log 2>&1
     svn add -q $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME >>/tmp/git-bs.log 2>&1
     svn ci $BS_SERVER_OPTION -q -m "auto: $BS_METADATA_NAME:$BS_TARGET" $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME >>/tmp/git-bs.log 2>&1
-    echo $BS_METADATA_MD5
+    export BS_METADATA_REV=$(svn info $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME | grep Rev | grep Last | awk -F': ' {'print $2'})
+    echo $BS_METADATA_REV
  fi
  EXIT 0
 }
@@ -273,11 +282,10 @@ BS_process()
  BS_clone
 }
 
-cat >/dev/null 2>&1
-
 export BS_ARG=$1
 [[ -z $BS_ARG ]] && exit 1
 export BS_TARGET=$(echo $* | sed "s/$BS_ARG//g" | awk -F' ' {'print $1'})
+export BS_SEED=$RANDOM
 
 export GIT_TOP=$(git rev-parse --show-toplevel)
 export GIT_URL_MD5=$(cat $GIT_TOP/.git/config | grep 'url =' | md5sum | awk -F' ' {'print $1'})
@@ -320,9 +328,11 @@ case ${BS_ARG} in
         BS_reset
     ;;
     clean)
+        cat >/dev/null 2>&1
         BS_clean "$BS_TARGET"
     ;;
     smudge)
+        cat | head -n1 >/tmp/BS_TARGET_REV.$BS_SEED
         BS_smudge "$BS_TARGET"
     ;;
     filter-process)
