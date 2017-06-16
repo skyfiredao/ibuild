@@ -234,18 +234,12 @@ BS_smudge()
  pushd $GIT_TOP >>/tmp/git-bs.log 2>&1
  export BS_INPUT=$1
  [[ -z $BS_INPUT || ! -f $GIT_TOP/.gitattributes || ! -d $GIT_TOP/.git/git-bs ]] && EXIT 0
+ BS_update
 
  export BS_TARGET=$BS_INPUT
- if [[ $(file $BS_TARGET | grep ASCII) ]] ; then
-    export $BS_TARGET_REV=$(head -n1 $BS_TARGET)
- fi
  export BS_METADATA_NAME=$(echo $(dirname $BS_TARGET)/$(basename $BS_TARGET) | md5sum | awk -F' ' {'print $1'})
- export BS_METADATA_REV=$(svn info $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME | grep Rev | grep Last | awk -F': ' {'print $2'})
- if [[ $BS_METADATA_REV != $BS_TARGET_REV ]] ; then
-    svn up $BS_SERVER_OPTION -q -r $BS_TARGET_REV $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME >>/tmp/git-bs.log 2>&1
- fi
  if [[ $(grep $BS_TARGET $GIT_TOP/.gitattributes) ]] ; then
-    cp $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME $BS_TARGET >>/tmp/git-bs.log 2>&1
+    cat $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME
  fi
  EXIT 0
 }
@@ -255,26 +249,20 @@ BS_clean()
  pushd $GIT_TOP >>/tmp/git-bs.log 2>&1
  export BS_INPUT=$1
  [[ -z $BS_INPUT || ! -f $GIT_TOP/.gitattributes || ! -d $GIT_TOP/.git/git-bs ]] && EXIT 0
+ BS_update
 
- if [[ -d $GIT_TOP/.git/git-bs/metadata ]] ; then
+ if [[ ! -d $GIT_TOP/.git/git-bs/metadata ]] ; then
     mkdir -p $GIT_TOP/.git/git-bs/metadata >>/tmp/git-bs.log 2>&1
     svn add -q $GIT_TOP/.git/git-bs/metadata >>/tmp/git-bs.log 2>&1
     svn ci $BS_SERVER_OPTION -q -m "auto: create metadata folder" $GIT_TOP/.git/git-bs/metadata >>/tmp/git-bs.log 2>&1
  fi
 
  export BS_TARGET=$BS_INPUT
- if [[ $(file $BS_TARGET | grep ASCII) ]] ; then
-    export BS_TARGET_REV=$(head -n1 $BS_TARGET)
- fi
  export BS_METADATA_NAME=$(echo $(dirname $BS_TARGET)/$(basename $BS_TARGET) | md5sum | awk -F' ' {'print $1'})
- export BS_METADATA_REV=$(svn info $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME | grep Rev | grep Last | awk -F': ' {'print $2'})
- if [[ $(grep $BS_TARGET $GIT_TOP/.gitattributes) && -z $BS_TARGET_REV ]] ; then
+ if [[ $(grep $BS_TARGET $GIT_TOP/.gitattributes) ]] ; then
     cp $BS_TARGET $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME >>/tmp/git-bs.log 2>&1
-    svn up $BS_SERVER_OPTION -q $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME >>/tmp/git-bs.log 2>&1
     svn add -q $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME >>/tmp/git-bs.log 2>&1
     svn ci $BS_SERVER_OPTION -q -m "auto: $BS_METADATA_NAME:$BS_TARGET" $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME >>/tmp/git-bs.log 2>&1
-    export BS_METADATA_REV=$(svn info $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME | grep Rev | grep Last | awk -F': ' {'print $2'})
-    echo $BS_METADATA_REV
  fi
  EXIT 0
 }
