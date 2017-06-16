@@ -16,8 +16,7 @@
 #
 # Change log
 # 170606 Create by Ding Wei
-source /etc/bash.bashrc
-export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 export LC_CTYPE=C
 export LC_ALL=C
 
@@ -258,11 +257,13 @@ BS_clean()
  fi
 
  export BS_TARGET=$BS_INPUT
+ export BS_METADATA_MD5=$(md5sum $BS_TARGET | awk -F' ' {'print $1'})
  export BS_METADATA_NAME=$(echo $(dirname $BS_TARGET)/$(basename $BS_TARGET) | md5sum | awk -F' ' {'print $1'})
  if [[ $(grep $BS_TARGET $GIT_TOP/.gitattributes) ]] ; then
     cp $BS_TARGET $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME >>/tmp/git-bs.log 2>&1
     svn add -q $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME >>/tmp/git-bs.log 2>&1
     svn ci $BS_SERVER_OPTION -q -m "auto: $BS_METADATA_NAME:$BS_TARGET" $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME >>/tmp/git-bs.log 2>&1
+    echo $BS_METADATA_MD5
  fi
  EXIT 0
 }
@@ -271,6 +272,8 @@ BS_process()
 {
  BS_clone
 }
+
+cat >/dev/null 2>&1
 
 export BS_ARG=$1
 [[ -z $BS_ARG ]] && exit 1
