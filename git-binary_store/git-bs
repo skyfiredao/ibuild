@@ -20,7 +20,7 @@ export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 export LC_CTYPE=C
 export LC_ALL=C
 
-export BS_VER=0.0.1
+export BS_VER=0.0.2
 
 BS_help()
 {
@@ -45,28 +45,22 @@ Commands
     Populate working copy with real content from Git BS files
 * git bs clone:
     Efficiently clone a Git BS-enabled repository
-* git bs fetch:
-    Download git BS files from a remote
-* git bs fsck:
-    Check GIT BS files for consistency.
-* git bs install:
-    Install Git BS configuration.
-* git bs logs:
+* git bs log:
     Show errors from the git-bs command.
-* git bs ls-files:
-    Show information about Git BS files in the index and working tree.
-* git bs pull:
+* git bs ls:
+    Show information about Git BS files in the metadata and working tree.
+???* git bs pull:
     Fetch BS changes from the remote & checkout any required working tree files
-* git bs push:
+???* git bs push:
     Push queued binary files to the Git BS endpoint.
-* git bs status:
+???* git bs status:
     Show the status of Git BS files in the working tree.
 * git bs track:
     View or add Git BS paths to Git attributes.
 * git bs untrack:
     Remove Git BS paths from Git Attributes.
-* git bs update:
-    Update Git hooks for the current Git repository.
+* git bs update
+    Download git BS files from a remote to latest version
 * git bs version:
     Report the version number.
 
@@ -142,9 +136,7 @@ BS_CHECK_ENV()
 
 SPLIT_LINE()
 {
- echo '========================================'
- echo "$1"
- echo '========================================'
+ echo "================================ $1"
 }
 
 EXIT()
@@ -172,11 +164,34 @@ BS_update()
 {
  export BS_update_TARGET=$1
  export BS_update_REV=$2
- [[ ! -z $BS_update_REV ]] && export FIX_REV="-r$BS_update_REV"
+ [[ ! -z $BS_update_REV ]] && export FIX_REV="-r $BS_update_REV"
  if [[ ! -d $GIT_TOP/.git/git-bs ]] ; then
     BS_clone
  fi
  svn up -q $BS_SERVER_OPTION $FIX_REV $GIT_TOP/.git/git-bs/metadata/$BS_update_TARGET
+}
+
+BS_log()
+{
+ [[ -f /tmp/git-bs.log ]] && cat /tmp/git-bs.log
+ EIXT 0
+}
+
+BS_ls()
+{
+ pushd $GIT_TOP >>/tmp/git-bs.log 2>&1
+ [[ ! -f $GIT_TOP/.gitattributes || ! -d $GIT_TOP/.git/git-bs ]] && EXIT 0
+
+ for BS_TARGET_NAME in $(cat $GIT_TOP/.gitattributes | awk -F' ' {'print $1'})
+ do
+    export BS_METADATA_NAME=$(echo $BS_TARGET_NAME | md5sum | awk -F' ' {'print $1'})
+    if [[ -f $BS_TARGET_NAME && -f $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME ]] ; then
+        SPLIT_LINE
+        md5sum $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME
+        md5sum $BS_TARGET_NAME
+    fi
+ done
+ EXIT 0
 }
 
 BS_checkout()
@@ -251,7 +266,7 @@ BS_smudge()
  if [[ $BS_METADATA_REV != $BS_TARGET_REV ]] ; then
     BS_update $BS_METADATA_NAME $BS_TARGET_REV
  fi
- if [[ $(grep $BS_TARGET $GIT_TOP/.gitattributes) ]] ; then
+ if [[ $(grep $BS_TARGET $GIT_TOP/.gitattributes) && -f $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME ]] ; then
     cat $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME
  fi
  EXIT 0
@@ -262,12 +277,6 @@ BS_clean()
  pushd $GIT_TOP >>/tmp/git-bs.log 2>&1
  export BS_INPUT=$1
  [[ -z $BS_INPUT || ! -f $GIT_TOP/.gitattributes || ! -d $GIT_TOP/.git/git-bs ]] && EXIT 0
-
- if [[ ! -d $GIT_TOP/.git/git-bs/metadata ]] ; then
-    mkdir -p $GIT_TOP/.git/git-bs/metadata >>/tmp/git-bs.log 2>&1
-    svn add -q $GIT_TOP/.git/git-bs/metadata >>/tmp/git-bs.log 2>&1
-    svn ci $BS_SERVER_OPTION -q -m "auto: create metadata folder" $GIT_TOP/.git/git-bs/metadata >>/tmp/git-bs.log 2>&1
- fi
 
  export BS_TARGET=$BS_INPUT
  export BS_TARGET_REV=$(head -n1 /tmp/BS_TARGET_REV.$BS_SEED)
@@ -283,11 +292,6 @@ BS_clean()
     echo $BS_METADATA_REV
  fi
  EXIT 0
-}
-
-BS_process()
-{
- BS_clone
 }
 
 export BS_ARG=$1
@@ -343,8 +347,11 @@ case ${BS_ARG} in
         cat | head -n1 >/tmp/BS_TARGET_REV.$BS_SEED
         BS_smudge "$BS_TARGET"
     ;;
-    filter-process)
-        BS_process
+    ls)
+        BS_ls
+    ;;
+    log)
+        BS_log
     ;;
     *)
         BS_help
