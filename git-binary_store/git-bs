@@ -57,14 +57,6 @@ Commands
     Download git BS files from a remote to latest version
 * git bs version:
     Report the version number.
-
-Low level commands
--------------------
-
-* git bs clean:
-    Git clean filter that converts large files to pointers.
-* git bs smudge:
-    Git smudge filter that converts pointer in blobs to the actual content.
 "
 }
 
@@ -239,7 +231,7 @@ BS_smudge()
  [[ -z $BS_INPUT || ! -f $GIT_TOP/.gitattributes || ! -d $GIT_TOP/.git/git-bs ]] && EXIT 0
 
  export BS_TARGET=$BS_INPUT
- export BS_TARGET_REV=$(head -n1 /tmp/BS_TARGET_REV.$BS_SEED)
+ [[ -f /tmp/BS_TARGET_REV.$BS_SEED ]] && export BS_TARGET_REV=$(head -n1 /tmp/BS_TARGET_REV.$BS_SEED)
  export BS_METADATA_NAME=$(echo $(dirname $BS_TARGET)/$(basename $BS_TARGET) | md5sum | awk -F' ' {'print $1'})
  BS_update $BS_METADATA_NAME
  export BS_METADATA_REV=$(svn info $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME | grep Rev | grep Last | awk -F': ' {'print $2'})
