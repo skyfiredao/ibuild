@@ -161,8 +161,10 @@ BS_clone()
     svn mkdir $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5 -q -m "auto: create $GIT_URL_MD5" >>/tmp/git-bs.log 2>&1
     svn mkdir $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5/metadata -q -m "auto: create metadata" >>/tmp/git-bs.log 2>&1
  fi
+ export BS_METADATA_INIT_REV=$(svn log $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5/metadata | grep ^r | tail -n1 | awk -F' ' {'print $1'})
+
  if [[ ! -d $GIT_TOP/.git/git-bs ]] ; then
-    svn co -q -r1 $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5 $GIT_TOP/.git/git-bs >>/tmp/git-bs.log 2>&1
+    svn co -q -r$BS_METADATA_INIT_REV $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5 $GIT_TOP/.git/git-bs >>/tmp/git-bs.log 2>&1
  fi
 }
 
