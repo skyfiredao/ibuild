@@ -20,7 +20,7 @@ export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 export LC_CTYPE=C
 export LC_ALL=C
 
-export BS_VER=0.0.2
+export BS_VER=0.1.0
 
 BS_help()
 {
@@ -41,10 +41,10 @@ Commands
 
 * git bs env:
     Display the Git BS environment.
-* git bs checkout:
-    Populate working copy with real content from Git BS files
-* git bs clone:
-    Efficiently clone a Git BS-enabled repository
+* git bs co:
+    Efficiently clone a Git BS-enabled repository and 
+* git bs up
+    Download git BS files from a remote to latest version
 * git bs log:
     Show errors from the git-bs command.
 * git bs ls:
@@ -53,8 +53,8 @@ Commands
     View or add Git BS paths to Git attributes.
 * git bs untrack:
     Remove Git BS paths from Git Attributes.
-* git bs update
-    Download git BS files from a remote to latest version
+* git bs diff
+    Diff binary by VBinDiff
 * git bs version:
     Report the version number.
 "
@@ -67,8 +67,10 @@ BS_version()
 
 BS_env()
 {
+ SPLIT_LINE
  BS_version
  $(git version)
+ SPLIT_LINE
  echo "
 git config git-bs.url = '$(git config --global git-bs.url)'
 git config git-bs.username = '$(git config --global git-bs.username)'
@@ -78,8 +80,9 @@ git config bs.filter.smudge = '$(git config --global filter.bs.smudge)'
 git config bs.filter.process = '$(git config --global filter.bs.process)'
 git config bs.filter.required = '$(git config --global filter.bs.required)'
 "
+ SPLIT_LINE
  cat $GIT_TOP/.gitattributes
- BS_clone
+ BS_co
 }
 
 BS_CHECK_ENV()
@@ -122,7 +125,8 @@ BS_CHECK_ENV()
 
 SPLIT_LINE()
 {
- echo "================================ $1"
+ echo "================================"
+ [[ ! -z $1 ]] && echo $1
 }
 
 EXIT()
@@ -133,28 +137,27 @@ EXIT()
  exit $1
 }
 
-BS_clone()
+BS_co()
 {
  if [[ $(svn ls $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5/metadata >/dev/null 2>&1) ]] ; then
     svn mkdir $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5 -q -m "auto: create $GIT_URL_MD5" >>/tmp/git-bs.log 2>&1
     svn mkdir $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5/metadata -q -m "auto: create metadata" >>/tmp/git-bs.log 2>&1
  fi
- export BS_METADATA_INIT_REV=$(svn log $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5/metadata | grep ^r | tail -n1 | awk -F' ' {'print $1'} | awk -F'r' {'print $2'})
 
  if [[ ! -d $GIT_TOP/.git/git-bs ]] ; then
-    svn co -q -r$BS_METADATA_INIT_REV $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5 $GIT_TOP/.git/git-bs >>/tmp/git-bs.log 2>&1
+    svn co -q --depth immediates $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5 $GIT_TOP/.git/git-bs >>/tmp/git-bs.log 2>&1
  fi
 }
 
-BS_update()
+BS_up()
 {
- export BS_update_TARGET=$1
- export BS_update_REV=$2
- [[ ! -z $BS_update_REV ]] && export FIX_REV="-r $BS_update_REV"
+ export BS_up_TARGET=$1
+ export BS_up_REV=$2
+ [[ ! -z $BS_up_REV ]] && export FIX_REV="-r $BS_up_REV"
  if [[ ! -d $GIT_TOP/.git/git-bs ]] ; then
-    BS_clone
+    BS_co
  fi
- svn up -q $BS_SERVER_OPTION $FIX_REV $GIT_TOP/.git/git-bs/metadata/$BS_update_TARGET
+ svn up -q $BS_SERVER_OPTION $FIX_REV $GIT_TOP/.git/git-bs/metadata/$BS_up_TARGET
 }
 
 BS_log()
@@ -190,21 +193,21 @@ BS_cleanup()
 
 BS_track()
 {
- BS_clone
+ BS_co
  export BS_track_INPUT=$1
  export BS_track_TARGET=$BS_track_INPUT
  export BS_track_URL=$(dirname $BS_track_TARGET)
  export BS_track_OBJ=$(basename $BS_track_TARGET)
 
  if [[ ! $(grep "^$BS_track_TARGET filter=bs" .gitattributes) ]] ; then
-    echo "$BS_track_TARGET filter=bs diff=bs merge=bs -text" >>.gitattributes
+    echo "$BS_track_TARGET filter=bs -text" >>.gitattributes
  fi
  git add .gitattributes
 }
 
 BS_untrack()
 {
- BS_clone
+ BS_co
  export BS_track_INPUT=$1
  export BS_track_TARGET=$BS_track_INPUT
  export BS_track_URL=$(dirname $BS_track_TARGET)
@@ -221,7 +224,7 @@ BS_reset()
 {
  rm -fr $GIT_TOP/.git/git-bs
  rm -f /tmp/git-bs.log
- BS_clone
+ BS_co
 }
 
 BS_smudge()
@@ -233,11 +236,11 @@ BS_smudge()
  export BS_TARGET=$BS_INPUT
  [[ -f /tmp/BS_TARGET_REV.$BS_SEED ]] && export BS_TARGET_REV=$(head -n1 /tmp/BS_TARGET_REV.$BS_SEED)
  export BS_METADATA_NAME=$(echo $(dirname $BS_TARGET)/$(basename $BS_TARGET) | md5sum | awk -F' ' {'print $1'})
- BS_update $BS_METADATA_NAME
+ BS_up $BS_METADATA_NAME
  export BS_METADATA_REV=$(svn info $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME | grep Rev | grep Last | awk -F': ' {'print $2'})
 
  if [[ $BS_METADATA_REV != $BS_TARGET_REV ]] ; then
-    BS_update $BS_METADATA_NAME $BS_TARGET_REV
+    BS_up $BS_METADATA_NAME $BS_TARGET_REV
  fi
  if [[ $(grep $BS_TARGET $GIT_TOP/.gitattributes) && -f $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME ]] ; then
     cat $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME
@@ -254,7 +257,7 @@ BS_clean()
  export BS_TARGET=$BS_INPUT
  export BS_TARGET_REV=$(head -n1 /tmp/BS_TARGET_REV.$BS_SEED)
  export BS_METADATA_NAME=$(echo $(dirname $BS_TARGET)/$(basename $BS_TARGET) | md5sum | awk -F' ' {'print $1'})
- BS_update $BS_METADATA_NAME
+ BS_up $BS_METADATA_NAME
  export BS_METADATA_REV=$(svn info $GIT_TOP/.git/git-bs/metadata/$BS_METADATA_NAME | grep Rev | grep Last | awk -F': ' {'print $2'})
 
  if [[ $(grep $BS_TARGET $GIT_TOP/.gitattributes) ]] ; then
@@ -267,24 +270,24 @@ BS_clean()
  EXIT 0
 }
 
+BS_diff()
+{
+ vbindiff $1 $2
+}
+
 export BS_ARG=$1
 [[ -z $BS_ARG ]] && exit 1
 export BS_TARGET=$(echo $* | sed "s/$BS_ARG//g" | awk -F' ' {'print $1'})
 export BS_SEED=$RANDOM
 
 export GIT_TOP=$(git rev-parse --show-toplevel)
+[[ -z $GIT_TOP ]] && EXIT 1 "You need to run this command from the toplevel of the working tree." 
 export GIT_URL_MD5=$(cat $GIT_TOP/.git/config | grep 'url =' | md5sum | awk -F' ' {'print $1'})
 
 BS_CHECK_ENV
 
 pushd $GIT_TOP >>/tmp/git-bs.log 2>&1
 case ${BS_ARG} in
-    pull)
-        BS_pull
-    ;;
-    push)
-        BS_push
-    ;;
     status)
         BS_status
     ;;
@@ -294,8 +297,8 @@ case ${BS_ARG} in
     untrack)
         BS_untrack "$BS_TARGET" 
     ;;
-    update)
-        BS_update
+    up)
+        BS_up
     ;;
     version)
         BS_version
@@ -303,11 +306,8 @@ case ${BS_ARG} in
     env)
         BS_env
     ;;
-    chekout)
-        BS_checkout
-    ;;
-    clone)
-        BS_clone
+    co)
+        BS_co
     ;;
     reset)
         BS_reset
@@ -328,6 +328,9 @@ case ${BS_ARG} in
     ;;
     log)
         BS_log
+    ;;
+    diff)
+        BS_diff $(echo $* | sed "s/$BS_ARG//g")
     ;;
     *)
         BS_help
