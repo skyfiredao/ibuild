@@ -77,7 +77,6 @@ git config git-bs.username = '$(git config --global git-bs.username)'
 git config git-bs.password = '$(git config --global git-bs.password)'
 git config bs.filter.clean = '$(git config --global filter.bs.clean)'
 git config bs.filter.smudge = '$(git config --global filter.bs.smudge)'
-git config bs.filter.process = '$(git config --global filter.bs.process)'
 git config bs.filter.required = '$(git config --global filter.bs.required)'
 "
  SPLIT_LINE
@@ -112,7 +111,6 @@ BS_CHECK_ENV()
  if [[ -z $(git config --global filter.bs.required) ]] ; then
      git config --global filter.bs.clean "git-bs clean %f"
      git config --global filter.bs.smudge "git-bs smudge %f"
-     git config --global filter.bs.process "git-bs filter-process"
      git config --global filter.bs.required true
  fi
 
@@ -200,7 +198,7 @@ BS_track()
  export BS_track_OBJ=$(basename $BS_track_TARGET)
 
  if [[ ! $(grep "^$BS_track_TARGET filter=bs" .gitattributes) ]] ; then
-    echo "$BS_track_TARGET filter=bs -text" >>.gitattributes
+    echo "$BS_track_TARGET filter=bs -diff -merge -text" >>.gitattributes
  fi
  git add .gitattributes
 }
