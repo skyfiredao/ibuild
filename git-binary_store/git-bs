@@ -55,6 +55,8 @@ Commands
     Remove Git BS paths from Git Attributes.
 * git bs diff
     Diff binary by VBinDiff
+* git bs find
+    Find big object/fils in current Git
 * git bs version:
     Report the version number.
 "
@@ -273,6 +275,30 @@ BS_diff()
  vbindiff $1 $2
 }
 
+BS_find()
+{
+ IFS=$'\n';
+
+ if [[ -d $GIT_TOP/.git/objects/pack ]] ; then
+    export OBJ_PACK_PATH=$GIT_TOP/.git/objects/pack
+ elif [[ -d $(pwd)/objects/pack ]] ; then
+    export OBJ_PACK_PATH=$(pwd)/objects/pack
+ else
+    EXIT 1 "Cannot find objects/pack path"
+ fi
+
+ export OUTPUT="Size(KB),Git(KB),SHA1,URL"
+ for OBJ in $(git verify-pack -v $OBJ_PACK_PATH/pack-*.idx | grep -v chain | sort -k3nr | head)
+ do
+    export SIZE=$(($(echo $OBJ | cut -f 5 -d ' ')/1024))
+    export COMPRESSED_SIZE=$(($(echo $OBJ | cut -f 6 -d ' ')/1024))
+    export SHA=$(echo $OBJ | cut -f 1 -d ' ')
+    export OTHER=$(git rev-list --all --objects | grep $SHA)
+    export OUTPUT="${OUTPUT}\n${SIZE},${COMPRESSED_SIZE},${OTHER}"
+ done
+
+ echo -e $OUTPUT | column -t -s ', '
+}
 export BS_ARG=$1
 [[ -z $BS_ARG ]] && exit 1
 export BS_TARGET=$(echo $* | sed "s/$BS_ARG//g" | awk -F' ' {'print $1'})
@@ -329,6 +355,9 @@ case ${BS_ARG} in
     ;;
     diff)
         BS_diff $(echo $* | sed "s/$BS_ARG//g")
+    ;;
+    find)
+        BS_find
     ;;
     *)
         BS_help
