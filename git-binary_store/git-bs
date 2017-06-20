@@ -143,9 +143,9 @@ BS_co()
     svn mkdir $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5 -q -m "git-bs: create $GIT_URL_MD5" >>/tmp/git-bs.log 2>&1
     svn mkdir $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5/metadata -q -m "git-bs: create metadata" >>/tmp/git-bs.log 2>&1
  fi
-
+# --depth immediates
  if [[ ! -d $GIT_TOP/.git/git-bs ]] ; then
-    svn co -q --depth immediates $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5 $GIT_TOP/.git/git-bs >>/tmp/git-bs.log 2>&1
+    svn co -q $BS_SERVER_OPTION $BS_SERVER/$GIT_URL_MD5 $GIT_TOP/.git/git-bs >>/tmp/git-bs.log 2>&1
  fi
 }
 
@@ -153,6 +153,7 @@ BS_up()
 {
  export BS_up_TARGET=$1
  export BS_up_REV=$2
+ export FIX_REV=''
  [[ ! -z $BS_up_REV ]] && export FIX_REV="-r $BS_up_REV"
  if [[ ! -d $GIT_TOP/.git/git-bs ]] ; then
     BS_co
