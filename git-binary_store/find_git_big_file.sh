@@ -21,6 +21,8 @@ export LC_CTYPE=C
 export LC_ALL=C
 export TASK_SPACE=/dev/shm
 
+[[ -d $1 ]] && cd $1
+
 IFS=$'\n';
  
 export GIT_TOP=$(git rev-parse --show-toplevel)

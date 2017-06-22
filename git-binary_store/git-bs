@@ -57,6 +57,8 @@ Commands
     Diff binary by VBinDiff
 * git bs find
     Find big object/fils in current Git
+* git bs convert
+    Convert current Git to git-bs (Expert)
 * git bs version:
     Report the version number.
 "
@@ -132,6 +134,7 @@ SPLIT_LINE()
 EXIT()
 {
  rm -f /tmp/BS_TARGET_REV.$BS_SEED >/dev/null 2>&1
+ rm -f /tmp/BS_bin.$BS_SEED >/dev/null 2>&1
  popd >>/tmp/git-bs.log 2>&1
  [[ $1 != 0 ]] && SPLIT_LINE "$2"
  exit $1
@@ -298,6 +301,12 @@ BS_find()
  echo -e $OUTPUT | column -t -s ', '
 }
 
+BS_convert()
+{
+ BS_find
+ git reflog expire --expire=now --all && git gc --prune=now --aggressive
+}
+
 export BS_ARG=$1
 [[ -z $BS_ARG ]] && exit 1
 export BS_TARGET=$(echo $* | sed "s/$BS_ARG//g" | awk -F' ' {'print $1'})
@@ -339,8 +348,8 @@ case ${BS_ARG} in
         BS_cleanup
     ;;
     clean)
-        cat >/dev/null 2>&1
-        BS_clean "$BS_TARGET"
+        cat | head -n1 >/tmp/BS_bin.$BS_SEED
+        [[ ! $(file /tmp/BS_bin.$BS_SEED | grep ASCII) ]] && BS_clean "$BS_TARGET"
     ;;
     smudge)
         cat | head -n1 >/tmp/BS_TARGET_REV.$BS_SEED
@@ -358,8 +367,12 @@ case ${BS_ARG} in
     find)
         BS_find
     ;;
+    convert)
+        BS_convert
+    ;;
     *)
         BS_help
     ;;
 esac
+
 
