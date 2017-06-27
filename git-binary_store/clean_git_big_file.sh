@@ -25,7 +25,7 @@ export RUN_PATH=$(dirname $0)
 export BFG='java -jar /local/ibuild/bin/bfg-1.12.15.jar'
 
 [[ -d $1 ]] && pushd $1
-$RUN_PATH/find_git_big_file.sh >/tmp/big_file_top10.tmp
+$RUN_PATH/find_git_big_file.sh >/tmp/big_file.tmp
 
 SPLIT_LINE()
 {
