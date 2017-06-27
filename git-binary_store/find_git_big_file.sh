@@ -22,6 +22,7 @@ export LC_ALL=C
 export TASK_SPACE=/dev/shm
 
 [[ -d $1 ]] && cd $1
+export TOP_NUM=30
 
 IFS=$'\n';
  
@@ -37,7 +38,9 @@ else
 fi
  
 OUTPUT="Size(KB),Git(KB),SHA1,URL"
-for OBJ in $(git verify-pack -v $OBJ_PACK_PATH/pack-*.idx | grep -v chain | sort -k3nr | head)
+git verify-pack -v $OBJ_PACK_PATH/pack-*.idx >/tmp/verify-pack.list
+
+for OBJ in $(cat /tmp/verify-pack.list | grep -v chain | sort -k3nr | head -n$TOP_NUM)
 do
     SIZE=$(($(echo $OBJ | cut -f 5 -d ' ')/1024))
     COMPRESSED_SIZE=$(($(echo $OBJ | cut -f 6 -d ' ')/1024))
