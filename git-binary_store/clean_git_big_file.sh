@@ -38,6 +38,9 @@ do
     if [[ ! -f $FILE_URL ]] ; then
         SPLIT_LINE "delete $FILE_URL"
         $BFG --delete-files $FILE_NAME ./
+    else
+        SPLIT_LINE "Keep latest $FILE_URL"
+        $BFG -p HEAD -D $FILE_NAME ./
     fi
 done
 
