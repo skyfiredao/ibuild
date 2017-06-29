@@ -20,19 +20,20 @@ source /etc/bash.bashrc
 export LC_CTYPE=C
 export LC_ALL=C
 export TASK_SPACE=/dev/shm
+export SEED=$RANDOM
 
 export RUN_PATH=$(dirname $0)
 export BFG='java -jar /local/ibuild/bin/bfg-1.12.15.jar'
 
 [[ -d $1 ]] && pushd $1
-$RUN_PATH/find_git_big_file.sh >/tmp/big_file.tmp
+$RUN_PATH/find_git_big_file.sh >/tmp/big_file.$SEED.tmp
 
 SPLIT_LINE()
 {
  echo -e "============================== $1"
 }
 
-for FILE_URL in $(cat /tmp/big_file.tmp | grep -v Size | awk -F' ' {'print $4'} | sort -u)
+for FILE_URL in $(cat /tmp/big_file.$SEED.tmp | grep -v Size | awk -F' ' {'print $4'} | sort -u)
 do
     [[ $(file $FILE_URL | grep ASCII) ]] || export FILE_CHECK=BIN
     export FILE_NAME=$(basename $FILE_URL)
