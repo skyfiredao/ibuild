@@ -34,13 +34,16 @@ SPLIT_LINE()
 
 for FILE_URL in $(cat /tmp/big_file.tmp | grep -v Size | awk -F' ' {'print $4'} | sort -u)
 do
+    [[ $(file $FILE_URL | grep ASCII) ]] || export FILE_CHECK=BIN
     export FILE_NAME=$(basename $FILE_URL)
-    if [[ ! -f $FILE_URL ]] ; then
+    if [[ ! -f $FILE_URL && $FILE_CHECK = BIN ]] ; then
         SPLIT_LINE "delete $FILE_URL"
         $BFG --delete-files $FILE_NAME ./
-    else
+    elif [[ $FILE_CHECK = BIN ]] ; then
         SPLIT_LINE "Keep latest $FILE_URL"
         $BFG -p HEAD -D $FILE_NAME ./
+    else
+        SPLIT_LINE "None binary file, No Change"
     fi
 done
 
