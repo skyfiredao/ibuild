@@ -520,11 +520,12 @@ SETUP_SUBV_REPO()
 	cd $LOC_WORKSPACE/subv_repo/
 	btrfs subvolume create $REPO_INIT_CMD_MD5_NAME >/dev/null 2>&1
 	chmod 775 $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
-	cd $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
+	pushd $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
 	/bin/bash $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME.info >$LOG_PATH/init.log 2>&1
 	MASK_LOG $LOG_PATH/init.log
 	REPO_SYNC $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
 	cp $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME.info $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME/ >/dev/null 2>&1
+        popd
  fi
 }
 
@@ -583,6 +584,7 @@ REPO_SYNC()
     if [[ -f Makefile && -z $IBUILD_GRTSRV_TAG ]] ; then
         time $REPO_CMD sync -c --no-tags -j$JOBS --force-sync $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
     else
+        /bin/bash $REPO_SYNC_MD5_INFO >>$AUTOUT_PATH/log/init.log 2>&1
         time $REPO_CMD sync -j$JOBS --force-sync $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
     fi
     export STATUS_SYNC=$?
