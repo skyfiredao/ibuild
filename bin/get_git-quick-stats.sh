@@ -24,6 +24,7 @@ cd git-quick-stats
 if [[ -f git-quick-stats ]] ; then
     sudo make install
     [[ -d /local/ibuild/bin ]] && cp git-quick-stats /local/ibuild/bin/
+    git config --global alias.quick-stats '! /usr/local/bin/git-quick-stats'
 else
     echo "Can NOT find git-quick-stats"
 fi
