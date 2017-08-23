@@ -29,7 +29,7 @@ export SORT_DATE=$1
 export SORT_ONE_DAY_AGO=$(date +%Y%m%d --date="$SORT_DATE 1 days ago")
 if [[ -z $SORT_DATE ]] ; then
 	echo -e "$0 <DATE> [GERRIT_SERVER:BRANCH]"
-	echo -e "For example: $0 20150210 gerritX.Domain_name.XXX:main/dev"
+	echo -e "For example: $0 $(date +%Y%m%d) gerritX.Domain_name.XXX:main/dev"
 	exit 0
 fi
 export COMMIT_ACCOUNT=ibuild
@@ -71,7 +71,7 @@ export SORT_REV_MAX=$(tail -n1 $TASK_SPACE/tmp.isort.$SEED/rev.log)
 
 for PATCHSET_FILE in $(cat $TASK_SPACE/tmp.isort.$SEED/patchset-created.log)
 do
-    svn blame $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ichange/ichange/$PATCHSET_FILE >>$TASK_SPACE/tmp.isort.$SEED/svn.blame.log
+    svn blame -r {$SORT_ONE_DAY_AGO}:{$SORT_DATE} $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ichange/ichange/$PATCHSET_FILE >>$TASK_SPACE/tmp.isort.$SEED/svn.blame.log
 done
 
 for ABANDONED_FILE in $(cat $TASK_SPACE/tmp.isort.$SEED/change-abandoned.log)
@@ -87,7 +87,7 @@ done
 cat $TASK_SPACE/tmp.isort.$SEED/svn.blame.log | grep $COMMIT_ACCOUNT | awk -F"$COMMIT_ACCOUNT" {'print $1'} | while read ICHANGE_ENTRY_REV
 do
     if [[ $ICHANGE_ENTRY_REV -ge $SORT_REV_MIN && $ICHANGE_ENTRY_REV -le $SORT_REV_MAX ]] ; then
-        grep " $ICHANGE_ENTRY_REV " $TASK_SPACE/tmp.isort.$SEED/svn.blame.log | awk -F"$COMMIT_ACCOUNT" {'print $2'} >>$TASK_SPACE/tmp.isort.$SEED/ichange.log
+        egrep "^$ICHANGE_ENTRY_REV " $TASK_SPACE/tmp.isort.$SEED/svn.blame.log | awk -F"$COMMIT_ACCOUNT" {'print $2'} >>$TASK_SPACE/tmp.isort.$SEED/ichange.log
     fi
 done
 
