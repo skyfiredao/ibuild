@@ -13,7 +13,7 @@ Usage: build.sh [svn:itask job rversion]
 #### clean_btrfs.sh
 stand-alone tool, clean btrfs disk mount point from /local/workspace
 
-#### daily_bundle_build.sh
+#### timer_build.sh
 stand-alone tool, daily bundle 24h patches build from svn:ispec/ispec/timer define, add ibuild task as a job in svn:itask
 
 #### function
