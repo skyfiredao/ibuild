@@ -39,8 +39,8 @@ export ISPEC_SVN_SRV=$(grep '^ISPEC_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | aw
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
-if [[ -f $LOCK_SPACE/daily_bundle_build.lock && $(cat $LOCK_SPACE/daily_bundle_build.lock) != $TOHOUR ]] ; then
-    echo $TOHOUR >$LOCK_SPACE/daily_bundle_build.lock
+if [[ -f $LOCK_SPACE/timer_build.lock && $(cat $LOCK_SPACE/timer_build.lock) != $TOHOUR ]] ; then
+    echo $TOHOUR >$LOCK_SPACE/timer_build.lock
 else
     exit
 fi
