@@ -201,6 +201,17 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
         sudo rm -fr $SHARE_POINT/$RM_ENTRY >>/tmp/clean_share.log 2>&1
     fi
 
+    for LS_URL in $(grep '^GERRIT_PATCHSET_NUMBER=' $SHARE_POINT/*/*/build_info.txt | egrep -v "$TODAY|^GERRIT_PATCHSET_NUMBER=1$" | awk -F'/build_info.txt:' {'print $1'})
+    do
+        export ENTRY_GERRIT_CHANGE_NUMBER=$(grep ^GERRIT_CHANGE_NUMBER= $LS_URL/build_info.txt)
+        export LAST_KEEP_ENTRY=$(grep "^$ENTRY_GERRIT_CHANGE_NUMBER$" $SHARE_POINT/*/*/build_info.txt | tail -n1 | awk -F'/build_info.txt:' {'print $1'})
+        for RM_OLD_ENTRY in $(grep "^$ENTRY_GERRIT_CHANGE_NUMBER$" $SHARE_POINT/*/*/build_info.txt | grep -v $LAST_KEEP_ENTRY | awk -F'/build_info.txt:' {'print $1'})
+        do
+            echo "rm -fr $RM_OLD_ENTRY" >>/tmp/clean_share.log 2>&1
+            rm -fr $RM_OLD_ENTRY
+        done
+    done
+
     if [[ ! -f $LOCK_SPACE/clean_task_spec-$TOWEEK ]] ; then
         rm -f $LOCK_SPACE/clean_task_spec-*
         touch $LOCK_SPACE/clean_task_spec-$TOWEEK
