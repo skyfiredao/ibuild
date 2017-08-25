@@ -167,6 +167,7 @@ fi
 
 RESET_INODE()
 {
+ echo RESET_INODE
  if [[ `svn st $TASK_SPACE/itask/svn/inode | grep ^D` ]] ; then
     svn ci $IBUILD_SVN_OPTION -m "auto: clean" $TASK_SPACE/itask/svn/inode/
  fi
@@ -174,6 +175,7 @@ RESET_INODE()
 
 RESET_GANGLIA()
 {
+ echo RESET_GANGLIA
  if [[ ! -f $LOCK_SPACE/ganglia-$(date +%p) ]] ; then
     rm -f $LOCK_SPACE/ganglia-*
     touch $LOCK_SPACE/ganglia-$(date +%p)
@@ -184,15 +186,18 @@ RESET_GANGLIA()
 
 RESET_SHARE_POINT()
 {
+ echo RESET_SHARE_POINT
  touch $LOCK_SPACE/reset_share_point-$TODAY
  export SHARE_POINT_USAGE=$(df | grep local | grep share | grep upload | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
  export RM_ENTRY=$(ls $SHARE_POINT | head -n1)
 
+ echo CLEAN_SHARE_POINT
  if [[ $SHARE_POINT_USAGE -ge 90 && ! -z $RM_ENTRY ]] ; then
     echo "rm -fr $SHARE_POINT/$RM_ENTRY" >>/tmp/clean_share.log 2>&1
     sudo rm -fr $SHARE_POINT/$RM_ENTRY >>/tmp/clean_share.log 2>&1
  fi
 
+ echo CLEAN_LINK
  find $SHARE_POINT | grep -v istatus | grep '/r' >$TASK_SPACE/clean_link.log
  for KEEP_ENTRY in $(grep build_info.txt$ $TASK_SPACE/clean_link.log | egrep -v '/log/' | awk -F'/build_info.txt' {'print $1'})
  do
@@ -205,26 +210,28 @@ RESET_SHARE_POINT()
     [[ ! -f $RM_LINK/build_info.txt ]] && rm -f $RM_LINK
  done
 
+ echo CLEAN_AFTER_NEW_PATCHSET
  for LS_URL in $(grep '^GERRIT_PATCHSET_NUMBER=' $SHARE_POINT/*/*/build_info.txt | egrep -v "$TODAY|^GERRIT_PATCHSET_NUMBER=1$" | awk -F'/build_info.txt:' {'print $1'})
  do
     export ENTRY_GERRIT_CHANGE_NUMBER=$(grep ^GERRIT_CHANGE_NUMBER= $LS_URL/build_info.txt)
     export LAST_KEEP_ENTRY=$(grep "^$ENTRY_GERRIT_CHANGE_NUMBER$" $SHARE_POINT/*/*/build_info.txt | tail -n1 | awk -F'/build_info.txt:' {'print $1'})
-    for RM_OLD_ENTRY in $(grep "^$ENTRY_GERRIT_CHANGE_NUMBER$" $SHARE_POINT/*/*/build_info.txt | grep -v $LAST_KEEP_ENTRY | awk -F'/build_info.txt:' {'print $1'})
+    for RM_OLD_ENTRY in $(grep "^$ENTRY_GERRIT_CHANGE_NUMBER$" $SHARE_POINT/*/*/build_info.txt | egrep -v "$LAST_KEEP_ENTRY" | awk -F'/build_info.txt:' {'print $1'})
     do
-        echo "rm -fr $RM_OLD_ENTRY" >>/tmp/clean_share.log 2>&1
-        rm -fr $RM_OLD_ENTRY
+        echo "[[ -d $RM_OLD_ENTRY ]] && rm -fr $RM_OLD_ENTRY" >>/tmp/clean_share.sh
     done
  done
 
+ echo CLEAN_AFTER_CHANGE_MERGED
  for LS_URL in $(grep '^GERRIT_CHANGE_STATUS=change-merged' $SHARE_POINT/*/*/build_info.txt | awk -F'/build_info.txt:' {'print $1'})
  do
     export ENTRY_GERRIT_CHANGE_NUMBER='GERRIT_CHANGE_NUMBER='$(grep ^GERRIT_CHANGE_STATUS=change-merged $LS_URL/build_info.txt | awk -F' ' {'print $2'})
     for RM_OLD_ENTRY in $(grep "^$ENTRY_GERRIT_CHANGE_NUMBER$" $SHARE_POINT/*/*/build_info.txt | awk -F'/build_info.txt:' {'print $1'})
     do
-        echo "rm -fr $RM_OLD_ENTRY" >>/tmp/clean_share.log 2>&1
-        rm -fr $RM_OLD_ENTRY
+        echo "[[ -d $RM_OLD_ENTRY ]] && rm -fr $RM_OLD_ENTRY" >>/tmp/clean_share.sh
     done
  done
+ echo "rm -f /tmp/clean_share.sh" >>/tmp/clean_share.sh
+ bash /tmp/clean_share.sh
 }
 
 if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
