@@ -73,6 +73,8 @@ export ITASK_SVN_SRV=$(grep '^ITASK_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | aw
     [[ -z $ITASK_SVN_SRV ]] && export ITASK_SVN_SRV=$IBUILD_SVN_SRV
 export ITASK_SVN_SRV_HOSTNAME=$(echo $ITASK_SVN_SRV | awk -F'.' {'print $1'})
 export DIST_FS_SHARE=$(grep '^DIST_FS_SHARE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'DIST_FS_SHARE=' {'print $2'})
+export SHARE_POINT=$(df | grep local | grep share | grep upload | awk -F' ' {'print $6'})
+    [[ $(df | grep local | grep share | grep sshfs | grep upload) ]] && export SHARE_POINT=$(df | grep local | grep share | grep upload | awk -F':' {'print $2'} | awk -F' ' {'print $1'})
 
 $IBUILD_ROOT/setup/reboot.sh
 
@@ -163,6 +165,68 @@ fi
 
 # [[ `ps aux | grep -v grep | grep gvfsd` ]] && sudo /etc/init.d/lightdm stop
 
+RESET_INODE()
+{
+ if [[ `svn st $TASK_SPACE/itask/svn/inode | grep ^D` ]] ; then
+    svn ci $IBUILD_SVN_OPTION -m "auto: clean" $TASK_SPACE/itask/svn/inode/
+ fi
+}
+
+RESET_GANGLIA()
+{
+ if [[ ! -f $LOCK_SPACE/ganglia-$(date +%p) ]] ; then
+    rm -f $LOCK_SPACE/ganglia-*
+    touch $LOCK_SPACE/ganglia-$(date +%p)
+    sudo /etc/init.d/gmetad restart
+    sudo /etc/init.d/ganglia-monitor restart
+ fi
+}
+
+RESET_SHARE_POINT()
+{
+ touch $LOCK_SPACE/reset_share_point-$TODAY
+ export SHARE_POINT_USAGE=$(df | grep local | grep share | grep upload | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
+ export RM_ENTRY=$(ls $SHARE_POINT | head -n1)
+
+ if [[ $SHARE_POINT_USAGE -ge 90 && ! -z $RM_ENTRY ]] ; then
+    echo "rm -fr $SHARE_POINT/$RM_ENTRY" >>/tmp/clean_share.log 2>&1
+    sudo rm -fr $SHARE_POINT/$RM_ENTRY >>/tmp/clean_share.log 2>&1
+ fi
+
+ find $SHARE_POINT | grep -v istatus | grep '/r' >$TASK_SPACE/clean_link.log
+ for KEEP_ENTRY in $(grep build_info.txt$ $TASK_SPACE/clean_link.log | egrep -v '/log/' | awk -F'/build_info.txt' {'print $1'})
+ do
+    grep -v $KEEP_ENTRY $TASK_SPACE/clean_link.log >$TASK_SPACE/tmp.clean_link.log
+    mv $TASK_SPACE/tmp.clean_link.log $TASK_SPACE/clean_link.log
+ done
+
+ for RM_LINK in $(cat $TASK_SPACE/clean_link.log)
+ do
+    [[ ! -f $RM_LINK/build_info.txt ]] && rm -f $RM_LINK
+ done
+
+ for LS_URL in $(grep '^GERRIT_PATCHSET_NUMBER=' $SHARE_POINT/*/*/build_info.txt | egrep -v "$TODAY|^GERRIT_PATCHSET_NUMBER=1$" | awk -F'/build_info.txt:' {'print $1'})
+ do
+    export ENTRY_GERRIT_CHANGE_NUMBER=$(grep ^GERRIT_CHANGE_NUMBER= $LS_URL/build_info.txt)
+    export LAST_KEEP_ENTRY=$(grep "^$ENTRY_GERRIT_CHANGE_NUMBER$" $SHARE_POINT/*/*/build_info.txt | tail -n1 | awk -F'/build_info.txt:' {'print $1'})
+    for RM_OLD_ENTRY in $(grep "^$ENTRY_GERRIT_CHANGE_NUMBER$" $SHARE_POINT/*/*/build_info.txt | grep -v $LAST_KEEP_ENTRY | awk -F'/build_info.txt:' {'print $1'})
+    do
+        echo "rm -fr $RM_OLD_ENTRY" >>/tmp/clean_share.log 2>&1
+        rm -fr $RM_OLD_ENTRY
+    done
+ done
+
+ for LS_URL in $(grep '^GERRIT_CHANGE_STATUS=change-merged' $SHARE_POINT/*/*/build_info.txt | awk -F'/build_info.txt:' {'print $1'})
+ do
+    export ENTRY_GERRIT_CHANGE_NUMBER='GERRIT_CHANGE_NUMBER='$(grep ^GERRIT_CHANGE_STATUS=change-merged $LS_URL/build_info.txt | awk -F' ' {'print $2'})
+    for RM_OLD_ENTRY in $(grep "^$ENTRY_GERRIT_CHANGE_NUMBER$" $SHARE_POINT/*/*/build_info.txt | awk -F'/build_info.txt:' {'print $1'})
+    do
+        echo "rm -fr $RM_OLD_ENTRY" >>/tmp/clean_share.log 2>&1
+        rm -fr $RM_OLD_ENTRY
+    done
+ done
+}
+
 if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn/inode
     for CHK_HOST in `ls $TASK_SPACE/itask/svn/inode`
@@ -181,47 +245,9 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
         fi
     done
 
-    if [[ `svn st $TASK_SPACE/itask/svn/inode | grep ^D` ]] ; then
-        svn ci $IBUILD_SVN_OPTION -m "auto: clean" $TASK_SPACE/itask/svn/inode/
-    fi
-
-#    if [[ ! -f $LOCK_SPACE/ganglia-$(date +%p) ]] ; then
-#        rm -f $LOCK_SPACE/ganglia-*
-#        touch $LOCK_SPACE/ganglia-$(date +%p)
-#        sudo /etc/init.d/gmetad restart
-#        sudo /etc/init.d/ganglia-monitor restart
-#    fi
-
-    export SHARE_POINT=$(df | grep local | grep share | grep upload | awk -F' ' {'print $6'})
-    [[ $(df | grep local | grep share | grep sshfs | grep upload) ]] && export SHARE_POINT=$(df | grep local | grep share | grep upload | awk -F':' {'print $2'} | awk -F' ' {'print $1'})
-    export SHARE_POINT_USAGE=$(df | grep local | grep share | grep upload | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
-    export RM_ENTRY=$(ls $SHARE_POINT | head -n1)
-    if [[ $SHARE_POINT_USAGE -ge 90 && ! -z $RM_ENTRY ]] ; then
-        echo "rm -fr $SHARE_POINT/$RM_ENTRY" >>/tmp/clean_share.log 2>&1
-        sudo rm -fr $SHARE_POINT/$RM_ENTRY >>/tmp/clean_share.log 2>&1
-    fi
-
-    find $SHARE_POINT | grep -v istatus | grep '/r' >$TASK_SPACE/clean_link.log
-    for KEEP_ENTRY in $(grep build_info.txt$ $TASK_SPACE/clean_link.log | egrep -v '/log/' | awk -F'/build_info.txt' {'print $1'})
-    do
-        grep -v $KEEP_ENTRY $TASK_SPACE/clean_link.log >$TASK_SPACE/tmp.clean_link.log
-        mv $TASK_SPACE/tmp.clean_link.log $TASK_SPACE/clean_link.log
-    done
-    for RM_LINK in $(cat $TASK_SPACE/clean_link.log)
-    do
-        [[ ! -f $RM_LINK/build_info.txt ]] && rm -f $RM_LINK
-    done
-
-    for LS_URL in $(grep '^GERRIT_PATCHSET_NUMBER=' $SHARE_POINT/*/*/build_info.txt | egrep -v "$TODAY|^GERRIT_PATCHSET_NUMBER=1$" | awk -F'/build_info.txt:' {'print $1'})
-    do
-        export ENTRY_GERRIT_CHANGE_NUMBER=$(grep ^GERRIT_CHANGE_NUMBER= $LS_URL/build_info.txt)
-        export LAST_KEEP_ENTRY=$(grep "^$ENTRY_GERRIT_CHANGE_NUMBER$" $SHARE_POINT/*/*/build_info.txt | tail -n1 | awk -F'/build_info.txt:' {'print $1'})
-        for RM_OLD_ENTRY in $(grep "^$ENTRY_GERRIT_CHANGE_NUMBER$" $SHARE_POINT/*/*/build_info.txt | grep -v $LAST_KEEP_ENTRY | awk -F'/build_info.txt:' {'print $1'})
-        do
-            echo "rm -fr $RM_OLD_ENTRY" >>/tmp/clean_share.log 2>&1
-            rm -fr $RM_OLD_ENTRY
-        done
-    done
+    RESET_INODE
+#   RESET_GANGLIA
+    [[ ! -f $LOCK_SPACE/reset_share_point-$TODAY ]] && RESET_SHARE_POINT
 
     if [[ ! -f $LOCK_SPACE/clean_task_spec-$TOWEEK ]] ; then
         rm -f $LOCK_SPACE/clean_task_spec-*
