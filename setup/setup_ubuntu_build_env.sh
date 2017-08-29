@@ -61,6 +61,13 @@ $DEBUG mkdir -p /local/workspace/autout/log
 $DEBUG chmod 775 /local /local/{ccache,workspace,out,ref_repo}
 $DEBUG chown ibuild -R /local
 
+cd $HOME
+bash $HOME/ibuild/bin/get_repo.sh
+bash $HOME/ibuild/bin/build_ccache.sh
+$DEBUG /bin/mv /tmp/repo /usr/bin/
+$DEBUG /bin/mv /tmp/ccache/ccache /usr/bin/ccache
+export REPO=`which repo`
+
 mkdir -p $HOME/.ssh
 echo "StrictHostKeyChecking=no" >> $HOME/.ssh/config
 
@@ -94,7 +101,7 @@ lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev ccache \
 libgl1-mesa-dev libxml2-utils xsltproc unzip python-networkx \
 libncurses5-dev:i386 libx11-dev:i386 libreadline6-dev:i386 libgl1-mesa-glx:i386 \
 git libc6-dev g++-multilib mingw32 tofrodos python-markdown zlib1g-dev:i386 \
-pylint distcc distcc-pump
+pylint
 
 # supportReDex  
 $DEBUG aptitude -y install g++ automake autoconf autoconf-archive libtool libboost-all-dev \
@@ -192,23 +199,8 @@ fi
 
 [[ -f /usr/bin/fromdos ]] && $DEBUG ln -s /usr/bin/fromdos /usr/local/bin/dos2unix
 
-cd $HOME
-bash $HOME/ibuild/bin/get_repo.sh
-bash $HOME/ibuild/bin/build_ccache.sh
-$DEBUG /bin/mv /tmp/repo /usr/bin/
-$DEBUG /bin/mv /tmp/ccache/ccache /usr/bin/ccache
-export REPO=`which repo`
 
-echo "
->>>>>>>> Add to /etc/rc.local
-/usr/bin/distccd --daemon --allow 192.168.0.0/24 --jobs 8 --nice 5 --user ibuild
-"
-
-echo "
-export DISTCC_HOSTS='IP'
-export DISTCC_VERBOSE=1
-export DISTCC_LOG=/tmp/distcc.log
-export LC_ALL=C
+echo "export LC_ALL=C
 export LC_CTYPE=C
 export PATH=/usr/local/jdk/bin:\$PATH:
 export CLASSPATH=/usr/local/jdk/lib:.
