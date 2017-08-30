@@ -42,7 +42,7 @@ if [[ $(date +%u) = 1 && ! -f $LOCK_SPACE/update-$TOWEEK ]] ; then
     echo "full-upgrade: "`date` >>$LOCK_SPACE/count
 fi
 
-if [[ $(cat $LOCK_SPACE/count | wc -l) -ge 50 ]] ; then
+if [[ $(cat $LOCK_SPACE/count | wc -l) -ge 100 && ! $(hostname | grep ibuild) ]] ; then
     touch $TASK_SPACE/reboot
 fi
 
@@ -52,7 +52,7 @@ fi
 
 if [[ -f /dev/shm/spec.build ]] ; then
     export SPEC_TIME=$(stat /dev/shm/spec.build | grep Modify | awk -F' ' {'print $2'} | awk -F'-' {'print $3'})
-    export LOAD_NOW=$(w | grep average | awk -F' ' {'print $8'} | awk -F'.' {'print $1'})
+    export LOAD_NOW=$(w | grep average | awk -F'average: ' {'print $2'} | awk -F'.' {'print $1'})
     [[ $(echo $(date +%d) - $SPEC_TIME | bc) -ge 1 && $LOAD_NOW -le 3 ]] && REBOOT_STEP
 fi
 
