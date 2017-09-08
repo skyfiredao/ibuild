@@ -1012,6 +1012,7 @@ CLEAN_EXIT()
     export CCACHE_SIZE=$($ORIG_CCACHE_URL -s | grep size | grep -v max | awk -F' ' {'print $3'} | awk -F'.' {'print $1'})
     [[ `echo $CCACHE_MAX_SIZE - $CCACHE_SIZE | bc` -le 10 ]] && $ORIG_CCACHE_URL -Cc
  fi
+ pkill -9 java
  exit $1
 }
 
