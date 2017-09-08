@@ -22,6 +22,12 @@ echo 1 >/proc/sys/net/ipv4/conf/eth0/proxy_arp
 /sbin/iptables -A FORWARD -i eth1 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
 /sbin/iptables -A FORWARD -i eth0 -o eth1 -j ACCEPT
 
+echo 'nameserver 8.8.8.8
+nameserver 8.8.4.4
+nameserver 127.0.0.1
+' >/etc/resolv.conf
+
+ifconfig wlan0 down
 
 exit 0
 
