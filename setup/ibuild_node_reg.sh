@@ -73,8 +73,8 @@ export ITASK_SVN_SRV=$(grep '^ITASK_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | aw
     [[ -z $ITASK_SVN_SRV ]] && export ITASK_SVN_SRV=$IBUILD_SVN_SRV
 export ITASK_SVN_SRV_HOSTNAME=$(echo $ITASK_SVN_SRV | awk -F'.' {'print $1'})
 export DIST_FS_SHARE=$(grep '^DIST_FS_SHARE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'DIST_FS_SHARE=' {'print $2'})
-export SHARE_POINT=$(df | grep local | grep share | grep upload | awk -F' ' {'print $6'})
-[[ -z $SHARE_POINT ]] && export SHARE_POINT=/local/share/build
+export SHARE_POINT=/local/share/build
+[[ ! -f $SHARE_POINT/README ]] && export SHARE_POINT=$(df | grep local | grep share | grep upload | awk -F' ' {'print $6'})
 
 $IBUILD_ROOT/setup/reboot.sh
 
