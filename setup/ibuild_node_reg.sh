@@ -74,7 +74,7 @@ export ITASK_SVN_SRV=$(grep '^ITASK_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | aw
 export ITASK_SVN_SRV_HOSTNAME=$(echo $ITASK_SVN_SRV | awk -F'.' {'print $1'})
 export DIST_FS_SHARE=$(grep '^DIST_FS_SHARE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'DIST_FS_SHARE=' {'print $2'})
 export SHARE_POINT=$(df | grep local | grep share | grep upload | awk -F' ' {'print $6'})
-    [[ $(df | grep local | grep share | grep sshfs | grep upload) ]] && export SHARE_POINT=$(df | grep local | grep share | grep upload | awk -F':' {'print $2'} | awk -F' ' {'print $1'})
+[[ -z $SHARE_POINT ]] && export SHARE_POINT=/local/share/build
 
 $IBUILD_ROOT/setup/reboot.sh
 
@@ -188,7 +188,9 @@ RESET_SHARE_POINT()
 {
  echo RESET_SHARE_POINT
  touch $LOCK_SPACE/reset_share_point-$TODAY
- export SHARE_POINT_USAGE=$(df | grep local | grep share | grep upload | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
+ export SHARE_POINT_USAGE=$(df | grep /local/share | grep upload | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
+ [[ -z $SHARE_POINT_USAGE ]] && export SHARE_POINT_USAGE=50
+ [[ -z $SHARE_POINT ]] && export SHARE_POINT=/local/share/build
  export RM_ENTRY=$(ls $SHARE_POINT | head -n1)
 
  echo CLEAN_SHARE_POINT
