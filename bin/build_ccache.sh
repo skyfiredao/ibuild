@@ -19,7 +19,7 @@
 cd /tmp
 rm -fr ccache
 git clone https://github.com/jrosdahl/ccache.git
-cd ccache
+cd /tmp/ccache
 ./autogen.sh
 ./configure LDFLAGS=-static
 make -j8
