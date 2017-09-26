@@ -29,18 +29,19 @@ export IP=`/sbin/ifconfig | grep 'inet addr' | grep -v '127.0.0.1' | awk -F':' {
 export CPU=`cat /proc/cpuinfo | grep CPU | awk -F': ' {'print $2'} | sort -u`
 export JOBS=`cat /proc/cpuinfo | grep CPU | wc -l`
 
-if [[ ! `sudo -l | grep ALL | grep NOPASSWD` && $(whoami) != root ]] ; then
+if [[ $(whoami) != root ]] ; then
 	echo "No permission"
 	exit 0
 fi
 
 [[ -f ~/bash.ibuild.bashrc ]] && source ~/bash.ibuild.bashrc
+[[ -f /etc/bash.ibuild.bashrc ]] && source /etc/bash.ibuild.bashrc
 
 # $DEBUG apt-get update
 # $DEBUG apt-get --force-yes -y install subversion openssh-server aptitude vim
 
-export IBUILD_ROOT=$HOME/ibuild
-	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
+export IBUILD_ROOT=/local/ibuild
+	[[ ! -d $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
 if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
         echo -e "Please put ibuild in your $HOME"
         echo -e "svn co svn://YOUR_SVN_SRV/ibuild/ibuild"
@@ -63,9 +64,7 @@ $DEBUG chown ibuild -R /local
 
 cd $HOME
 bash $HOME/ibuild/bin/get_repo.sh
-bash $HOME/ibuild/bin/build_ccache.sh
 $DEBUG /bin/mv /tmp/repo /usr/bin/
-$DEBUG /bin/mv /tmp/ccache/ccache /usr/bin/ccache
 export REPO=`which repo`
 
 mkdir -p $HOME/.ssh
@@ -226,6 +225,9 @@ if [[ ! `grep ibuild /etc/bash.bashrc` ]] ; then
     echo ". /etc/bash.ibuild.bashrc" >>/tmp/bash.bashrc
     $DEBUG cp /tmp/bash.bashrc /etc
 fi
+
+bash $HOME/ibuild/bin/build_ccache.sh
+$DEBUG /bin/mv /tmp/ccache/ccache /usr/bin/ccache
 
 . /etc/bash.ibuild.bashrc
 ccache -M 150G

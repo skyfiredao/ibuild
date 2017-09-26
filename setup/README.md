@@ -18,6 +18,22 @@ stand-alone tool, reboot node after check count
 
 #### setup_ubuntu_build_env.sh
 stand-alone tool, init setup ibuild node after install ubuntu basic OS
+install ubuntu follow those info:
+60M        efi   boot partition
+20G        ext4  /
+4G         swap
+others     btrfs /local
+add proxy if need
+apt-get install aptitude screen vim openssh-server git subversion
+aptitude update
+aptitude full-upgrade
+add authorized_keys in ~/.ssh
+cp id_rsa and id_rsa.pub to ~/.ssh
+sudo chown ibuild.ibuild /local
+svn checkout ibuild in /local
+sudo su
+ln -sf /local/ibuild ~/ibuild
+bash /local/ibuild/ibuild_node_reg.sh
 
 #### setup_srv_svn.sh
 stand-alone tool, init setup ibuild subversion server based on https://github.com/daviding924/ibuild
