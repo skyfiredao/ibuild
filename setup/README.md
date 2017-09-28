@@ -29,6 +29,8 @@ aptitude update
 aptitude full-upgrade
 add authorized_keys in ~/.ssh
 cp id_rsa and id_rsa.pub to ~/.ssh
+cp .ssh/config ~/.ssh
+cp .gitconfig ~/
 sudo chown ibuild.ibuild /local
 svn checkout ibuild in /local
 sudo su

@@ -191,6 +191,9 @@ if [[ -f $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt ]] ; then
     export ERROR_FILTER='cannot | failed |error: package |duplicate annotation|cannot find symbol|ERROR Resource entry|No resource found that matches the given name|make: ***|fatal error: |file not found|Errot 41|Error 1|error: method does not override or implement a method from a supertype|error: could not apply |hint: after resolving the conflicts'
     echo -e "\n------------------------- Error log:\n" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
     cat $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt | egrep -v '32m|0m' | egrep -3 "$ERROR_FILTER" | tail -n30 >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
+    if [[ $(tail -n2 $TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail | grep 'Error log') ]] ; then
+        tail -n15 $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt
+    fi
     echo -e "------------------------- End" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
 fi
 
