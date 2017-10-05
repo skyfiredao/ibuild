@@ -21,8 +21,8 @@ echo 1 >/proc/sys/net/ipv4/conf/eth0/proxy_arp
 /sbin/iptables -A FORWARD -i eth1 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
 /sbin/iptables -A FORWARD -i eth0 -o eth1 -j ACCEPT
 
-# /etc/disable_wifi_apmode.sh
-/etc/enable_wifi_apmode.sh
+# /etc/wifi_apmode_off.sh
+/etc/wifi_apmode_on.sh
 
 exit 0
 
