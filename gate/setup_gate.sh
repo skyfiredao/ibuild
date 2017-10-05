@@ -56,7 +56,7 @@ cp $PWD/etc/hostapd/hostapd.conf /etc/hostapd/hostapd.conf
 cp $PWD/etc/rc.local /etc/
 
 # setup apmode switch
-cp $PWD/etc/*wifi_apmode.sh /etc/
+cp $PWD/etc/wifi_apmode_*.sh /etc/
 
 # setup network
 cp $PWD/etc/wpa_supplicant.conf /etc/

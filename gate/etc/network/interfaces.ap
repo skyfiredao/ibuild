@@ -20,6 +20,6 @@ wpa-conf /etc/wpa_supplicant.conf
 allow-hotplug wlan0
 auto wlan0
         iface wlan0 inet static
-        address 192.168.0.253
+        address 192.168.1.254
         netmask 255.255.255.0
 
