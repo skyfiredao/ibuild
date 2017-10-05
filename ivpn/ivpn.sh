@@ -38,7 +38,7 @@ iptables_wlan0()
 
 dnsmasq_setup()
 {
-# cat /etc/dnsmasq.conf | grep ^interface= >/tmp/dnsmasq.conf
+# cat /etc/dnsmasq.conf | grep -v ^interface= >/tmp/dnsmasq.conf
 # echo interface=$1 >>/tmp/dnsmasq.conf
 
  sudo /etc/init.d/dnsmasq stop
