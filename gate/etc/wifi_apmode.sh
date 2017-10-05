@@ -36,8 +36,8 @@ APMODE_ON()
  /sbin/iptables -A FORWARD -i wlan0 -o eth1 -j ACCEPT
 
 # setup dnsmasq
- cat /etc/dnsmasq.conf | grep -v interface=wlan0 >/tmp/dnsmasq.conf
- echo 'interface=wlan0' >>/tmp/dnsmasq.conf
+ cat /etc/dnsmasq.conf | egrep -v 'interface=lo,wlan0|interface=wlan0' >/tmp/dnsmasq.conf
+ echo 'interface=lo,wlan0' >>/tmp/dnsmasq.conf
  cp /tmp/dnsmasq.conf /etc/dnsmasq.conf
  /usr/sbin/hostapd /etc/hostapd/hostapd.conf &
 }
