@@ -75,6 +75,11 @@ if [[ `readlink /bin/sh` = dash && -f /bin/bash ]] ; then
     $DEBUG ln -sf /bin/bash /bin/sh
 fi
 
+if [[ ! $(curl http://www.google.com >/dev/null 2>&1) ]] ; then
+    echo "Check Internet Access: Failed"
+    exit 1
+fi
+
 # If your local is China
 # sudo ln -sf /usr/share/zoneinfo/posix/Asia/Shanghai /etc/localtime
 

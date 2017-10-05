@@ -1,5 +1,4 @@
 #!/bin/bash
-# <setup_ubuntu_build_env.sh for setup AOSP build env>
 # Copyright (C) <2014,2015>  <Ding Wei>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -30,7 +29,10 @@ export PWD=$(pwd)
 [[ ! -d $PWD/etc ]] && exit 1
 [[ $(whoami) != root ]] && exit 1
 
-echo "Only for NanoPC T2/T3 with 2rd USB network port"
+if [[ ! $(curl http://www.google.com >/dev/null 2>&1) ]] ; then
+    echo "Check Internet Access: Failed"
+    exit 1
+fi
 
 # setup usbreset
 ../bin/build_usbreset.sh
@@ -44,14 +46,19 @@ cp $PWD/etc/arno-iptables-firewall/conf.d/00debconf.conf /etc/arno-iptables-fire
 
 # setup dnsmasq
 cp $PWD/etc/dnsmasq.conf /etc/
+cp $PWD/etc/resolv.dnsmasq.conf /etc/
 
-#setup rc.local
+# setup hostapd.conf
+mkdir -p /etc/hostapd >/dev/null 2>&1
+cp $PWD/etc/hostapd/hostapd.conf /etc/hostapd/hostapd.conf
+
+# setup rc.local
 cp $PWD/etc/rc.local /etc/
+
+# setup apmode switch
+cp $PWD/etc/*wifi_apmode.sh /etc/
 
 # setup network
 cp $PWD/etc/wpa_supplicant.conf /etc/
-cp $PWD/etc/network/interfaces /etc/network/
-
-
-
+cp $PWD/etc/network/interfaces.* /etc/network/
 

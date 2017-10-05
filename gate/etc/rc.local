@@ -15,19 +15,14 @@
 
 /usr/bin/usbreset /dev/bus/usb/$(lsusb | grep Realtek | awk -F'[ :]' {'print $2"/"$4'})
 
-/etc/init.d/dnsmasq start
 echo 1 >/proc/sys/net/ipv4/conf/eth0/proxy_arp
 
 /sbin/iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
 /sbin/iptables -A FORWARD -i eth1 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
 /sbin/iptables -A FORWARD -i eth0 -o eth1 -j ACCEPT
 
-echo 'nameserver 8.8.8.8
-nameserver 8.8.4.4
-nameserver 127.0.0.1
-' >/etc/resolv.conf
-
-ifconfig wlan0 down
+# /etc/disable_wifi_apmode.sh
+/etc/enable_wifi_apmode.sh
 
 exit 0
 
