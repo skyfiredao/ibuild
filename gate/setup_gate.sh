@@ -38,7 +38,7 @@ fi
 ../bin/build_usbreset.sh
 
 # install arno-iptables-firewall dnsmasq
-apt-get install arno-iptables-firewall dnsmasq hostapd screen vim git subversion byobu
+apt-get install arno-iptables-firewall dnsmasq hostapd screen vim git subversion byobu xtrlock htop
 
 # setup arno-iptables-firewall
 cp $PWD/etc/arno-iptables-firewall/firewall.conf /etc/arno-iptables-firewall/
@@ -63,4 +63,13 @@ chmod +x /etc/wifi_apmode.sh
 # setup network
 cp $PWD/etc/wpa_supplicant.conf /etc/
 cp $PWD/etc/network/interfaces.* /etc/network/
+
+echo "
+alias screen='screen -R -DD'
+alias dhcp='cat /var/lib/misc/dnsmasq.leases | egrep -v "ibuild|192.168.1."'
+alias dhcpa='cat /var/lib/misc/dnsmasq.leases'
+alias h=htop
+alias x=xtrlock
+alias curl='curl -k'
+" >>/etc/bash.bashrc
 
