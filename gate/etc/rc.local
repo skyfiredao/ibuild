@@ -11,18 +11,7 @@
 #
 # By default this script does nothing.
 
-# iptables -t nat -A POSTROUTING -s 192.168.8.0/24 ! -d 192.168.8.0/24  -j MASQUERADE
-
-/usr/bin/usbreset /dev/bus/usb/$(lsusb | grep Realtek | awk -F'[ :]' {'print $2"/"$4'})
-
-echo 1 >/proc/sys/net/ipv4/conf/eth0/proxy_arp
-
-/sbin/iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
-/sbin/iptables -A FORWARD -i eth1 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
-/sbin/iptables -A FORWARD -i eth0 -o eth1 -j ACCEPT
-
-# /etc/wifi_apmode_off.sh
-/etc/wifi_apmode_on.sh
+/bin/bash /etc/wifi_apmode.sh off
 
 exit 0
 
