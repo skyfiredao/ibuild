@@ -32,6 +32,10 @@ APMODE_ON()
  cp -f /etc/network/interfaces/interfaces.ap /etc/network/interfaces/interfaces
 
 # setup iptables
+ /sbin/iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
+ /sbin/iptables -A FORWARD -i eth1 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+ /sbin/iptables -A FORWARD -i eth0 -o eth1 -j ACCEPT
+
  /sbin/iptables -A FORWARD -i eth1 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
  /sbin/iptables -A FORWARD -i wlan0 -o eth1 -j ACCEPT
 
@@ -60,6 +64,9 @@ APMODE_OFF()
 }
 
 export APMODE_SWITCH=$1
+
+# enable proxy_arp
+echo 1 >/proc/sys/net/ipv4/conf/eth0/proxy_arp
 
 # stop service
 [[ -f /etc/init.d/dnsmasq ]] && /etc/init.d/dnsmasq stop
