@@ -29,14 +29,15 @@ APMODE_ON()
  /sbin/iwconfig wlan0 power off
  /sbin/ifconfig wlan0 192.168.1.254/24
  cp -f /etc/network/interfaces/interfaces.ap /etc/network/interfaces/interfaces
+ echo 1 >/proc/sys/net/ipv4/conf/wlan0/proxy_arp
 
 # setup iptables
- /sbin/iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
- /sbin/iptables -A FORWARD -i eth1 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
- /sbin/iptables -A FORWARD -i eth0 -o eth1 -j ACCEPT
+# /sbin/iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
+# /sbin/iptables -A FORWARD -i eth1 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+# /sbin/iptables -A FORWARD -i eth0 -o eth1 -j ACCEPT
 
- /sbin/iptables -A FORWARD -i eth1 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
- /sbin/iptables -A FORWARD -i wlan0 -o eth1 -j ACCEPT
+# /sbin/iptables -A FORWARD -i eth1 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+# /sbin/iptables -A FORWARD -i wlan0 -o eth1 -j ACCEPT
 
 # setup dnsmasq
  cat /etc/dnsmasq.conf | egrep -v 'interface=lo,wlan0|interface=wlan0' >/tmp/dnsmasq.conf
@@ -63,6 +64,9 @@ APMODE_OFF()
 }
 
 export APMODE_SWITCH=$1
+
+# USB reset
+/usr/bin/usbreset /dev/bus/usb/$(lsusb | grep Realtek | awk -F'[ :]' {'print $2"/"$4'})
 
 # enable proxy_arp
 echo 1 >/proc/sys/net/ipv4/conf/eth0/proxy_arp
