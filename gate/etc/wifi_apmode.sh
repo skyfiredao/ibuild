@@ -27,8 +27,7 @@ APMODE_ON()
  /sbin/ifconfig wlan0 up
  sleep 2
  /sbin/iwconfig wlan0 power off
-# /sbin/iwconfig wlan0 mode master
- /sbin/ifconfig wlan0 192.168.1.254
+ /sbin/ifconfig wlan0 192.168.1.254/24
  cp -f /etc/network/interfaces/interfaces.ap /etc/network/interfaces/interfaces
 
 # setup iptables
