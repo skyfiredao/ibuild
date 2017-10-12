@@ -19,6 +19,10 @@ create status report for ibuild system
 #### clean_task_spec.sh
 stand-alone tool, clean up job spec in itask/tasks 
 
+
+### create_xml2git2branch.sh
+create new remote branch from sanpshot manifest in repo
+
 #### diff_tag2xml2git.sh
 stand-alone tool, get diff log from manifest repo git:tag
 
