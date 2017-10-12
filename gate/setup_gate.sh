@@ -38,7 +38,7 @@ fi
 ../bin/build_usbreset.sh
 
 # install arno-iptables-firewall dnsmasq
-apt-get install arno-iptables-firewall dnsmasq hostapd screen vim git subversion byobu xtrlock htop
+apt-get install arno-iptables-firewall dnsmasq hostapd sshfs screen vim git subversion byobu xtrlock htop
 
 # setup arno-iptables-firewall
 cp $PWD/etc/arno-iptables-firewall/firewall.conf /etc/arno-iptables-firewall/
