@@ -237,27 +237,29 @@ $DEBUG /bin/mv /tmp/ccache/ccache /usr/bin/ccache
 . /etc/bash.ibuild.bashrc
 ccache -M 150G
 
+mkdir -p /local/srv
+
 # setup svn server
 if [[ `echo $RUN_OPTION | egrep 'server'` ]] ; then
-	mkdir -p /local/svn.srv/{conf,repo}
-	cd /local/svn.srv/repo
+	mkdir -p /local/srv/svn/{conf,repo}
+	cd /local/srv/svn/repo
 	svnadmin create ibuild
-	cp ibuild/conf/* /local/svn.srv/conf/
-	cd /local/svn.srv/repo/ibuild/conf
-	for CONF in `ls /local/svn.srv/conf/`
+	cp ibuild/conf/* /local/srv/svn/conf/
+	cd /local/srv/svn/repo/ibuild/conf
+	for CONF in `ls /local/srv/svn/conf/`
 	do
 		rm -f $CONF
 		ln -sf ../../../conf/$CONF
 	done
 
-	cd /local/svn.srv/repo
+	cd /local/srv/svn/repo
 	for SVN_REPO in 'icase ichange ispec itask iversion'
 	do
 		svnadmin create $SVN_REPO
 		rm -f $SVN_REPO/conf/*
-		cp -R /local/svn.srv/repo/ibuild/conf/* /local/svn.srv/repo/$SVN_REPO/conf
+		cp -R /local/srv/svn/repo/ibuild/conf/* /local/srv/svn/repo/$SVN_REPO/conf
 	done
-	/usr/bin/svnserve -d -r /local/svn.srv/repo
+	/usr/bin/svnserve -d -r /local/srv/svn/repo
 fi
 
 echo '
