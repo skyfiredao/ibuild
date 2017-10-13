@@ -285,4 +285,11 @@ if [[ ! $(df | grep ref_repo | grep sshfs) ]] ; then
     $IBUILD_ROOT/setup/sync_local_ref_repo.sh 2>/tmp/sync_local_ref_repo.sh.log &
 fi
 
+if [[ ! -e /local/token ]] ; then
+    mkdir -p /local/token
+fi
+
+if [[ ! $(df | grep /local/token) ]] ; then
+    sudo mount -t tmpfs -o size=4096,mode=1777 overflow /local/token
+fi
 
