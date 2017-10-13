@@ -18,10 +18,7 @@
 # 171012: Ding Wei created it
 export LC_ALL=C
 export LC_CTYPE=C
-export USER=$(whoami)
 export TODAY=$(date +%y%m%d)
-export TOWEEK=$(date +%yw%V)
-export TOYEAR=$(date +%Y)
 export LOCK_SPACE=/dev/shm/lock
 export HOSTNAME_A=$(hostname -A)
 export PWD=$(pwd)
@@ -36,6 +33,7 @@ fi
 export SHN_CONF=$(dirname $0)/conf/shn.conf
 export SHN_REMOTE_LOGIN=$(grep 'SHN_REMOTE_LOGIN=' $SHN_CONF | awk -F'SHN_REMOTE_LOGIN=' {'print $2'})
 export SHN_NETWORK=$(grep 'SHN_NETWORK=' $SHN_CONF | awk -F'SHN_NETWORK=' {'print $2'})
+export SHN_SLEEP=$(grep 'SHN_SLEEP=' $SHN_CONF | awk -F'SHN_SLEEP=' {'print $2'})
 
 for SHN_NODE_IP in $(cat /var/lib/misc/dnsmasq.leases | egrep "$SHN_NETWORK" | awk -F' ' {'print $3'})
 do
