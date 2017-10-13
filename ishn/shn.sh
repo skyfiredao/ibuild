@@ -33,7 +33,7 @@ export SHN_COOLDOWN_SEC=$(grep 'SHN_COOLDOWN_SEC=' $SHN_CONF | awk -F'SHN_COOLDO
 for SHN_NODE_IP in $(cat /var/lib/misc/dnsmasq.leases | egrep "$SHN_NETWORK" | awk -F' ' {'print $3'})
 do
     export SHN_NODE_HOSTNAME=$(cat /var/lib/misc/dnsmasq.leases | egrep "$SHN_NODE_IP" | awk -F' ' {'print $4'})
-    mkdir -p /globe/$SHN_NODE_HOSTNAME >/dev/null 2>&1
-    [[ ! -e /globe/$SHN_NODE_HOSTNAME/token ]] && sshfs $SHN_REMOTE_LOGIN@$SHN_NODE_IP:/local /globe/$SHN_NODE_HOSTNAME
+    [[ ! -e /globe/$SHN_NODE_HOSTNAME ]] && mkdir -p /globe/$SHN_NODE_HOSTNAME >/dev/null 2>&1
+    [[ ! -e /globe/$SHN_NODE_HOSTNAME/token ]] && sshfs $SHN_REMOTE_LOGIN@$SHN_NODE_IP:/local /globe/$SHN_NODE_HOSTNAME >/dev/null 2>&1
 done
 
