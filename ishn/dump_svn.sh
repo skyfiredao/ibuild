@@ -25,14 +25,19 @@ export PWD=$(pwd)
 [[ ! -d $PWD/conf ]] && exit 1
 [[ $(whoami) != root ]] && exit 1
 
+export SHN_CONF=$(dirname $0)/conf/shn.conf
+export SHN_REMOTE_LOGIN=$(grep 'SHN_REMOTE_LOGIN=' $SHN_CONF | awk -F'SHN_REMOTE_LOGIN=' {'print $2'})
+export SHN_NETWORK=$(grep 'SHN_NETWORK=' $SHN_CONF | awk -F'SHN_NETWORK=' {'print $2'})
+export SHN_COOLDOWN_SEC=$(grep 'SHN_COOLDOWN_SEC=' $SHN_CONF | awk -F'SHN_COOLDOWN_SEC=' {'print $2'})
+
 export HOST_TOKEN=$(find /globe/*/token | egrep 'token/key' | awk -F'/' {'print $3'})
 [[ ! -e /globe/$HOST_TOKEN/srv/svn/dump ]] && mkdir -p /globe/$HOST_TOKEN/srv/svn/dump
 
-for SVN_REPO in $(ls /globe/$HOST_TOKEN/srv/svn/repo/*)
+for SVN_REPO in $(ls /globe/$HOST_TOKEN/srv/svn/repo/)
 do
     export SVN_REPO_REV=$(svnadmin deltify /globe/$HOST_TOKEN/srv/svn/repo/$SVN_REPO | awk -F' ' {'print $3'} | awk -F'.' {'print $1'})
     echo $SVN_REPO_REV >/globe/$HOST_TOKEN/srv/svn/dump/$SVN_REPO.rev
-    svnadmin dump /globe/$HOST_TOKEN/srv/svn/repo/$SVN_REPO -r$SVN_REPO_REV >/globe/$HOST_TOKEN/srv/svn/dump/$SVN_REPO.dump
+    ssh $SHN_REMOTE_LOGIN@$HOST_TOKEN "time svnadmin dump /local/srv/svn/repo/$SVN_REPO -r$SVN_REPO_REV >/local/srv/svn/dump/$SVN_REPO.dump"
 done
 
 
