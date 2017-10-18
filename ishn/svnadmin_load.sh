@@ -19,6 +19,7 @@
 export LC_ALL=C
 export LC_CTYPE=C
 export TODAY=$(date +%y%m%d)
+export NOW=$(date +%y%m%d%H%M%S)
 export LOCK_SPACE=/dev/shm/lock
 export HOSTNAME_A=$(hostname -A)
 export PWD=$(pwd)
@@ -30,14 +31,26 @@ export SHN_REMOTE_LOGIN=$(grep 'SHN_REMOTE_LOGIN=' $SHN_CONF | awk -F'SHN_REMOTE
 export SHN_NETWORK=$(grep 'SHN_NETWORK=' $SHN_CONF | awk -F'SHN_NETWORK=' {'print $2'})
 export SHN_COOLDOWN_SEC=$(grep 'SHN_COOLDOWN_SEC=' $SHN_CONF | awk -F'SHN_COOLDOWN_SEC=' {'print $2'})
 
-export HOST_TOKEN=$(find /globe/*/token | egrep 'token/key' | awk -F'/' {'print $3'})
-[[ ! -e /globe/$HOST_TOKEN/srv/svn/dump ]] && mkdir -p /globe/$HOST_TOKEN/srv/svn/dump
+export HOST_TOKEN=$(find /globe/*/token | egrep 'token/2rd.key' | awk -F'/' {'print $3'})
+[[ -z $HOST_TOKEN ]] && exit 0
+[[ -e /globe/$HOST_TOKEN/token/1st.key ]] && exit 0
 
-for SVN_REPO in $(ls /globe/$HOST_TOKEN/srv/svn/repo/)
+for SVN_REPO in $(ls /globe/$HOST_TOKEN/srv/svn/dump/ | grep dump$ | awk -F'.dump' {'print $1'})
 do
-#    export SVN_REPO_REV=$(svnadmin deltify /globe/$HOST_TOKEN/srv/svn/repo/$SVN_REPO | awk -F' ' {'print $3'} | awk -F'.' {'print $1'})
-#    echo $SVN_REPO_REV >/globe/$HOST_TOKEN/srv/svn/dump/$SVN_REPO.rev
-    ssh $SHN_REMOTE_LOGIN@$HOST_TOKEN "svnadmin dump /local/srv/svn/repo/$SVN_REPO -rHEAD >/local/srv/svn/dump/$SVN_REPO.dump"
+    mkdir -p /globe/$HOST_TOKEN/srv/svn/repo
+    mv /globe/$HOST_TOKEN/srv/svn/$SVN_REPO /globe/$HOST_TOKEN/srv/svn/$SVN_REPO.$NOW
+
+    ssh $SHN_REMOTE_LOGIN@$HOST_TOKEN "svnadmin create /local/srv/svn/repo/$SVN_REPO"
+    ssh $SHN_REMOTE_LOGIN@$HOST_TOKEN "svnadmin load /local/srv/svn/repo/$SVN_REPO </local/srv/svn/dump/$SVN_REPO.dump" >/dev/null 2>$1
+    ssh $SHN_REMOTE_LOGIN@$HOST_TOKEN "svnadmin setuuid /local/srv/svn/repo/$SVN_REPO 12345678-1234-1234-1234-02420400c240"
+
+    pushd /globe/$HOST_TOKEN/srv/svn/$SVN_REPO/conf
+      rm -f authz hooks-env passwd svnserve.conf
+      ln -sf /local/srv/svn/conf/authz
+      ln -sf /local/srv/svn/conf/hooks-env
+      ln -sf /local/srv/svn/conf/passwd
+      ln -sf /local/srv/svn/conf/svnserve.conf
+    popd
 done
 
 

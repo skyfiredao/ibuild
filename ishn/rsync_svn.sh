@@ -31,15 +31,11 @@ export SHN_REMOTE_LOGIN=$(grep 'SHN_REMOTE_LOGIN=' $SHN_CONF | awk -F'SHN_REMOTE
 export SHN_NETWORK=$(grep 'SHN_NETWORK=' $SHN_CONF | awk -F'SHN_NETWORK=' {'print $2'})
 export SHN_COOLDOWN_SEC=$(grep 'SHN_COOLDOWN_SEC=' $SHN_CONF | awk -F'SHN_COOLDOWN_SEC=' {'print $2'})
 
-export HOST_TOKEN=$(find /globe/*/token | egrep 'token/backup' | awk -F'/' {'print $3'})
-[[ -z $HOST_TOKEN ]] && exit 0
+export HOST_TOKEN=$(find /globe/*/token | egrep 'token/1st.key' | awk -F'/' {'print $3'})
 
-for SVN_REPO in $(ls /globe/$HOST_TOKEN/srv/svn/dump | grep dump$)
+for NODE_PATH in $(df | grep local | grep globe | awk -F'/globe/' {'print $2'} | grep -v $HOST_TOKEN)
 do
-    mv /globe/$HOST_TOKEN/srv/svn/$SVN_REPO /globe/$HOST_TOKEN/srv/svn/$SVN_REPO.$NOW
-    ssh $SHN_REMOTE_LOGIN@$HOST_TOKEN "svnadmin create /local/srv/svn/$SVN_REPO"
-    ssh $SHN_REMOTE_LOGIN@$HOST_TOKEN "svnadmin load /local/srv/svn/$SVN_REPO </local/srv/svn/dump/$SVN_REPO.dump"
+    mkdir -p /globe/$NODE_PATH/srv/svn/{dump,conf,repo} >/dev/null 2>&1
+    rsync -a /globe/$HOST_TOKEN/srv/svn/conf/ /globe/$NODE_PATH/srv/svn/conf/
+    rsync -a /globe/$HOST_TOKEN/srv/svn/dump/ /globe/$NODE_PATH/srv/svn/dump/
 done
-
-
-
