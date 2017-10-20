@@ -42,7 +42,7 @@ TAC_TIC_TOE()
 
  for TIC in $(ls /globe/$SHN_NODE_HOSTNAME/token/ | egrep '^X.' | awk -F'X.' {'print $2'})
  do
-    mv /globe/$SHN_NODE_HOSTNAME/token/X.$TIC /globe/$SHN_NODE_HOSTNAME/token/O.$TIC
+    ssh $SHN_REMOTE_LOGIN@$SHN_NODE_HOSTNAME "mv /local/token/X.$TIC /local/token/O.$TIC"
  done
 }
 
