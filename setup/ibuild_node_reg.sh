@@ -184,6 +184,20 @@ RESET_GANGLIA()
  fi
 }
 
+INTIME_CLEAN_SHARE_POINT()
+{
+ export SHARE_POINT_USAGE=$(df | grep /local/share | grep upload | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
+ [[ -z $SHARE_POINT_USAGE ]] && export SHARE_POINT_USAGE=50
+ [[ -z $SHARE_POINT ]] && export SHARE_POINT=/local/share/build
+ export RM_ENTRY=$(ls $SHARE_POINT | head -n1)
+
+ echo INTIME_CLEAN_SHARE_POINT
+ if [[ $SHARE_POINT_USAGE -ge 90 && ! -z $RM_ENTRY ]] ; then
+    echo "rm -fr $SHARE_POINT/$RM_ENTRY" >>/tmp/clean_share.log 2>&1
+    sudo rm -fr $SHARE_POINT/$RM_ENTRY >>/tmp/clean_share.log 2>&1
+ fi
+}
+
 RESET_SHARE_POINT()
 {
  echo RESET_SHARE_POINT
@@ -254,6 +268,7 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
         fi
     done
 
+    INTIME_CLEAN_SHARE_POINT
     RESET_INODE
 #   RESET_GANGLIA
     [[ ! -f $LOCK_SPACE/reset_share_point-$TODAY ]] && RESET_SHARE_POINT
