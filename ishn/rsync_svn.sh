@@ -31,7 +31,8 @@ export SHN_REMOTE_LOGIN=$(grep 'SHN_REMOTE_LOGIN=' $SHN_CONF | awk -F'SHN_REMOTE
 export SHN_NETWORK=$(grep 'SHN_NETWORK=' $SHN_CONF | awk -F'SHN_NETWORK=' {'print $2'})
 export SHN_COOLDOWN_SEC=$(grep 'SHN_COOLDOWN_SEC=' $SHN_CONF | awk -F'SHN_COOLDOWN_SEC=' {'print $2'})
 
-export HOST_TOKEN=$(find /globe/*/token | egrep 'token/1st.key' | awk -F'/' {'print $3'})
+[[ ! -e /globe/key ]] && exit 1
+export HOST_TOKEN=$(readlink /globe/key | awk -F'/' {'print $1'})
 
 for NODE_PATH in $(df | grep local | grep globe | awk -F'/globe/' {'print $2'} | grep -v $HOST_TOKEN)
 do

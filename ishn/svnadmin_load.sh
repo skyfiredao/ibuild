@@ -31,9 +31,10 @@ export SHN_REMOTE_LOGIN=$(grep 'SHN_REMOTE_LOGIN=' $SHN_CONF | awk -F'SHN_REMOTE
 export SHN_NETWORK=$(grep 'SHN_NETWORK=' $SHN_CONF | awk -F'SHN_NETWORK=' {'print $2'})
 export SHN_COOLDOWN_SEC=$(grep 'SHN_COOLDOWN_SEC=' $SHN_CONF | awk -F'SHN_COOLDOWN_SEC=' {'print $2'})
 
-export HOST_TOKEN=$(find /globe/*/token | egrep 'token/2rd.key' | awk -F'/' {'print $3'})
-[[ -z $HOST_TOKEN ]] && exit 0
-[[ -e /globe/$HOST_TOKEN/token/1st.key ]] && exit 0
+[[ -e /globe/key ]] && exit 0
+export KEY_POINT=$(readlink /globe/key | awk -F'/' {'print $1'})
+export HOST_TOKEN=$(find /globe/*/token | egrep 'token/key' | awk -F'/' {'print $3'} | head -n1)
+[[ $KEY_POINT = $HOST_TOKEN ]] && exit 0
 
 for SVN_REPO in $(ls /globe/$HOST_TOKEN/srv/svn/dump/ | grep dump$ | awk -F'.dump' {'print $1'})
 do
@@ -53,5 +54,7 @@ do
     popd
 done
 
+rm -f /globe/key
+ln -sf $HOST_TOKEN/token/key /globe/key
 
 
