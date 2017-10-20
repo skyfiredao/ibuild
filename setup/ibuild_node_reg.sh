@@ -186,7 +186,7 @@ RESET_GANGLIA()
 
 INTIME_CLEAN_SHARE_POINT()
 {
- export SHARE_POINT_USAGE=$(df | grep /local/share | grep upload | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
+ export SHARE_POINT_USAGE=$(df /local/share | grep '/local' | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
  [[ -z $SHARE_POINT_USAGE ]] && export SHARE_POINT_USAGE=50
  [[ -z $SHARE_POINT ]] && export SHARE_POINT=/local/share/build
  export RM_ENTRY=$(ls $SHARE_POINT | head -n1)
@@ -202,7 +202,8 @@ RESET_SHARE_POINT()
 {
  echo RESET_SHARE_POINT
  touch $LOCK_SPACE/reset_share_point-$TODAY
- export SHARE_POINT_USAGE=$(df | grep /local/share | grep upload | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
+ export SHARE_POINT_USAGE=$(df /local/share | grep '/local' | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
+
  [[ -z $SHARE_POINT_USAGE ]] && export SHARE_POINT_USAGE=50
  [[ -z $SHARE_POINT ]] && export SHARE_POINT=/local/share/build
  export RM_ENTRY=$(ls $SHARE_POINT | head -n1)
