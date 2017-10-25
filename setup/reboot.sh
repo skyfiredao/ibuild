@@ -46,6 +46,10 @@ if [[ $(cat $LOCK_SPACE/count | wc -l) -ge 100 && ! $(hostname | grep ibuild) ]]
     touch $TASK_SPACE/reboot
 fi
 
+if [[ $(w | grep days | awk -F' ' {'print $3'}) -ge 2 ]] ; then
+    touch $TASK_SPACE/reboot
+fi
+
 if [[ -f $TASK_SPACE/reboot && ! -f $TASK_SPACE/spec.build && ! $(hostname | grep ibuild) ]] ; then
     REBOOT_STEP
 fi
@@ -53,7 +57,7 @@ fi
 if [[ -f /dev/shm/spec.build ]] ; then
     export SPEC_TIME=$(stat /dev/shm/spec.build | grep Modify | awk -F' ' {'print $2'} | awk -F'-' {'print $3'})
     export LOAD_NOW=$(w | grep average | awk -F'average: ' {'print $2'} | awk -F'.' {'print $1'})
-    [[ $(echo $(date +%d) - $SPEC_TIME | bc) -ge 2 && $LOAD_NOW -le 3 ]] && echo "spec out of date: "$(date) >>$LOCK_SPACE/count
+    [[ $(echo $(date +%d) - $SPEC_TIME | bc) -ge 2 && $LOAD_NOW -le 3 ]] && REBOOT_STEP
 fi
 
 
