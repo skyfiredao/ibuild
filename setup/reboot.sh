@@ -24,11 +24,13 @@ export TASK_SPACE=/dev/shm
 export TOWEEK=$(date +%yw%V)
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
+export IBUILD_FOUNDER_EMAIL=$(grep '^IBUILD_FOUNDER_EMAIL=' $0/../conf/ibuild.conf | awk -F'IBUILD_FOUNDER_EMAIL=' {'print $2'})
 
 REBOOT_STEP()
 {
  nc 127.0.0.1 1234
  sync
+ [[ ! -z $IBUILD_FOUNDER_EMAIL ]] && ls -la /dev/shm/ | mail -s "[ibuild][reboot]$(hostname)" $IBUILD_FOUNDER_EMAIL
  sudo reboot
 }
 
