@@ -35,15 +35,14 @@ TAC_TIC_TOE()
 {
  export SHN_NODE_HOSTNAME=$1
 
- if [[ $(ls /globe/$SHN_NODE_HOSTNAME/token/ | egrep '^O.') ]] ; then
-    rm -f /globe/$SHN_NODE_HOSTNAME/token/{X,O}.*
-    touch /globe/$SHN_NODE_HOSTNAME/token/X.$NOW
- fi
+ rm -f /globe/$SHN_NODE_HOSTNAME/token/O.* >/dev/null 2>&1
 
  for TIC in $(ls /globe/$SHN_NODE_HOSTNAME/token/ | egrep '^X.' | awk -F'X.' {'print $2'})
  do
     ssh $SHN_REMOTE_LOGIN@$SHN_NODE_HOSTNAME "mv /local/token/X.$TIC /local/token/O.$TIC"
  done
+
+ touch /globe/$SHN_NODE_HOSTNAME/token/X.$NOW
 }
 
 CHECK_KEY()
@@ -53,19 +52,25 @@ CHECK_KEY()
  export KEY_POINT=$(readlink /globe/key | awk -F'/' {'print $1'})
  export KEY_COUNT=$(find /globe/*/token | egrep 'token/key' | awk -F'/' {'print $3'} | wc -l)
 
- if [[ $KEY_COUNT = 0 ]] ; then
+ if [[ $KEY_COUNT = 0 && -e /globe/$KEY_POINT/token ]] ; then
+    touch /globe/$KEY_POINT/token/key
+
+ elif [[ $KEY_COUNT = 0 && ! /globe/$KEY_POINT/token ]] ; then
     export KEY_HOLDER=$(find /globe/*/token | awk -F'/' {'print $3'} | sort -u | head -n1)
     touch /globe/$KEY_HOLDER/token/key
     ln -sf $KEY_HOLDER/token/key /globe/key
+
  elif [[ $KEY_COUNT = 1 && ! -e /globe/key ]] ; then
     export KEY_HOLDER=$(find /globe/*/token | egrep 'token/key' | awk -F'/' {'print $3'})
     rm -f /globe/key
     ln -sf $KEY_HOLDER/token/key /globe/key
+
  elif [[ $KEY_COUNT != 1 && -e /globe/key ]] ; then
     for KEY_HOLDER in $(find /globe/*/token | egrep 'token/key' | awk -F'/' {'print $3'})
     do
         [[ $KEY_HOLDER != $KEY_POINT ]] && rm -f /globe/$KEY_HOLDER/token/key
     done
+
  elif [[ $KEY_COUNT != 1 && ! -e /globe/key ]] ; then
     export KEY_HOLDER=$(find /globe/*/token | egrep 'token/key' | awk -F'/' {'print $3'} | head -n1)
     rm -f /globe/key
@@ -78,8 +83,18 @@ CHECK_KEY()
  fi
 }
 
+CHECK_SSH_CONFIG()
+{
+ if [[ ! -e ~/.ssh/config || ! $(grep StrictHostKeyChecking ~/.ssh/config) ]] ; then
+    echo "
+ServerAliveInterval 60
+StrictHostKeyChecking=no" >>~/.ssh/config
+ fi
+}
+
 CHECK_SSHFS()
 {
+ CHECK_SSH_CONFIG
  for SHN_NODE_IP in $(cat /var/lib/misc/dnsmasq.leases | egrep "$SHN_NETWORK" | awk -F' ' {'print $3'})
  do
     export SHN_NODE_HOSTNAME=$(cat /var/lib/misc/dnsmasq.leases | egrep "$SHN_NODE_IP" | awk -F' ' {'print $4'})
@@ -89,6 +104,5 @@ CHECK_SSHFS()
  done
 }
 
-CHECK_SSHFS
-
+CHECK_KEY
 
