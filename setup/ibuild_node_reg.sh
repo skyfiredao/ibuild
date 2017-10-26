@@ -306,6 +306,6 @@ if [[ ! -e /local/token ]] ; then
 fi
 
 if [[ ! $(df | grep /local/token) ]] ; then
-    sudo mount -t tmpfs -o size=4096,mode=1777 overflow /local/token
+    sudo mount -t tmpfs -o size=512K,mode=1777 overflow /local/token
 fi
 
