@@ -24,7 +24,7 @@ export TASK_SPACE=/dev/shm
 export TOWEEK=$(date +%yw%V)
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
-export IBUILD_FOUNDER_EMAIL=$(grep '^IBUILD_FOUNDER_EMAIL=' $0/../conf/ibuild.conf | awk -F'IBUILD_FOUNDER_EMAIL=' {'print $2'})
+export IBUILD_FOUNDER_EMAIL=$(grep '^IBUILD_FOUNDER_EMAIL=' $(dirname $0)/../conf/ibuild.conf | awk -F'IBUILD_FOUNDER_EMAIL=' {'print $2'})
 
 REBOOT_STEP()
 {
