@@ -31,7 +31,8 @@ REBOOT_STEP()
  nc 127.0.0.1 1234
  sync
  [[ ! -z $IBUILD_FOUNDER_EMAIL ]] && ls -la /dev/shm/ | mail -s "[ibuild][reboot]$(hostname)" $IBUILD_FOUNDER_EMAIL
- sudo reboot
+ sleep 5
+ sudo reboot -f
 }
 
 touch $LOCK_SPACE/count
