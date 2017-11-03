@@ -31,10 +31,10 @@ REBOOT_STEP()
 {
  nc 127.0.0.1 1234
  sync
- if [[ ! -z $IBUILD_FOUNDER_EMAIL ]] ; then
+ if [[ ! -z $IBUILD_FOUNDER_EMAIL && $(which mail)]] ; then
     ls -la /dev/shm/ | mail -s "[ibuild][reboot]$(hostname)" $IBUILD_FOUNDER_EMAIL
+    sleep 5
  fi
- sleep 5
  sudo reboot -f
 }
 
