@@ -63,7 +63,10 @@ fi
 if [[ -f /dev/shm/spec.build ]] ; then
     export SPEC_TIME=$(stat /dev/shm/spec.build | grep Modify | awk -F' ' {'print $2'} | awk -F'-' {'print $3'})
     export LOAD_NOW=$(w | grep average | awk -F'average: ' {'print $2'} | awk -F'.' {'print $1'})
-    [[ $(echo $(date +%d) - $SPEC_TIME | bc) -ge 2 && $LOAD_NOW -le 3 ]] && REBOOT_STEP
+    if [[ $(echo $(date +%d) - $SPEC_TIME | bc) -ge 2 && $LOAD_NOW -le 3 ]] ; then
+        rm -f /dev/shm/spec.build
+        REBOOT_STEP
+    fi
 fi
 
 
