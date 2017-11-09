@@ -196,6 +196,14 @@ if [[ `echo $RUN_OPTION | egrep 'remote'` ]] ; then
     x2goserver x2goserver-xsession x2goclient wmii2 dwm wmctrl xfce4
 fi
 
+# purge libreoffice
+for PURGE_ENTRY in $(aptitude search libreoffice | grep ^i | awk -F'libreoffice-' {'print $2'} | awk -F' ' {'print $1'})
+do
+    export PURGE_LIBREOFFICE="libreoffice-$PURGE_ENTRY $PURGE_LIBREOFFICE"
+done
+
+$DEBUG aptitude -y purge $PURGE_LIBREOFFICE
+
 # clean email service
 if [[ `echo $RUN_OPTION | egrep 'nomail'` ]] ; then
     $DEBUG aptitude -y purge nbSMTP exim4 exim4-base exim4-daemon-light libpam-smbpass
