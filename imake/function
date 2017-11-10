@@ -557,13 +557,11 @@ REPO_SYNC()
 
  if [[ -e $REPO_SYNC_MD5_INFO ]] ; then
     SPLIT_LINE repo_init
-    export REPO_SPACE=$(du -sh .repo | awk -F'M' {'print $1'})
-    [[ -z $REPO_SPACE ]] && export REPO_SPACE=$(du -sh .repo | awk -F'G' {'print $1'}) || export REPO_SPACE=1
-    if [[ $REPO_SPACE -gt 2 && -e $LOC_REF_REPO_PATH ]] ; then
-       rm -fr .repo && /bin/bash $REPO_SYNC_MD5_INFO >>$AUTOUT_PATH/log/init.log 2>&1
-    fi
+    rm -fr .repo
     /bin/bash $REPO_SYNC_MD5_INFO >>$AUTOUT_PATH/log/init.log 2>&1
+    export REPO_INIT_STATUS=$?
     MASK_LOG $AUTOUT_PATH/log/init.log
+    LOG_STATUS $REPO_INIT_STATUS repo_init $AUTOUT_PATH/log/init.log
  fi
 
  if [[ ! -z $IVERSION && ! -e $REPO_SYNC_MD5_INFO ]] ; then
@@ -599,16 +597,16 @@ REPO_SYNC()
 
  BTRFS_CLEANUP_SUBV_REPO && $REPO_CMD sync -j$JOBS --force-sync >/dev/null 2>&1
 
- for INDEX_LOCK_REPO in `grep index.lock $LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>/dev/null | awk -F"'" {'print $2'} | awk -F'/.git' {'print $1'}`
- do
-    rm -fr $INDEX_LOCK_REPO
-    export INDEX_LOCK=true
- done
+# for INDEX_LOCK_REPO in `grep index.lock $LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>/dev/null | awk -F"'" {'print $2'} | awk -F'/.git' {'print $1'}`
+# do
+#    rm -fr $INDEX_LOCK_REPO
+#    export INDEX_LOCK=true
+# done
 
- if [[ ! -z $INDEX_LOCK && ! -e $REPO_SYNC_MD5_INFO ]] ; then
-    time $REPO_CMD sync -j$JOBS --force-sync $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
-    export STATUS_SYNC=$?
- fi
+# if [[ ! -z $INDEX_LOCK && ! -e $REPO_SYNC_MD5_INFO ]] ; then
+#    time $REPO_CMD sync -j$JOBS --force-sync $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+#    export STATUS_SYNC=$?
+# fi
 
  if [[ ! -e $REPO_SYNC_MD5_INFO ]] ; then
     EXPORT_MANIFEST $LOG_PATH/after_sync_manifest.xml
