@@ -581,7 +581,7 @@ REPO_SYNC()
  fi
 
  SPLIT_LINE "repo_sync $REPO_SYNC_OPTION"
- export REPO_SPACE=$(du -sh .repo | awk -F'G' {'print $1'})
+ export REPO_SPACE=$(du -sh .repo | awk -F'G' {'print $1'} | awk -F'M' {'print $1'})
  if [[ ! -z $REPO_SPACE && $REPO_SPACE -gt 2 && -e $IBUILD_LOC_REF_REPO_PATH && -e $REPO_SYNC_MD5_INFO ]] ; then
     rm -fr .repo
     /bin/bash $REPO_SYNC_MD5_INFO >>$AUTOUT_PATH/log/init.log 2>&1
