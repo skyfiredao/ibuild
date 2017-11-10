@@ -558,7 +558,7 @@ REPO_SYNC()
 
  if [[ -e $REPO_SYNC_MD5_INFO ]] ; then
     SPLIT_LINE repo_init
-    rm -fr .repo
+    [[ $(du -sh .repo | grep G) ]] && rm -fr .repo
     /bin/bash $REPO_SYNC_MD5_INFO >>$AUTOUT_PATH/log/init.log 2>&1
     export REPO_INIT_STATUS=$?
     MASK_LOG $AUTOUT_PATH/log/init.log
