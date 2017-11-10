@@ -543,7 +543,7 @@ IBUILD_ADD_STEPS()
 
 REPO_SYNC()
 {
- cd $1
+ pushd $1
  export REPO_SYNC_MD5_INFO=$1.info
  export REPO_SYNC_LOG_NAME=sync-`basename $1`
  export INDEX_LOCK=''
@@ -575,11 +575,18 @@ REPO_SYNC()
     LOG_STATUS $REPO_INIT_STATUS repo_init $AUTOUT_PATH/log/init.log
  else
     SPLIT_LINE repo_init
+    rm -fr .repo >>$AUTOUT_PATH/log/init.log 2>&1
     /bin/bash $REPO_SYNC_MD5_INFO >>$AUTOUT_PATH/log/init.log 2>&1
     MASK_LOG $AUTOUT_PATH/log/init.log
  fi
 
  SPLIT_LINE "repo_sync $REPO_SYNC_OPTION"
+ export REPO_SPACE=$(du -sh .repo | awk -F'G' {'print $1'})
+ if [[ ! -z $REPO_SPACE && $REPO_SPACE -gt 2 && -e $IBUILD_LOC_REF_REPO_PATH && -e $REPO_SYNC_MD5_INFO ]] ; then
+    rm -fr .repo
+    /bin/bash $REPO_SYNC_MD5_INFO >>$AUTOUT_PATH/log/init.log 2>&1
+ fi
+
  if [[ -z $SYNC_ONLY ]] ; then
     if [[ -f Makefile && -z $IBUILD_GRTSRV_TAG ]] ; then
         time $REPO_CMD sync -c --no-tags -j$JOBS --force-sync $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
@@ -614,6 +621,7 @@ REPO_SYNC()
  if [[ -d /local/out ]]; then
     ln -sf /local/out
  fi
+ popd
 }
 
 SETUP_BUILD_REPO()
