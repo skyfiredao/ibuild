@@ -590,7 +590,7 @@ REPO_SYNC()
     export STATUS_SYNC=$?
     rm -f log && ln -sf $LOG_PATH
  elif [[ ! -z $SYNC_ONLY ]] ; then
-    BTRFS_CLEANUP_SUBV_REPO && $REPO_CMD sync -j$JOBS --force-sync >/dev/null 2>&1 &
+    BTRFS_CLEANUP_SUBV_REPO && $REPO_CMD sync -j$JOBS --force-sync >/dev/null 2>&1
  fi
 
  for INDEX_LOCK_REPO in `grep index.lock $LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>/dev/null | awk -F"'" {'print $2'} | awk -F'/.git' {'print $1'}`
