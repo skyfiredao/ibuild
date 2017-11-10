@@ -544,67 +544,60 @@ IBUILD_ADD_STEPS()
 REPO_SYNC()
 {
  pushd $1
+ sudo sysctl -w net.ipv4.tcp_window_scaling=0 >/dev/null 2>&1
+
  export REPO_SYNC_MD5_INFO=$1.info
  export REPO_SYNC_LOG_NAME=sync-`basename $1`
  export INDEX_LOCK=''
-
- if [[ ! -z $IVERSION && -z $SYNC_ONLY ]] ; then
-    export BUILD_NUMBER=$IVERSION
-    echo $BUILD_NUMBER >$LOCK_SPACE/BUILD_NUMBER
-    export IVER_MANIFEST_URL=$(svn log -v -r $IVERSION $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion | egrep 'A /iversion|M /iversion' | awk -F' ' {'print $2'})
-    svn export -q -r $IVERSION $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion/$IVER_MANIFEST_URL $LOG_PATH/manifest-r$IVERSION.xml
-    export MANIFEST_NAME=$(basename $IVER_MANIFEST_URL | sed 's/.xml//g')
-    touch $LOG_PATH/$MANIFEST_NAME
-    rm -f .repo/manifests/manifest-r*.xml >/dev/null 2>&1
-    cp $LOG_PATH/manifest-r$IVERSION.xml .repo/manifests/
-    export REPO_SYNC_OPTION="-m manifest-r$IVERSION.xml"
- else
-    export REPO_SYNC_OPTION=''
- fi
-
- sudo sysctl -w net.ipv4.tcp_window_scaling=0 >/dev/null 2>&1
-
- $IBUILD_ROOT/hotfix/clean_dirty.sh >/dev/null 2>&1
-
- if [[ ! -f $REPO_SYNC_MD5_INFO ]] ; then
-    SPLIT_LINE repo_init_$IBUILD_GRTSRV_MANIFEST
-    echo "$REPO_CMD init -u ssh://$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD" >repo_init.info
-    time $REPO_CMD init -u ssh://$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD >>$AUTOUT_PATH/log/init.log 2>&1
-    export REPO_INIT_STATUS=$?
-    MASK_LOG $AUTOUT_PATH/log/init.log
-    LOG_STATUS $REPO_INIT_STATUS repo_init $AUTOUT_PATH/log/init.log
- else
-    SPLIT_LINE repo_init
-    rm -fr .repo >>$AUTOUT_PATH/log/init.log 2>&1
-    /bin/bash $REPO_SYNC_MD5_INFO >>$AUTOUT_PATH/log/init.log 2>&1
-    MASK_LOG $AUTOUT_PATH/log/init.log
- fi
 
  if [[ -e $LOC_REF_REPO_PATH ]] ; then
     sudo umount /local/ref_repo >>$AUTOUT_PATH/log/init.log 2>&1
     $IBUILD_ROOT/setup/ibuild_node_reg.sh >>$AUTOUT_PATH/log/init.log 2>&1
  fi
 
- SPLIT_LINE "repo_sync $REPO_SYNC_OPTION"
- if [[ -z $SYNC_ONLY ]] ; then
-    if [[ -f Makefile && -z $IBUILD_GRTSRV_TAG ]] ; then
-        time $REPO_CMD sync -j$JOBS --force-sync $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
-    else
-        /bin/bash $REPO_SYNC_MD5_INFO >>$AUTOUT_PATH/log/init.log 2>&1
-        time $REPO_CMD sync -j$JOBS --force-sync $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
-    fi
-    export STATUS_SYNC=$?
-    rm -f log && ln -sf $LOG_PATH
-
- elif [[ ! -z $SYNC_ONLY ]] ; then
+ if [[ -e $REPO_SYNC_MD5_INFO ]] ; then
+    SPLIT_LINE repo_init
     export REPO_SPACE=$(du -sh .repo | awk -F'M' {'print $1'})
     [[ -z $REPO_SPACE ]] && export REPO_SPACE=$(du -sh .repo | awk -F'G' {'print $1'}) || export REPO_SPACE=1
-    if [[ $REPO_SPACE -gt 2 && -e $LOC_REF_REPO_PATH && $(echo $(pwd) | grep subv_repo) ]] ; then
-       [[ -e $REPO_SYNC_MD5_INFO ]] && rm -fr .repo && /bin/bash $REPO_SYNC_MD5_INFO >>$AUTOUT_PATH/log/init.log 2>&1
+    if [[ $REPO_SPACE -gt 2 && -e $LOC_REF_REPO_PATH ]] ; then
+       rm -fr .repo && /bin/bash $REPO_SYNC_MD5_INFO >>$AUTOUT_PATH/log/init.log 2>&1
     fi
-
-    BTRFS_CLEANUP_SUBV_REPO && $REPO_CMD sync -j$JOBS --force-sync >/dev/null 2>&1
+    /bin/bash $REPO_SYNC_MD5_INFO >>$AUTOUT_PATH/log/init.log 2>&1
+    MASK_LOG $AUTOUT_PATH/log/init.log
  fi
+
+ if [[ ! -z $IVERSION && ! -e $REPO_SYNC_MD5_INFO ]] ; then
+    export BUILD_NUMBER=$IVERSION
+    export REPO_SYNC_OPTION="-m manifest-r$IVERSION.xml"
+    export IVER_MANIFEST_URL=$(svn log -v -r $IVERSION $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion | egrep 'A /iversion|M /iversion' | awk -F' ' {'print $2'})
+    export MANIFEST_NAME=$(basename $IVER_MANIFEST_URL | sed 's/.xml//g')
+
+    echo $BUILD_NUMBER >$LOCK_SPACE/BUILD_NUMBER
+    touch $LOG_PATH/$MANIFEST_NAME
+
+    svn export -q -r $IVERSION $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion/$IVER_MANIFEST_URL $LOG_PATH/manifest-r$IVERSION.xml
+    rm -f .repo/manifests/manifest-r*.xml >/dev/null 2>&1
+    cp $LOG_PATH/manifest-r$IVERSION.xml .repo/manifests/
+
+    SPLIT_LINE repo_init_$IBUILD_GRTSRV_MANIFEST
+    echo "$REPO_CMD init -u ssh://$IBUILD_GRTSRV/$IBUILD_GRTSRV_URL $REPO_INIT_CMD" >repo_init.info
+    /bin/bash repo_init.info >>$AUTOUT_PATH/log/init.log 2>&1
+    export REPO_INIT_STATUS=$?
+    MASK_LOG $AUTOUT_PATH/log/init.log
+    LOG_STATUS $REPO_INIT_STATUS repo_init $AUTOUT_PATH/log/init.log
+ else
+    export REPO_SYNC_OPTION=''
+ fi
+
+ $IBUILD_ROOT/hotfix/clean_dirty.sh >/dev/null 2>&1
+
+ SPLIT_LINE "repo_sync $REPO_SYNC_OPTION"
+ time $REPO_CMD sync -j$JOBS --force-sync $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+ export STATUS_SYNC=$?
+ [[ -e $LOG_PATH ]] && rm -f log && ln -sf $LOG_PATH
+ [[ -e /local/out ]] && rm -f out && ln -sf /local/out
+
+ BTRFS_CLEANUP_SUBV_REPO && $REPO_CMD sync -j$JOBS --force-sync >/dev/null 2>&1
 
  for INDEX_LOCK_REPO in `grep index.lock $LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>/dev/null | awk -F"'" {'print $2'} | awk -F'/.git' {'print $1'}`
  do
@@ -612,21 +605,17 @@ REPO_SYNC()
     export INDEX_LOCK=true
  done
 
- if [[ ! -z $INDEX_LOCK && -z $SYNC_ONLY ]] ; then
+ if [[ ! -z $INDEX_LOCK && ! -e $REPO_SYNC_MD5_INFO ]] ; then
     time $REPO_CMD sync -j$JOBS --force-sync $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
     export STATUS_SYNC=$?
  fi
 
- if [[ -z $SYNC_ONLY ]] ; then
+ if [[ ! -e $REPO_SYNC_MD5_INFO ]] ; then
     EXPORT_MANIFEST $LOG_PATH/after_sync_manifest.xml
     LOG_STATUS $STATUS_SYNC repo_sync $LOG_PATH/$REPO_SYNC_LOG_NAME.log
     CCACHE_HOTFIX
  fi
 
- rm -f out
- if [[ -d /local/out ]]; then
-    ln -sf /local/out
- fi
  popd
 }
 
