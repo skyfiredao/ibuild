@@ -550,8 +550,9 @@ REPO_SYNC()
  export REPO_SYNC_LOG_NAME=sync-`basename $1`
  export INDEX_LOCK=''
 
- if [[ -e $LOC_REF_REPO_PATH ]] ; then
+ if [[ ! -e $LOC_REF_REPO_PATH ]] ; then
     sudo umount /local/ref_repo >>$AUTOUT_PATH/log/init.log 2>&1
+    sudo mount -a
     $IBUILD_ROOT/setup/ibuild_node_reg.sh >>$AUTOUT_PATH/log/init.log 2>&1
  fi
 
