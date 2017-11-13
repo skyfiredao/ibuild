@@ -37,7 +37,7 @@ export TODAY=$(date +%y%m%d)
 if [[ -d /local/ibuild/conf ]] ; then
     sudo chown $USER -R /local/ibuild
     [[ ! -L $HOME/ibuild ]] && ln -sf /local/ibuild $HOME/ibuild
-    [[ ! -e /local/.subversion/config && -e $HOME/.subversion/config ]] && rm -fr /local/.subversion ; ln -sf $HOME/.subversion /local/.subversion
+    [[ ! -e /local/.subversion/config && -e $HOME/.subversion/config ]] && rm -fr /local/.subversion && ln -sf $HOME/.subversion /local/.subversion
     [[ ! -e /local/.gitconfig && -e $HOME/.ssh/gitconfig ]] && ln -sf $HOME/.ssh/gitconfig /local/.gitconfig
     [[ ! -e /local/.ssh && -e $HOME/.ssh ]] && ln -sf $HOME/.ssh /local/.ssh
 fi
