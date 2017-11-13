@@ -420,7 +420,7 @@ BTRFS_CLEANUP_SUBV_REPO()
     export SUBV_REPO_CLEAN=''
     export SUBV_REPO_TIME=$(stat -c %Z $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5)
     export SUBV_REPO_SIZE=$(du -sh $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5/.repo 2>/dev/null | grep G | awk -F'G' {'print $1'} | awk -F'.' {'print $1'})
-    [[ ! -z $SUBV_REPO_SIZE && $SUBV_REPO_SIZE -ge 50 ]] && export SUBV_REPO_CLEAN=yes
+    [[ ! -z $SUBV_REPO_SIZE && $SUBV_REPO_SIZE -ge 10 ]] && export SUBV_REPO_CLEAN=yes
     [[ `echo $FULL_TODAY - $SUBV_REPO_TIME | bc` -ge 2600000 ]] && export SUBV_REPO_CLEAN=yes
 
     if [[ ! -z $SUBV_REPO_CLEAN ]] ; then
@@ -510,22 +510,25 @@ REPO_INFO()
  else
     export LOC_SUBV_REPO=$LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
  fi
-    [[ ! -d $LOC_SUBV_REPO ]] && SETUP_SUBV_REPO
+    [[ ! -e $LOC_SUBV_REPO ]] && SETUP_SUBV_REPO
 }
 
 SETUP_SUBV_REPO()
 {
- if [[ ! -d $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME ]] ; then
-	mv /tmp/$USER.repo_init.tmp $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME.info
-	cd $LOC_WORKSPACE/subv_repo/
-	btrfs subvolume create $REPO_INIT_CMD_MD5_NAME >/dev/null 2>&1
-	chmod 775 $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
-	pushd $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
-	/bin/bash $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME.info >$LOG_PATH/init.log 2>&1
-	MASK_LOG $LOG_PATH/init.log
-	REPO_SYNC $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
-	cp $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME.info $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME/ >/dev/null 2>&1
-        popd
+ if [[ ! -e $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME ]] ; then
+    mv /tmp/$USER.repo_init.tmp $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME.info
+
+    pushd $LOC_WORKSPACE/subv_repo/
+    btrfs subvolume create $REPO_INIT_CMD_MD5_NAME >/dev/null 2>&1
+    chmod 775 $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
+    popd
+
+    pushd $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
+    /bin/bash $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME.info >$LOG_PATH/init.log 2>&1
+    MASK_LOG $LOG_PATH/init.log
+    REPO_SYNC $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
+    cp $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME.info $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME/ >/dev/null 2>&1
+    popd
  fi
 }
 
@@ -543,7 +546,9 @@ IBUILD_ADD_STEPS()
 
 REPO_SYNC()
 {
- pushd $1
+ [[ ! -z $1 ]] && export REPO_WORKSPACE=$1 || SPLIT_LINE no_repo_workspace
+ [[ ! -e $REPO_WORKSPACE ]] && SPLIT_LINE "repo_workspace_path_issue: $REPO_WORKSPACE"
+ pushd $REPO_WORKSPACE
  sudo sysctl -w net.ipv4.tcp_window_scaling=0 >/dev/null 2>&1
 
  export REPO_SYNC_MD5_INFO=$1.info
@@ -558,7 +563,6 @@ REPO_SYNC()
 
  if [[ -e $REPO_SYNC_MD5_INFO ]] ; then
     SPLIT_LINE repo_init
-    [[ $(du -sh .repo | grep G) ]] && rm -fr .repo
     /bin/bash $REPO_SYNC_MD5_INFO >>$AUTOUT_PATH/log/init.log 2>&1
     export REPO_INIT_STATUS=$?
     MASK_LOG $AUTOUT_PATH/log/init.log
@@ -596,7 +600,8 @@ REPO_SYNC()
  [[ -e $LOG_PATH ]] && rm -f log && ln -sf $LOG_PATH
  [[ -e /local/out ]] && rm -f out && ln -sf /local/out
 
- BTRFS_CLEANUP_SUBV_REPO && $REPO_CMD sync -j$JOBS --force-sync >/dev/null 2>&1
+ BTRFS_CLEANUP_SUBV_REPO
+# && $REPO_CMD sync -j$JOBS --force-sync >/dev/null 2>&1
 
 # for INDEX_LOCK_REPO in `grep index.lock $LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>/dev/null | awk -F"'" {'print $2'} | awk -F'/.git' {'print $1'}`
 # do
