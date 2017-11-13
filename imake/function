@@ -375,7 +375,7 @@ BUNDLE_BUILD()
    LOG_STATUS $STATUS_GIT bundle $LOG_PATH/bundle.log
  done
 
- cd $BUILD_PATH_TOP
+ [[ -e $BUILD_PATH_TOP && $(pwd) != $BUILD_PATH_TOP ]] && pushd $BUILD_PATH_TOP
  EXPORT_MANIFEST $LOG_PATH/after_patch_manifest.xml
 }
 
@@ -478,7 +478,7 @@ REPO_INFO()
  export REPO_INIT_CMD_MD5_NAME=$(cat /tmp/$USER.repo_init.tmp | md5sum | awk -F' ' {'print $1'} | cut -c1-5)
  export BTRFS_NAME=$REPO_INIT_CMD_MD5_NAME
  export BUILD_PATH_TOP=$LOC_WORKSPACE/build/ibuild
- [[ -e $BUILD_PATH_TOP ]] && pushd $BUILD_PATH_TOP
+ [[ -e $BUILD_PATH_TOP && $(pwd) != $BUILD_PATH_TOP ]] && pushd $BUILD_PATH_TOP
  
  if [[ ! -z $IBUILD_SUBV_REPO && -d $LOC_WORKSPACE/subv_repo/$IBUILD_SUBV_REPO ]] ; then
     export LOC_SUBV_REPO=$LOC_WORKSPACE/subv_repo/$IBUILD_SUBV_REPO
@@ -625,7 +625,7 @@ SETUP_BUILD_REPO()
     SPLIT_LINE git_checkout_$IBUILD_GRTSRV_TAG
     time $REPO_CMD forall -j$JOBS -c git checkout $IBUILD_GRTSRV_TAG >$LOG_PATH/$IBUILD_GRTSRV_TAG.log 2>&1
  fi
- [[ -e $BUILD_PATH_TOP ]] && pushd $BUILD_PATH_TOP
+ [[ -e $BUILD_PATH_TOP && $(pwd) != $BUILD_PATH_TOP ]] && pushd $BUILD_PATH_TOP
 }
 
 CCACHE_HOTFIX()
@@ -868,8 +868,8 @@ DIFF_MANIFEST()
 
 SETUP_BUILD_OUT()
 {
- [[ -d $BUILD_PATH_TOP ]] && cd $BUILD_PATH_TOP
-# EXPORT_MANIFEST $LOG_PATH/after_build_manifest.xml
+ [[ -e $BUILD_PATH_TOP && $(pwd) != $BUILD_PATH_TOP ]] && pushd $BUILD_PATH_TOP
+ # EXPORT_MANIFEST $LOG_PATH/after_build_manifest.xml
  cp $OUT/system/build.prop $BUILD_PATH_TOP/autout/ >/dev/null 2>&1
 
  if [[ $RESULT != FAILED ]] ; then
@@ -1046,8 +1046,17 @@ REPO_DOWNLOAD()
 GIT_CHERRY_PICK()
 {
  export REMOTE_NAME=$(cat $BUILD_PATH_TOP/.repo/manifests/*.xml | grep remote= | awk -F'="' {'print $2'} | awk -F'"' {'print $1'} | sort -u)
- [[ -z $REMOTE_NAME ]] && export REMOTE_NAME=No_Remote_Name
- export REAL_GERRIT_PROJECT=$(echo $GERRIT_PROJECT | sed "s/$REMOTE_NAME\///g")
+ if [[ ! -z $REMOTE_NAME && $(echo $GERRIT_PROJECT | grep $REMOTE_NAME) ]] ; then
+    export REAL_GERRIT_PROJECT=$(echo $GERRIT_PROJECT | sed "s/$REMOTE_NAME\///g")
+    export FETCH_GERRIT_PROJECT=$GERRIT_PROJECT
+ elif [[ ! -z $REMOTE_NAME && ! $(echo $GERRIT_PROJECT | grep $REMOTE_NAME) ]] ; then
+    export REAL_GERRIT_PROJECT=$GERRIT_PROJECT
+    export FETCH_GERRIT_PROJECT=$REMOTE_NAME/$GERRIT_PROJECT
+ else
+    export REAL_GERRIT_PROJECT=$GERRIT_PROJECT
+    export FETCH_GERRIT_PROJECT=$GERRIT_PROJECT
+ fi
+
  export LOCAL_PROJECT_PATH=$(cat /tmp/repo.list | egrep ": $REAL_GERRIT_PROJECT$" | awk -F':' {'print $1'} | head -n1)
  export MANIFEST_PATCHSET=''
 
@@ -1067,8 +1076,8 @@ GIT_CHERRY_PICK()
 
  git remote update
 
- SPLIT_LINE "git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC"
- git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC >$LOG_PATH/cherry_pick.log 2>&1
+ SPLIT_LINE "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC"
+ git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC >$LOG_PATH/cherry_pick.log 2>&1
  export CHECK_STATUS=$?
  LOG_STATUS $CHECK_STATUS git_fetch $LOG_PATH/cherry_pick.log
  export COMMIT_SHA1=$(git log FETCH_HEAD | head -n1 | awk -F' ' {'print $2'})
