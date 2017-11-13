@@ -297,6 +297,15 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME != $HOSTNAME ]] ; then
     $IBUILD_ROOT/hotfix/mount_ref_repo.sh
 fi
 
+echo "df | grep Transport" >/tmp/check_sshfs_issue.sh
+/bin/bash /tmp/check_sshfs_issue.sh >/tmp/sshfs_issue.tmp 2>&1
+for SSHFS_ISSUE in $(cat /tmp/sshfs_issue.tmp | grep Transport | awk -F"'" {'print $2'} | awk -F"'" {'print $1'})
+do
+    sudo umount $SSHFS_ISSUE
+done
+sudo mount -a
+rm -f /tmp/check_sshfs_issue.sh
+
 if [[ ! $(df | grep ref_repo | grep sshfs) ]] ; then
     $IBUILD_ROOT/setup/sync_local_ref_repo.sh 2>/tmp/sync_local_ref_repo.sh.log &
 fi
