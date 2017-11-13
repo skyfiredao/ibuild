@@ -43,6 +43,7 @@ fi
 REPO_INFO
 SETUP_BUILD_REPO
 
+[[ -e $BUILD_PATH_TOP ]] && pushd $BUILD_PATH_TOP
 $REPO_CMD list >/tmp/repo.list
 [[ $IBUILD_MODE = bundle ]] && BUNDLE_BUILD
 if [[ ! -z $(ssh $IBUILD_GRTSRV gerrit query commit:$GERRIT_PATCHSET_REVISION | grep 'topic:' | awk -F': ' {'print $2'}) && $IBUILD_MODE = topic ]] ; then
