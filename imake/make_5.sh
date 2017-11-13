@@ -46,7 +46,7 @@ SETUP_BUILD_REPO
 [[ $IBUILD_MODE = bundle ]] && BUNDLE_BUILD
 if [[ ! -z $(ssh $IBUILD_GRTSRV gerrit query commit:$GERRIT_PATCHSET_REVISION | grep 'topic:' | awk -F': ' {'print $2'}) && $IBUILD_MODE = topic ]] ; then
     TOPIC_BUILD
-elif [[ ! -z $GERRIT_CHANGE_NUMBER ]] ; then
+elif [[ ! -z $GERRIT_CHANGE_NUMBER && $IBUILD_MODE = topic ]] ; then
     SPLIT_LINE "No topic, Switch to patch build"
     REPO_DOWNLOAD
 fi
