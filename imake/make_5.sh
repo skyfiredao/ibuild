@@ -48,14 +48,16 @@ if [[ ! -z $(ssh $IBUILD_GRTSRV gerrit query commit:$GERRIT_PATCHSET_REVISION | 
     TOPIC_BUILD
 elif [[ ! -z $GERRIT_CHANGE_NUMBER ]] ; then
     SPLIT_LINE "No topic, Switch to patch build"
+    pushd $BUILD_PATH_TOP
     REPO_DOWNLOAD
+    popd
 fi
 
 [[ ! -z $GERRIT_CHANGE_NUMBER && $IBUILD_MODE = patch ]] && REPO_DOWNLOAD
 [[ $(echo $IBUILD_NOTE | egrep "itest") ]] && DIFF_MANIFEST
 [[ -f $LOG_PATH/nobuild ]] && exit 0
 
-cd $BUILD_PATH_TOP
+pushd $BUILD_PATH_TOP
 EXPORT_MANIFEST $LOG_PATH/before_build_manifest.xml
 
 [[ ! -z $IBUILD_ADD_STEP_1 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_1"
@@ -86,4 +88,5 @@ find out/ >>file.list
 [[ ! -z $IBUILD_ADD_STEP_2 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_2"
 cp $OUT/system/build.prop $BUILD_PATH_TOP/autout/ >/dev/null 2>&1
 cp $OUT/system/build.prop $BUILD_PATH_TOP/release/ >/dev/null 2>&1
+popd
 
