@@ -37,20 +37,20 @@ export TODAY=$(date +%y%m%d)
 if [[ -d /local/ibuild/conf ]] ; then
     sudo chown $USER -R /local/ibuild
     [[ ! -L $HOME/ibuild ]] && ln -sf /local/ibuild $HOME/ibuild
-    [[ ! -f /local/.subversion/config && -f $HOME/.subversion/config ]] && rm -f /local/.subversion ; ln -sf $HOME/.subversion /local/.subversion
-    [[ ! -f /local/.gitconfig && -f $HOME/.ssh/gitconfig ]] && ln -sf $HOME/.ssh/gitconfig /local/.gitconfig
-    [[ ! -f /local/.ssh && -d $HOME/.ssh ]] && ln -sf $HOME/.ssh /local/.ssh
+    [[ ! -e /local/.subversion/config && -e $HOME/.subversion/config ]] && rm -fr /local/.subversion ; ln -sf $HOME/.subversion /local/.subversion
+    [[ ! -e /local/.gitconfig && -e $HOME/.ssh/gitconfig ]] && ln -sf $HOME/.ssh/gitconfig /local/.gitconfig
+    [[ ! -e /local/.ssh && -e $HOME/.ssh ]] && ln -sf $HOME/.ssh /local/.ssh
 fi
 
-if [[ -f /local/ibuild/bin/ibuild ]] ; then
-    [[ ! -d /local/bin ]] && sudo mkdir -p /local/bin >/dev/null 2>&1
+if [[ -e /local/ibuild/bin/ibuild ]] ; then
+    [[ ! -e /local/bin ]] && sudo mkdir -p /local/bin >/dev/null 2>&1
     sudo chown $USER -R /local/bin
     cp /local/ibuild/bin/ibuild /local/bin/ibuild 
 fi
 
 export IBUILD_ROOT=$HOME/ibuild
-    [[ ! -d $HOME/ibuild/conf ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
-if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
+    [[ ! -e $HOME/ibuild/conf ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
+if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
     echo -e "Please put ibuild in your $HOME"
     exit 0
 fi
@@ -78,7 +78,7 @@ export SHARE_POINT=/local/share/build
 
 $IBUILD_ROOT/setup/reboot.sh
 
-if [[ -f $TASK_SPACE/itask/svn.$TODAY.lock && -d $TASK_SPACE/itask/svn/.svn ]] ; then
+if [[ -e $TASK_SPACE/itask/svn.$TODAY.lock && -d $TASK_SPACE/itask/svn/.svn ]] ; then
     export SVN_REV_LOC=$(svn info $TASK_SPACE/itask/svn | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
     if [[ $IBUILD_SVN_REV_SRV != $SVN_REV_LOC ]] ; then
         sudo chmod 777 -R $TASK_SPACE/itask
@@ -102,12 +102,12 @@ if [[ $IBUILD_TOP_SVN_SRV_HOSTNAME != $IBUILD_SVN_SRV_HOSTNAME && ! -z $IBUILD_T
     svn co -q $IBUILD_SVN_OPTION svn://$ITASK_SVN_SRV/itask/itask $TASK_SPACE/itask.top/svn
 fi
 
-if [[ ! -d $TASK_SPACE/itask/svn/inode ]] ; then
+if [[ ! -e $TASK_SPACE/itask/svn/inode ]] ; then
     svn mkdir $TASK_SPACE/itask/svn/inode
     svn ci $IBUILD_SVN_OPTION -m "auto: add inode in $IP" $TASK_SPACE/itask/svn/inode
 fi
 
-if [[ -f $DIST_FS_SHARE/README && $IBUILD_SVN_SRV_HOSTNAME != $HOSTNAME ]] ; then
+if [[ -e $DIST_FS_SHARE/README && $IBUILD_SVN_SRV_HOSTNAME != $HOSTNAME ]] ; then
     export DIST_FS=$DIST_FS_SHARE
     export SHARE_POINT_USAGE=$(df $DIST_FS | grep dev | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
     export RM_ENTRY=$(ls $DIST_FS | head -n1)
@@ -142,7 +142,7 @@ if [[ $IBUILD_TOP_SVN_SRV_HOSTNAME != $IBUILD_SVN_SRV_HOSTNAME ]] ; then
     fi
 fi
 
-if [[ `svn st $TASK_SPACE/itask/svn/inode/$HOSTNAME | grep $HOSTNAME` ]] ; then
+if [[ $(svn st $TASK_SPACE/itask/svn/inode/$HOSTNAME | grep $HOSTNAME) ]] ; then
     svn add $TASK_SPACE/itask/svn/inode/$HOSTNAME >/dev/null 2>&1
     svn ci $IBUILD_SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask/svn/inode/$HOSTNAME
     if [[ $? != 0 ]] ; then
@@ -153,7 +153,7 @@ if [[ `svn st $TASK_SPACE/itask/svn/inode/$HOSTNAME | grep $HOSTNAME` ]] ; then
     fi
 fi
 
-if [[ ! `crontab -l | grep ibuild_node_reg` && -f $IBUILD_ROOT/setup/ibuild_node_reg.sh ]] ; then
+if [[ ! $(crontab -l | grep ibuild_node_reg) && -f $IBUILD_ROOT/setup/ibuild_node_reg.sh ]] ; then
     echo "# m h  dom mon dow   command
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
