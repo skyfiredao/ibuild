@@ -1077,9 +1077,9 @@ GIT_CHERRY_PICK()
  git remote update
 
  SPLIT_LINE "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC"
- git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC >$LOG_PATH/cherry_pick.log 2>&1
+ git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC >$LOG_PATH/patch.log 2>&1
  export CHECK_STATUS=$?
- LOG_STATUS $CHECK_STATUS git_fetch $LOG_PATH/cherry_pick.log
+ LOG_STATUS $CHECK_STATUS git_fetch $LOG_PATH/patch.log
  export COMMIT_SHA1=$(git log FETCH_HEAD | head -n1 | awk -F' ' {'print $2'})
 
  git diff HEAD FETCH_HEAD >/tmp/diff-$NOW.tmp
@@ -1087,15 +1087,15 @@ GIT_CHERRY_PICK()
  if [[ ! $(git log HEAD | grep $COMMIT_SHA1) && ! $(md5sum /tmp/diff-$NOW.tmp | grep d41d8cd98f00b204e9800998ecf8427e) ]] ; then
     rm -f /tmp/diff-$NOW.tmp
     SPLIT_LINE "git cherry-pick FETCH_HEAD"
-    git cherry-pick FETCH_HEAD >$LOG_PATH/cherry_pick.log 2>&1
+    git cherry-pick FETCH_HEAD >$LOG_PATH/patch.log 2>&1
     export CHECK_STATUS=$?
     if [[ $CHECK_STATUS != 0 ]] ; then
         SPLIT_LINE "git cherry-pick -m 1 FETCH_HEAD"
-        git cherry-pick -m 1 FETCH_HEAD >$LOG_PATH/cherry_pick.log 2>&1
+        git cherry-pick -m 1 FETCH_HEAD >$LOG_PATH/patch.log 2>&1
         export CHECK_STATUS=$?
     fi
-    [[ $CHECK_STATUS != 0 ]] && git status >$LOG_PATH/cherry_pick.log 2>&1
-    LOG_STATUS $CHECK_STATUS cherry_pick $LOG_PATH/cherry_pick.log
+    [[ $CHECK_STATUS != 0 ]] && git status >$LOG_PATH/patch.log 2>&1
+    LOG_STATUS $CHECK_STATUS cherry_pick $LOG_PATH/patch.log
  else
     SPLIT_LINE "MERGED: $GERRIT_PROJECT $GERRIT_REFSPEC"
     touch $LOG_PATH/nobuild
