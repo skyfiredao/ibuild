@@ -551,8 +551,17 @@ IBUILD_ADD_STEPS()
 
 REPO_SYNC()
 {
- [[ ! -z $1 ]] && export REPO_WORKSPACE=$1 || SPLIT_LINE no_repo_workspace
- [[ ! -e $REPO_WORKSPACE ]] && SPLIT_LINE "repo_workspace_path_issue: $REPO_WORKSPACE"
+ if [[ ! -z $1 ]] ; then
+    export REPO_WORKSPACE=$1
+ else
+    SPLIT_LINE no_repo_workspace
+    exit 0
+ fi
+ if [[ ! -e $REPO_WORKSPACE ]] ; then
+    SPLIT_LINE "repo_workspace_path_issue: $REPO_WORKSPACE"
+    exit 0
+ fi
+
  pushd $REPO_WORKSPACE
  sudo sysctl -w net.ipv4.tcp_window_scaling=0 >/dev/null 2>&1
 
@@ -1065,12 +1074,10 @@ REPO_DOWNLOAD()
 
 GIT_CHERRY_PICK()
 {
- pushd $BUILD_PATH_TOP
- [[ ! -e repo.list ]] && $REPO_CMD list >repo.list
  export REMOTE_NAME=$(cat $BUILD_PATH_TOP/.repo/manifests/*.xml | grep remote= | awk -F'="' {'print $2'} | awk -F'"' {'print $1'} | sort -u)
  [[ -z $REMOTE_NAME ]] && export REMOTE_NAME=No_Remote_Name
  export REAL_GERRIT_PROJECT=$(echo $GERRIT_PROJECT | sed "s/$REMOTE_NAME\///g")
- export LOCAL_PROJECT_PATH=$(cat repo.list | egrep ": $REAL_GERRIT_PROJECT$" | awk -F':' {'print $1'} | head -n1)
+ export LOCAL_PROJECT_PATH=$(cat /tmp/repo.list | egrep ": $REAL_GERRIT_PROJECT$" | awk -F':' {'print $1'} | head -n1)
  export MANIFEST_PATCHSET=''
 
  if [[ $(echo $GERRIT_PROJECT | grep manifests$) ]] ; then
@@ -1087,7 +1094,6 @@ GIT_CHERRY_PICK()
     exit 0
  fi
 
- git pull
  git remote update
 
  SPLIT_LINE "git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC"
@@ -1120,14 +1126,13 @@ GIT_CHERRY_PICK()
 
  if [[ $MANIFEST_PATCHSET = true ]] ; then
     SPLIT_LINE "Clean workspace and sync again"
-    for RM_ENTRY in $(cat repo.list | awk -F':' {'print $1'} | awk -F'/' {'print $1'} | sort -u)
+    for RM_ENTRY in $(cat /tmp/repo.list | awk -F':' {'print $1'} | awk -F'/' {'print $1'} | sort -u)
     do
         rm -fr $BUILD_PATH_TOP/$RM_ENTRY
     done
     $REPO_CMD sync -d -c -q --force-sync -j$JOBS --no-tags
     CHECK_STATUS $?
  fi
- popd
 }
 
 GET_ICHANGE_STRING()

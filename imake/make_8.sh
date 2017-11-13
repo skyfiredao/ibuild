@@ -43,6 +43,7 @@ fi
 REPO_INFO
 SETUP_BUILD_REPO
 
+$REPO_CMD list >/tmp/repo.list
 [[ $IBUILD_MODE = bundle ]] && BUNDLE_BUILD
 if [[ ! -z $(ssh $IBUILD_GRTSRV gerrit query commit:$GERRIT_PATCHSET_REVISION | grep 'topic:' | awk -F': ' {'print $2'}) && $IBUILD_MODE = topic ]] ; then
     TOPIC_BUILD
@@ -55,7 +56,6 @@ fi
 [[ $(echo $IBUILD_NOTE | egrep "itest") ]] && DIFF_MANIFEST
 [[ -f $LOG_PATH/nobuild ]] && exit 0
 
-pushd $BUILD_PATH_TOP
 EXPORT_MANIFEST $LOG_PATH/before_build_manifest.xml
 
 [[ ! -z $IBUILD_ADD_STEP_1 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_1"
@@ -86,5 +86,4 @@ find out/ >>file.list
 [[ ! -z $IBUILD_ADD_STEP_2 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_2"
 cp $OUT/system/build.prop $BUILD_PATH_TOP/autout/ >/dev/null 2>&1
 cp $OUT/system/build.prop $BUILD_PATH_TOP/release/ >/dev/null 2>&1
-popd
 
