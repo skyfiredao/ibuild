@@ -48,9 +48,7 @@ if [[ ! -z $(ssh $IBUILD_GRTSRV gerrit query commit:$GERRIT_PATCHSET_REVISION | 
     TOPIC_BUILD
 elif [[ ! -z $GERRIT_CHANGE_NUMBER ]] ; then
     SPLIT_LINE "No topic, Switch to patch build"
-    pushd $BUILD_PATH_TOP
     REPO_DOWNLOAD
-    popd
 fi
 
 [[ ! -z $GERRIT_CHANGE_NUMBER && $IBUILD_MODE = patch ]] && REPO_DOWNLOAD
