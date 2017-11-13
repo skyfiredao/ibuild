@@ -310,102 +310,71 @@ do
 
 BUNDLE_BUILD()
 {
-# BUNDLE_PATCH repo download mode 1 with BUNDLE_PATCH
+ export REMOTE_NAME=$(cat .repo/manifests/*.xml | grep remote= | awk -F'="' {'print $2'} | awk -F'"' {'print $1'} | sort -u)
+ [[ -z $REMOTE_NAME ]] && export REMOTE_NAME=No_Remote_Name
+
  grep '^BUNDLE_PATCH=' $IBUILD_SPEC | awk -F'BUNDLE_PATCH=' {'print $2'} | while read BUNDLE_PATCH_ENTRY
  do
-     export EMAIL_PATCH_OWNER=$(echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $1'})
-     export BUNDLE_PATCH=$(echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $2'})
+    export EMAIL_PATCH_OWNER=$(echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $1'})
+    export GERRIT_PROJECT=$(echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $2'} | awk -F' ' {'print $1'})
+    export REAL_GERRIT_PROJECT=$(echo $GERRIT_PROJECT | sed "s/$REMOTE_NAME\///g")
+    export LOCAL_PROJECT_PATH=$(cat /tmp/repo.list | egrep ": $REAL_GERRIT_PROJECT$" | awk -F':' {'print $1'} | head -n1)
+    export GERRIT_REFSPEC=$(echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $2'} | awk -F': ' {'print $2'})
 
-     SPLIT_LINE "bundle: repo download $BUNDLE_PATCH"
-     echo "------------------------- $EMAIL_PATCH_OWNER|$BUNDLE_PATCH" >>$LOG_PATH/bundle.log 2>&1
-     pushd $BUILD_PATH_TOP
-     time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
-     export STATUS_REPO=$?
-     [[ $STATUS_REPO != 0 && ! -z $BUNDLE_PATCH ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
-     SETUP_ISTATUS "patch: BUNDLE_PATCH_ENTRY" $ITASK_REV
-     LOG_STATUS $STATUS_REPO bundle $LOG_PATH/bundle.log
-     popd
+    SPLIT_LINE "bundle: $REAL_GERRIT_PROJECT $GERRIT_REFSPEC"
+    if [[ ! -z $LOCAL_PROJECT_PATH ]] ; then
+        echo -e "git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC \n" >>$LOG_PATH/build_info.txt
+        echo -e "cd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH" >>$LOG_PATH/bundle.log 2>&1
+        pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH
+        SPLIT_LINE "bundle: git fetch $GERRIT_REFSPEC in $LOCAL_PROJECT_PATH"
+        echo "------------------------- $EMAIL_PATCH_OWNER|$GERRIT_PROJECT $GERRIT_REFSPEC" >>$LOG_PATH/topic.log 2>&1
+        git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/topic.log 2>&1
+        export STATUS_GIT=$?
+        if [[ $STATUS_GIT = 0 ]] ; then
+             git cherry-pick FETCH_HEAD >>$LOG_PATH/bundle.log 2>&1
+             export STATUS_GIT=$?
+             echo $STATUS_GIT >>$LOG_PATH/bundle.log
+        fi
+        SETUP_ISTATUS "bundle: $GERRIT_PROJECT $GERRIT_REFSPEC" $ITASK_REV
+        LOG_STATUS $STATUS_GIT topic $LOG_PATH/bundle.log
+        popd >/dev/null 2>&1
+   else
+        SPLIT_LINE "Can NOT find $LOCAL_PROJECT_PATH in local workspace"
+        LOG_STATUS 1 bundle $LOG_PATH/bundle.log
+   fi
  done
-
-# repo download mode 2 with naked repo download
- grep '^repo download' $IBUILD_SPEC | while read BUNDLE_PATCH_ENTRY
- do
-     [[ ! -z $EMAIL_TMP ]] && export EMAIL_PATCH_OWNER=$EMAIL_TMP
-     export BUNDLE_PATCH=$(echo $BUNDLE_PATCH_ENTRY | awk -F'download' {'print $2'})
-
-     SPLIT_LINE "bundle: repo download $BUNDLE_PATCH"
-     echo "------------------------- $EMAIL_PATCH_OWNER $BUNDLE_PATCH" >>$LOG_PATH/bundle.log 2>&1
-     pushd $BUILD_PATH_TOP
-     time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
-     export STATUS_REPO=$?
-     [[ $STATUS_REPO != 0 && ! -z $BUNDLE_PATCH ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
-     SETUP_ISTATUS "patch: $BUNDLE_PATCH_ENTRY" $ITASK_REV
-     LOG_STATUS $STATUS_REPO bundle $LOG_PATH/bundle.log
-     popd
- done
-
-# git fetch mode 1 with IBUILD_FETCH_GRTSRV and naked git fetch
-# grep '^git fetch' $IBUILD_SPEC | sed "s/:$IBUILD_GRTSRV_PORT//g" | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F'&' {'print $1'} | while read IBUILD_FETCH_HEAD_ENTRY
 
  grep '^git fetch' $IBUILD_SPEC | awk -F'&&' {'print $1'} | while read IBUILD_FETCH_HEAD_ENTRY
  do
-    export IBUILD_FETCH_GRTSRV_ID=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F'@' {'print $1'} | awk -F'//' {'print $2'})
-    export IBUILD_FETCH_GRTSRV_PORT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F':' {'print $3'} | awk -F'/' {'print $1'})
-    export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | sed "s/:$IBUILD_FETCH_GRTSRV_PORT//g" | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $1'})
-    export IBUILD_FETCH_HEAD_REFS=$(echo $IBUILD_FETCH_HEAD_ENTRY | sed "s/:$IBUILD_FETCH_GRTSRV_PORT//g" | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $2'})
-    export IBUILD_FETCH_HEAD_PATH=$($REPO_CMD list | egrep ": $IBUILD_FETCH_HEAD_PROJECT$" | awk -F':' {'print $1'} | head -n1)
-    export IBUILD_FETCH_HEAD_ENTRY_FIX=$(echo $IBUILD_FETCH_HEAD_ENTRY | sed -e "s/$IBUILD_FETCH_GRTSRV_ID@//g" | sed -e "s/:$IBUILD_FETCH_GRTSRV_PORT//g")
-    [[ -z $IBUILD_FETCH_HEAD_PATH ]] && export IBUILD_FETCH_HEAD_PATH="NO_path_for_$IBUILD_FETCH_HEAD_PROJECT"
-    SPLIT_LINE "bundle: git fetch $IBUILD_FETCH_HEAD_REFS in $IBUILD_FETCH_HEAD_PATH"
-    echo "------------------------- $IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS" >>$LOG_PATH/bundle.log 2>&1
-    echo -e "cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH" >>$LOG_PATH/bundle.log 2>&1
-    cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH >>$LOG_PATH/bundle.log 2>&1
-    export STATUS_GIT=$?
-    echo -e "$IBUILD_FETCH_HEAD_ENTRY_FIX\n" >>$LOG_PATH/bundle.log 2>&1
-    time $IBUILD_FETCH_HEAD_ENTRY_FIX >>$LOG_PATH/bundle.log 2>&1
-    export STATUS_GIT=$?
-    echo $STATUS_GIT >>$LOG_PATH/bundle.log
-    if [[ $STATUS_GIT = 0 ]] ; then
-        echo -e "\ngit cherry-pick FETCH_HEAD\n" >>$LOG_PATH/bundle.log 2>&1
-        git cherry-pick FETCH_HEAD >>$LOG_PATH/bundle.log 2>&1
-        export STATUS_GIT=$?
-        echo $STATUS_GIT >>$LOG_PATH/bundle.log
-    fi
-    if [[ $STATUS_GIT != 0 && ! -z $IBUILD_FETCH_HEAD_REFS ]] ; then
-        FILTER_BAD_PATCH $IBUILD_FETCH_HEAD_REFS
-    fi
-    SETUP_ISTATUS "patch: $IBUILD_FETCH_HEAD_ENTRY" $ITASK_REV
-    LOG_STATUS $STATUS_GIT bundle $LOG_PATH/bundle.log
+   export IBUILD_FETCH_GRTSRV_ID=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F'@' {'print $1'} | awk -F'//' {'print $2'})
+   export IBUILD_FETCH_GRTSRV_PORT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F':' {'print $3'} | awk -F'/' {'print $1'})
+   export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | sed "s/:$IBUILD_FETCH_GRTSRV_PORT//g" | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $1'})
+   export IBUILD_FETCH_HEAD_REFS=$(echo $IBUILD_FETCH_HEAD_ENTRY | sed "s/:$IBUILD_FETCH_GRTSRV_PORT//g" | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $2'})
+   export IBUILD_FETCH_HEAD_PATH=$($REPO_CMD list | egrep ": $IBUILD_FETCH_HEAD_PROJECT$" | awk -F':' {'print $1'} | head -n1)
+   export IBUILD_FETCH_HEAD_ENTRY_FIX=$(echo $IBUILD_FETCH_HEAD_ENTRY | sed -e "s/$IBUILD_FETCH_GRTSRV_ID@//g" | sed -e "s/:$IBUILD_FETCH_GRTSRV_PORT//g")
+   [[ -z $IBUILD_FETCH_HEAD_PATH ]] && export IBUILD_FETCH_HEAD_PATH="NO_path_for_$IBUILD_FETCH_HEAD_PROJECT"
+   SPLIT_LINE "bundle: git fetch $IBUILD_FETCH_HEAD_REFS in $IBUILD_FETCH_HEAD_PATH"
+   echo "------------------------- $IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS" >>$LOG_PATH/bundle.log 2>&1
+   echo -e "cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH" >>$LOG_PATH/bundle.log 2>&1
+   cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH >>$LOG_PATH/bundle.log 2>&1
+   export STATUS_GIT=$?
+   echo -e "$IBUILD_FETCH_HEAD_ENTRY_FIX\n" >>$LOG_PATH/bundle.log 2>&1
+   time $IBUILD_FETCH_HEAD_ENTRY_FIX >>$LOG_PATH/bundle.log 2>&1
+   export STATUS_GIT=$?
+   echo $STATUS_GIT >>$LOG_PATH/bundle.log
+   if [[ $STATUS_GIT = 0 ]] ; then
+       echo -e "\ngit cherry-pick FETCH_HEAD\n" >>$LOG_PATH/bundle.log 2>&1
+       git cherry-pick FETCH_HEAD >>$LOG_PATH/bundle.log 2>&1
+       export STATUS_GIT=$?
+       echo $STATUS_GIT >>$LOG_PATH/bundle.log
+   fi
+   if [[ $STATUS_GIT != 0 && ! -z $IBUILD_FETCH_HEAD_REFS ]] ; then
+       FILTER_BAD_PATCH $IBUILD_FETCH_HEAD_REFS
+   fi
+   SETUP_ISTATUS "patch: $IBUILD_FETCH_HEAD_ENTRY" $ITASK_REV
+   LOG_STATUS $STATUS_GIT bundle $LOG_PATH/bundle.log
  done
 
-# git fetch mode 2 with IBUILD_FETCH_HEAD and IBUILD_FETCH_GRTSRV
- grep '^IBUILD_FETCH_HEAD=' $IBUILD_SPEC | grep -v '|$'| awk -F'IBUILD_FETCH_HEAD=' {'print $2'} | while read IBUILD_FETCH_HEAD_ENTRY
- do
-    export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F' ' {'print $1'})
-    export IBUILD_FETCH_HEAD_REFS=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F' ' {'print $2'})
-    export IBUILD_FETCH_HEAD_PATH=$($REPO_CMD list | egrep ": $IBUILD_FETCH_HEAD_PROJECT$" | awk -F':' {'print $1'} | head -n1)
-    [[ -z $IBUILD_FETCH_HEAD_PATH ]] && export IBUILD_FETCH_HEAD_PATH="NO_path_for_$IBUILD_FETCH_HEAD_PROJECT"
-    SPLIT_LINE "bundle: git fetch $IBUILD_FETCH_HEAD_REFS in $IBUILD_FETCH_HEAD_PATH"
-    echo "------------------------- $IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS" >>$LOG_PATH/bundle.log 2>&1
-    echo -e "cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH" >>$LOG_PATH/bundle.log 2>&1
-    cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH >>$LOG_PATH/bundle.log 2>&1
-    export STATUS_GIT=$?
-    echo -e "git fetch ssh://$IBUILD_FETCH_GRTSRV/$IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS\n" >>$LOG_PATH/bundle.log 2>&1
-    time git fetch ssh://$IBUILD_FETCH_GRTSRV/$IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS >>$LOG_PATH/bundle.log 2>&1
-    export STATUS_GIT=$?
-    echo $STATUS_GIT >>$LOG_PATH/bundle.log
-    if [[ $STATUS_GIT = 0 ]] ; then
-        echo -e "\ngit cherry-pick FETCH_HEAD\n" >>$LOG_PATH/bundle.log 2>&1
-        git cherry-pick FETCH_HEAD >>$LOG_PATH/bundle.log 2>&1
-        export STATUS_GIT=$?
-        echo $STATUS_GIT >>$LOG_PATH/bundle.log
-    fi
-    if [[ $STATUS_GIT != 0 && ! -z $IBUILD_FETCH_HEAD_REFS ]] ; then
-        FILTER_BAD_PATCH $IBUILD_FETCH_HEAD_REFS
-    fi
-    SETUP_ISTATUS "patch: $IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS" $ITASK_REV
-    LOG_STATUS $STATUS_GIT bundle $LOG_PATH/bundle.log
- done
  cd $BUILD_PATH_TOP
  EXPORT_MANIFEST $LOG_PATH/after_patch_manifest.xml
 }
