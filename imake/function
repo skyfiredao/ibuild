@@ -318,11 +318,13 @@ BUNDLE_BUILD()
 
      SPLIT_LINE "bundle: repo download $BUNDLE_PATCH"
      echo "------------------------- $EMAIL_PATCH_OWNER|$BUNDLE_PATCH" >>$LOG_PATH/bundle.log 2>&1
+     pushd $BUILD_PATH_TOP
      time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
      export STATUS_REPO=$?
      [[ $STATUS_REPO != 0 && ! -z $BUNDLE_PATCH ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
      SETUP_ISTATUS "patch: BUNDLE_PATCH_ENTRY" $ITASK_REV
      LOG_STATUS $STATUS_REPO bundle $LOG_PATH/bundle.log
+     popd
  done
 
 # repo download mode 2 with naked repo download
@@ -333,11 +335,13 @@ BUNDLE_BUILD()
 
      SPLIT_LINE "bundle: repo download $BUNDLE_PATCH"
      echo "------------------------- $EMAIL_PATCH_OWNER $BUNDLE_PATCH" >>$LOG_PATH/bundle.log 2>&1
+     pushd $BUILD_PATH_TOP
      time $REPO_CMD download $BUNDLE_PATCH >>$LOG_PATH/bundle.log 2>&1
      export STATUS_REPO=$?
      [[ $STATUS_REPO != 0 && ! -z $BUNDLE_PATCH ]] && FILTER_BAD_PATCH $BUNDLE_PATCH
      SETUP_ISTATUS "patch: $BUNDLE_PATCH_ENTRY" $ITASK_REV
      LOG_STATUS $STATUS_REPO bundle $LOG_PATH/bundle.log
+     popd
  done
 
 # git fetch mode 1 with IBUILD_FETCH_GRTSRV and naked git fetch
@@ -1060,13 +1064,23 @@ REPO_DOWNLOAD()
 
 GIT_CHERRY_PICK()
 {
+ $REPO_CMD list >/tmp/repo.list
+ export LOCAL_PROJECT_PATH=$(cat /tmp/repo.list | egrep ": $REAL_GERRIT_PROJECT$" | awk -F':' {'print $1'} | head -n1)
+ pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH
+
  SPLIT_LINE "git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC && git cherry-pick FETCH_HEAD" 
  time git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/git_cherry-pick.log 2>&1
  export STATUS_REPO=$?
  LOG_STATUS $STATUS_REPO git_fetch $LOG_PATH/git_cherry-pick.log
+
  git cherry-pick FETCH_HEAD >>$LOG_PATH/git_cherry-pick.log 2>&1
  export STATUS_REPO=$?
+ if [[ $STATUS_REPO != 0 ]] ; then
+    git cherry-pick -m 1 FETCH_HEAD
+    export STATUS_REPO=$?
+ fi
  LOG_STATUS $STATUS_REPO git_cherry-pick $LOG_PATH/git_cherry-pick.log
+ popd
 }
 
 GET_ICHANGE_STRING()
