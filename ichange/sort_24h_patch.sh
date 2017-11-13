@@ -137,10 +137,10 @@ do
 done
 
 # for BUNDLE_PATCH
-cat $TASK_SPACE/tmp.isort.$SEED/repo_download.txt | sort -u
+# cat $TASK_SPACE/tmp.isort.$SEED/repo_download.txt | sort -u
 
 # for email with cherry pick 
-# cat $TASK_SPACE/tmp.isort.$SEED/email_cherry_pick.txt | sort -u
+cat $TASK_SPACE/tmp.isort.$SEED/email_cherry_pick.txt | sort -u
 
 # for git fetch
 # cat $TASK_SPACE/tmp.isort.$SEED/cherry_pick.txt | sort -u
