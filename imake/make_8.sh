@@ -43,7 +43,8 @@ fi
 REPO_INFO
 SETUP_BUILD_REPO
 
-[[ -e $BUILD_PATH_TOP && $(pwd) != $BUILD_PATH_TOP ]] && cd $BUILD_PATH_TOP
+[[ -e $BUILD_PATH_TOP && $(pwd) != $BUILD_PATH_TOP ]] && pushd $BUILD_PATH_TOP
+cd $BUILD_PATH_TOP
 $REPO_CMD list >/tmp/repo.list
 [[ $IBUILD_MODE = bundle ]] && BUNDLE_BUILD
 if [[ ! -z $(ssh $IBUILD_GRTSRV gerrit query commit:$GERRIT_PATCHSET_REVISION | grep 'topic:' | awk -F': ' {'print $2'}) && $IBUILD_MODE = topic ]] ; then
@@ -87,4 +88,5 @@ find out/ >>file.list
 [[ ! -z $IBUILD_ADD_STEP_2 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_2"
 cp $OUT/system/build.prop $BUILD_PATH_TOP/autout/ >/dev/null 2>&1
 cp $OUT/system/build.prop $BUILD_PATH_TOP/release/ >/dev/null 2>&1
+[[ -e $BUILD_PATH_TOP && $(pwd) != $BUILD_PATH_TOP ]] && pushd $BUILD_PATH_TOP
 

@@ -894,6 +894,7 @@ SETUP_BUILD_OUT()
 {
  [[ -e $BUILD_PATH_TOP && $(pwd) != $BUILD_PATH_TOP ]] && cd $BUILD_PATH_TOP
  if [[ -z $OUT ]] ; then
+    cd $BUILD_PATH_TOP
     source build/envsetup.sh
     lunch $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT
  fi
