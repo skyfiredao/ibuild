@@ -479,7 +479,7 @@ REPO_INFO()
  export BUILD_PATH_TOP=$LOC_WORKSPACE/build/ibuild
  [[ -e $BUILD_PATH_TOP && $(pwd) != $BUILD_PATH_TOP ]] && pushd $BUILD_PATH_TOP
  
- if [[ ! -z $IBUILD_SUBV_REPO && -d $LOC_WORKSPACE/subv_repo/$IBUILD_SUBV_REPO ]] ; then
+ if [[ ! -z $IBUILD_SUBV_REPO && -e $LOC_WORKSPACE/subv_repo/$IBUILD_SUBV_REPO ]] ; then
     export LOC_SUBV_REPO=$LOC_WORKSPACE/subv_repo/$IBUILD_SUBV_REPO
  else
     export LOC_SUBV_REPO=$LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
@@ -675,7 +675,7 @@ SETUP_ISTATUS_OLD()
  export ISTATUS_ENTRY=$1
     [[ -z $ITASK_REV ]] && export ITASK_REV=$(ls /tmp | grep log$ | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1)
 
- if [[ ! -d $TASK_SPACE/istatus-$TOYEAR ]] ; then
+ if [[ ! -e $TASK_SPACE/istatus-$TOYEAR ]] ; then
     rm -fr $TASK_SPACE/istatus-* >/dev/null 2>&1
     svn co -q $IBUILD_SVN_OPTION svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR $TASK_SPACE/istatus-$TOYEAR >/dev/null 2>&1
     if [[ $? != 0 ]] ; then
@@ -722,7 +722,7 @@ SETUP_IVERSION()
  export ORIG_MANIFEST_URL=$1
  export IVER_MANIFEST_NAME=$2.xml
 
- if [[ -d $TASK_SPACE/iversion-$TOYEAR ]] ; then
+ if [[ -e $TASK_SPACE/iversion-$TOYEAR ]] ; then
     export IBUILD_SVN_REV_LOC=$(svn info $TASK_SPACE/iversion-$TOYEAR | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
     if [[ $IBUILD_SVN_REV_SRV != $IBUILD_SVN_REV_LOC ]] ; then
         svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOYEAR
@@ -815,7 +815,7 @@ DOWNLOAD_PKG_NAME=$DOWNLOAD_PKG_NAME
  cat $LOG_PATH/build_info.txt | sort -u | grep -v ^$ >$LOG_PATH/build_info.tmp
  mv $LOG_PATH/build_info.tmp $LOG_PATH/build_info.txt
  
- if [[ -d $TASK_SPACE/icase-$TOWEEK ]] ; then
+ if [[ -e $TASK_SPACE/icase-$TOWEEK ]] ; then
     export IBUILD_SVN_REV_LOC=$(svn info $TASK_SPACE/icase-$TOWEEK | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
     if [[ $IBUILD_SVN_REV_SRV != $IBUILD_SVN_REV_LOC ]] ; then
         svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/icase-$TOWEEK
@@ -858,7 +858,7 @@ DIFF_MANIFEST()
 {
  export DIFF_MANIFEST=''
  export MANIFEST_MD5=$(md5sum $LOG_PATH/manifest.xml | awk -F' ' {'print $1'})
- if [[ -d $TASK_SPACE/iversion-$TOYEAR ]] ; then
+ if [[ -e $TASK_SPACE/iversion-$TOYEAR ]] ; then
     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOYEAR
  else
     svn co -q $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR $TASK_SPACE/iversion-$TOYEAR
@@ -884,7 +884,7 @@ SETUP_BUILD_OUT()
         tar cf $REL_PKG_NAME.tar $REL_PKG_NAME
         cp $REL_PKG_NAME.tar $AUTOUT_PATH/$AUTOUT_NAME/
         export DOWNLOAD_PKG_NAME=$REL_PKG_NAME.tar
-    elif [[ -d $BUILD_PATH_TOP/release ]] ; then
+    elif [[ -e $BUILD_PATH_TOP/release ]] ; then
         cp $OUT/system/build.prop $BUILD_PATH_TOP/release/ >/dev/null 2>&1
         [[ -z $BUILD_NUMBER ]] && export BUILD_NUMBER=$(cat $LOCK_SPACE/BUILD_NUMBER)
         export RELEASE_VER=$BUILD_NUMBER
