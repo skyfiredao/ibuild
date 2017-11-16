@@ -99,7 +99,9 @@ EXPORT_IBUILD_SPEC()
 {
  export ITASK_REV=$1
  if [[ ! -z $ITASK_REV ]] ; then
+     pushd /tmp >/dev/null 2>&1
      svn up -q $IBUILD_SVN_OPTION $ITASK_PATH
+     popd >/dev/null 2>&1
      export IBUILD_SPEC_NAME=$(svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$ITASK_SVN_SRV/itask/itask | egrep 'A |M ' | head -n1 | awk -F'tasks/' {'print $2'} | awk -F' ' {'print $1'})
      if [[ ! $(grep IBUILD_GRTSRV $ITASK_PATH/tasks/$IBUILD_SPEC_NAME) ]] ; then
          SPLIT_LINE "$ITASK_PATH/tasks/$IBUILD_SPEC_NAME is not a spec.build"
@@ -222,7 +224,9 @@ FILTER_BAD_PATCH()
 
  rm -f /tmp/itask $TASK_SPACE/tmp.spec.$SEED
 
+ pushd /tmp >/dev/null 2>&1
  svn export -q $IBUILD_SVN_OPTION svn://$ITASK_SVN_SRV/ispec/ispec/itask /tmp
+ popd >/dev/null 2>&1
  chmod +x /tmp/itask
 
  SPLIT_LINE "add new task after remove $BAD_PATCH_ENTRY"
@@ -563,7 +567,9 @@ REPO_SYNC()
     echo $BUILD_NUMBER >$LOCK_SPACE/BUILD_NUMBER
     touch $LOG_PATH/$MANIFEST_NAME
 
+    pushd /tmp >/dev/null 2>&1
     svn export -q -r $IVERSION $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion/$IVER_MANIFEST_URL $LOG_PATH/manifest-r$IVERSION.xml
+    popd >/dev/null 2>&1
     rm -f .repo/manifests/manifest-r*.xml >/dev/null 2>&1
     cp $LOG_PATH/manifest-r$IVERSION.xml .repo/manifests/
 
@@ -677,15 +683,19 @@ SETUP_ISTATUS_OLD()
 
  if [[ ! -e $TASK_SPACE/istatus-$TOYEAR ]] ; then
     rm -fr $TASK_SPACE/istatus-* >/dev/null 2>&1
+    pushd /tmp >/dev/null 2>&1
     svn co -q $IBUILD_SVN_OPTION svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR $TASK_SPACE/istatus-$TOYEAR >/dev/null 2>&1
     if [[ $? != 0 ]] ; then
         svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add istatus/$TOYEAR" svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR >/dev/null 2>&1
         svn co -q $IBUILD_SVN_OPTION svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR $TASK_SPACE/istatus-$TOYEAR >/dev/null 2>&1
     fi
+    popd >/dev/null 2>&1
  else
+    pushd /tmp >/dev/null 2>&1
     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/istatus-$TOYEAR >/dev/null 2>&1
+    popd >/dev/null 2>&1
  fi
-
+ 
  touch $TASK_SPACE/istatus-$TOYEAR/$ITASK_REV
  touch $TASK_SPACE/istatus-$TOYEAR/$ITASK_ORDER
 
@@ -701,6 +711,7 @@ SETUP_ISTATUS_OLD()
     echo $(date +%y%m%d-%H%M%S)"|$HOSTNAME|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOYEAR/$ITASK_ORDER
  fi
 
+ pushd /tmp >/dev/null 2>&1
  svn add $TASK_SPACE/istatus-$TOYEAR/$ITASK_REV >/dev/null 2>&1
  svn add $TASK_SPACE/istatus-$TOYEAR/$ITASK_ORDER >/dev/null 2>&1
 
@@ -715,6 +726,7 @@ SETUP_ISTATUS_OLD()
  if [[ $? != 0 ]] ; then
     rm -fr $TASK_SPACE/istatus-$TOYEAR >/dev/null 2>&1
  fi
+ popd >/dev/null 2>&1
 }
 
 SETUP_IVERSION()
@@ -723,17 +735,22 @@ SETUP_IVERSION()
  export IVER_MANIFEST_NAME=$2.xml
 
  if [[ -e $TASK_SPACE/iversion-$TOYEAR/.svn ]] ; then
+    pushd /tmp >/dev/null 2>&1
     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOYEAR
+    popd >/dev/null 2>&1
  else
     rm -fr $TASK_SPACE/iversion-*
     svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add iversion/$TOYEAR" svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR >/dev/null 2>&1
+    pushd /tmp >/dev/null 2>&1
     svn co -q $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR $TASK_SPACE/iversion-$TOYEAR
+    popd >/dev/null 2>&1
  fi
  export LATEST_MANIFEST=$(ls $TASK_SPACE/iversion-$TOYEAR | grep xml$ | tail -n1)
     [[ ! -z $LATEST_MANIFEST ]] && svn cp $TASK_SPACE/iversion-$TOYEAR/$LATEST_MANIFEST $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME >/dev/null 2>&1
  cp $ORIG_MANIFEST_URL $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME
  export MANIFEST_VER=$(md5sum $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME | cut -c1-5)
 
+ pushd /tmp >/dev/null 2>&1
  svn add $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME >/dev/null 2>&1
  svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVER_MANIFEST_NAME" $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME
  if [[ $? = 0 ]] ; then
@@ -754,6 +771,7 @@ SETUP_IVERSION()
  SPLIT_LINE "$IVER_MANIFEST_NAME $IBUILD_ID"
  echo $IBUILD_ID >$LOCK_SPACE/IBUILD_ID
  echo $BUILD_NUMBER >$LOCK_SPACE/BUILD_NUMBER
+ popd >/dev/null 2>&1
 }
 
 SETUP_ICASE()
@@ -813,11 +831,15 @@ DOWNLOAD_PKG_NAME=$DOWNLOAD_PKG_NAME
  mv $LOG_PATH/build_info.tmp $LOG_PATH/build_info.txt
  
  if [[ -e $TASK_SPACE/icase-$TOWEEK ]] ; then
+    pushd /tmp >/dev/null 2>&1
     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/icase-$TOWEEK
+    popd >/dev/null 2>&1
  else
     rm -fr $TASK_SPACE/icase-*
     svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add icase/$TOYEAR/$TOWEEK" svn://$ICASE_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK >/dev/null 2>&1
+    pushd /tmp >/dev/null 2>&1
     svn co -q $IBUILD_SVN_OPTION svn://$ICASE_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/icase-$TOWEEK
+    popd >/dev/null 2>&1
  fi
 
  if [[ ! -z $ITASK_REV ]] ; then
@@ -826,8 +848,10 @@ DOWNLOAD_PKG_NAME=$DOWNLOAD_PKG_NAME
     export IVEREV=$IBUILD_ID
  fi
  cp $LOG_PATH/build_info.txt $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt
+ pushd /tmp >/dev/null 2>&1
  svn add $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt >/dev/null 2>&1
  svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVEREV.build_info.txt" $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt
+ popd >/dev/null 2>&1
  cp $LOG_PATH/build_info.txt $AUTOUT_UPLOAD_PATH/$ICASE_UPLOAD_URL/
 }
 
@@ -853,9 +877,13 @@ DIFF_MANIFEST()
  export DIFF_MANIFEST=''
  export MANIFEST_MD5=$(md5sum $LOG_PATH/manifest.xml | awk -F' ' {'print $1'})
  if [[ -e $TASK_SPACE/iversion-$TOYEAR ]] ; then
+    pushd /tmp >/dev/null 2>&1
     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOYEAR
+    popd >/dev/null 2>&1
  else
+    pushd /tmp >/dev/null 2>&1
     svn co -q $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR $TASK_SPACE/iversion-$TOYEAR
+    popd >/dev/null 2>&1
  fi
  if [[ $(md5sum $TASK_SPACE/iversion-$TOYEAR/*itest* | grep $MANIFEST_MD5) ]] ; then
      touch $LOG_PATH/nobuild
