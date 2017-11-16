@@ -39,15 +39,15 @@ export DISTRIB_ID=$(grep '^DISTRIB_ID=' /etc/lsb-release | awk -F'=' {'print $2'
 export DISTRIB_RELEASE=$(grep '^DISTRIB_RELEASE=' /etc/lsb-release | awk -F'=' {'print $2'})
 
 export IBUILD_ROOT=$HOME/ibuild
-        [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
-if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
-	echo -e "Please put ibuild in your $HOME"
-	exit 0
+    [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
+if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
+    echo -e "Please put ibuild in your $HOME"
+    exit 0
 fi
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
 export NETCAT=$(which nc)
-        [[ -z $NETCAT ]] && export NETCAT="$IBUILD_ROOT/bin/netcat.openbsd-u14.04"
+    [[ -z $NETCAT ]] && export NETCAT="$IBUILD_ROOT/bin/netcat.openbsd-u14.04"
 
 if [[ ! -z $1 && $1 != node_matching ]] ; then
     export ITASK_REV=$1
@@ -83,10 +83,10 @@ EXPORT_IBUILD_CONF()
 
 # mkdir -p /local/{ccache,out} >/dev/null 2>&1
  mkdir -p /local/workspace/{subv_repo,build} >/dev/null 2>&1
- [[ -z $CCACHE_DIR ]] && export CCACHE_DIR=$(grep '^CCACHE_DIR=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_DIR=' {'print $2'})
- [[ -z $CCACHE_UMASK ]] && export CCACHE_UMASK=$(grep '^CCACHE_UMASK=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_UMASK=' {'print $2'})
- [[ -z $CCACHE_BASEDIR ]] && export CCACHE_BASEDIR=$(grep '^CCACHE_BASEDIR=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_BASEDIR=' {'print $2'})
- [[ -z $USE_CCACHE ]] && export USE_CCACHE=$(grep '^USE_CCACHE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'USE_CCACHE=' {'print $2'})
+    [[ -z $CCACHE_DIR ]] && export CCACHE_DIR=$(grep '^CCACHE_DIR=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_DIR=' {'print $2'})
+    [[ -z $CCACHE_UMASK ]] && export CCACHE_UMASK=$(grep '^CCACHE_UMASK=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_UMASK=' {'print $2'})
+    [[ -z $CCACHE_BASEDIR ]] && export CCACHE_BASEDIR=$(grep '^CCACHE_BASEDIR=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'CCACHE_BASEDIR=' {'print $2'})
+    [[ -z $USE_CCACHE ]] && export USE_CCACHE=$(grep '^USE_CCACHE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'USE_CCACHE=' {'print $2'})
  export JDK6_PATH=$(grep '^JDK6_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'JDK6_PATH=' {'print $2'})
  export JDK7_PATH=$(grep '^JDK7_PATH=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'JDK7_PATH=' {'print $2'})
  export IBUILD_GRTSRV_ID_DEFAULT=$(grep '^IBUILD_GRTSRV_ID=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_GRTSRV_ID=' {'print $2'})
@@ -105,7 +105,7 @@ EXPORT_IBUILD_SPEC()
          SPLIT_LINE "$ITASK_PATH/tasks/$IBUILD_SPEC_NAME is not a spec.build"
          exit 1
      fi
-     if [[ -f $ITASK_PATH/tasks/$IBUILD_SPEC_NAME && ! -f $TASK_SPACE/spec.build ]] ; then
+     if [[ -e $ITASK_PATH/tasks/$IBUILD_SPEC_NAME && ! -e $TASK_SPACE/spec.build ]] ; then
          cp $ITASK_PATH/tasks/$IBUILD_SPEC_NAME $TASK_SPACE/
          ln -sf $TASK_SPACE/$IBUILD_SPEC_NAME $TASK_SPACE/spec.build
 #         echo -e "-------------------------\nStart build: \n$(date) \n$IBUILD_SPEC_NAME\n-------------------------" | sudo wall -t 3 -n >/dev/null 2>&1 
@@ -116,13 +116,13 @@ EXPORT_IBUILD_SPEC()
  fi
 
  if [[ -L $TASK_SPACE/spec.build ]] ; then
-        export IBUILD_SPEC=$(readlink $TASK_SPACE/spec.build)
-	[[ ! -f $IBUILD_SPEC ]] && export IBUILD_SPEC=$TASK_SPACE/$IBUILD_SPEC 
- elif [[ -f $TASK_SPACE/spec.build ]] ; then
-	export IBUILD_SPEC=$TASK_SPACE/spec.build
+    export IBUILD_SPEC=$(readlink $TASK_SPACE/spec.build)
+    [[ ! -e $IBUILD_SPEC ]] && export IBUILD_SPEC=$TASK_SPACE/$IBUILD_SPEC 
+ elif [[ -e $TASK_SPACE/spec.build ]] ; then
+    export IBUILD_SPEC=$TASK_SPACE/spec.build
  else
-	SPLIT_LINE "No spec.build in $TASK_SPACE"
-	exit 1
+    SPLIT_LINE "No spec.build in $TASK_SPACE"
+    exit 1
  fi
 
  export EMAIL_PM=$(grep '^EMAIL_PM=' $IBUILD_SPEC | awk -F'EMAIL_PM=' {'print $2'})
@@ -139,7 +139,7 @@ EXPORT_IBUILD_SPEC()
  export IBUILD_GRTSRV_INIT_OPTION=$(grep '^IBUILD_GRTSRV_INIT_OPTION=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_INIT_OPTION=' {'print $2'})
  export IBUILD_GRTSRV_MANIFEST=$(grep '^IBUILD_GRTSRV_MANIFEST=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_MANIFEST=' {'print $2'})
  export IBUILD_GRTSRV_MANIFEST_BRANCH=$(grep '^IBUILD_GRTSRV_MANIFEST_BRANCH=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_MANIFEST_BRANCH=' {'print $2'})
-    export BUILD_ID=$IBUILD_GRTSRV_MANIFEST_BRANCH
+ export BUILD_ID=$IBUILD_GRTSRV_MANIFEST_BRANCH
  export IBUILD_GRTSRV_REPO=$(grep '^IBUILD_GRTSRV_REPO=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_REPO=' {'print $2'})
  export IBUILD_GRTSRV_URL=$(grep '^IBUILD_GRTSRV_URL=' $IBUILD_SPEC | awk -F'IBUILD_GRTSRV_URL=' {'print $2'})
  export IBUILD_FETCH_GRTSRV=$(grep '^IBUILD_FETCH_GRTSRV=' $IBUILD_SPEC | awk -F'IBUILD_FETCH_GRTSRV=' {'print $2'})
@@ -183,7 +183,7 @@ EXPORT_IBUILD_SPEC()
  export GERRIT_PATCHSET_NUMBER=$(grep '^GERRIT_PATCHSET_NUMBER=' $IBUILD_SPEC | awk -F'GERRIT_PATCHSET_NUMBER=' {'print $2'})
  export GERRIT_PATCHSET_REVISION=$(grep '^GERRIT_PATCHSET_REVISION=' $IBUILD_SPEC | awk -F'GERRIT_PATCHSET_REVISION=' {'print $2'})
  export GERRIT_PROJECT=$(grep '^GERRIT_PROJECT=' $IBUILD_SPEC | awk -F'GERRIT_PROJECT=' {'print $2'})
- [[ ! -z $IBUILD_GRTSRV_MANIFEST_BRANCH ]] && export IBUILD_GRTSRV_MANIFEST_BRANCH_TOP=$(echo $IBUILD_GRTSRV_MANIFEST_BRANCH | awk -F'/' {'print $1'})
+     [[ ! -z $IBUILD_GRTSRV_MANIFEST_BRANCH ]] && export IBUILD_GRTSRV_MANIFEST_BRANCH_TOP=$(echo $IBUILD_GRTSRV_MANIFEST_BRANCH | awk -F'/' {'print $1'})
  export GERRIT_REFSPEC=$(grep '^GERRIT_REFSPEC=' $IBUILD_SPEC | awk -F'GERRIT_REFSPEC=' {'print $2'})
 
  export SPEC_NAME=$(basename $IBUILD_SPEC)
@@ -191,7 +191,7 @@ EXPORT_IBUILD_SPEC()
  export AUTOUT_UPLOAD_PATH=$LOC_WORKSPACE/upload
 # [[ $(echo $SPEC_NAME | grep patch.spec.build) ]] && export PATCH_SPEC='patch.' || export PATCH_SPEC=''
  [[ $IBUILD_MODE != normal ]] && export PATCH_SPEC="$IBUILD_MODE." || export PATCH_SPEC=''
- if [[ ! -z $DIST_FS_SHARE && -f $DIST_FS_SHARE/README ]] ; then
+ if [[ ! -z $DIST_FS_SHARE && -e $DIST_FS_SHARE/README ]] ; then
     export AUTOUT_UPLOAD_PATH=$DIST_FS_SHARE
  fi
  export AUTOUT_NAME=$PATCH_SPEC$(echo $SPEC_NAME | awk -F'spec.build.' {'print $2'})
@@ -249,10 +249,10 @@ TOPIC_BUILD()
  export GERRIT_TOPIC=$(cat /tmp/patch_info.tmp | grep 'topic:' | awk -F': ' {'print $2'})
 
  if [[ -z $GERRIT_TOPIC ]] ; then
-     echo "Can NOT find $GERRIT_TOPIC"
-     CLEAN_EXIT 1
+    echo "Can NOT find $GERRIT_TOPIC"
+    CLEAN_EXIT 1
  else
-     SPLIT_LINE "topic: $GERRIT_TOPIC"
+    SPLIT_LINE "topic: $GERRIT_TOPIC"
  fi
 
  rm -f /tmp/topic.*.tmp
@@ -263,13 +263,13 @@ TOPIC_BUILD()
 
  cat /tmp/topic.$TODAY.$SEED.tmp | while read line
  do
-     [[ $(echo $line | grep '^change I') ]] && export Change_ID=$(echo $line | awk -F' ' {'print $2'})
-     echo $line >>/tmp/topic.$Change_ID.tmp
+    [[ $(echo $line | grep '^change I') ]] && export Change_ID=$(echo $line | awk -F' ' {'print $2'})
+    echo $line >>/tmp/topic.$Change_ID.tmp
  done
 
 [[ ! -z $GERRIT_TOPIC ]] && echo "GERRIT_TOPIC=$GERRIT_TOPIC" >>$LOG_PATH/build_info.txt
 export REMOTE_NAME=$(cat .repo/manifests/*.xml | grep remote= | awk -F'="' {'print $2'} | awk -F'"' {'print $1'} | sort -u)
-[[ -z $REMOTE_NAME ]] && export REMOTE_NAME=No_Remote_Name
+    [[ -z $REMOTE_NAME ]] && export REMOTE_NAME=No_Remote_Name
 
 for TOPIC_ID in $(ls /tmp/ | grep topic.I)
 do
@@ -310,7 +310,7 @@ do
 BUNDLE_BUILD()
 {
  export REMOTE_NAME=$(cat .repo/manifests/*.xml | grep remote= | awk -F'="' {'print $2'} | awk -F'"' {'print $1'} | sort -u)
- [[ -z $REMOTE_NAME ]] && export REMOTE_NAME=No_Remote_Name
+    [[ -z $REMOTE_NAME ]] && export REMOTE_NAME=No_Remote_Name
 
  grep '^BUNDLE_PATCH=' $IBUILD_SPEC | awk -F'BUNDLE_PATCH=' {'print $2'} | while read BUNDLE_PATCH_ENTRY
  do
@@ -345,33 +345,33 @@ BUNDLE_BUILD()
 
  grep '^git fetch' $IBUILD_SPEC | awk -F'&&' {'print $1'} | while read IBUILD_FETCH_HEAD_ENTRY
  do
-   export IBUILD_FETCH_GRTSRV_ID=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F'@' {'print $1'} | awk -F'//' {'print $2'})
-   export IBUILD_FETCH_GRTSRV_PORT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F':' {'print $3'} | awk -F'/' {'print $1'})
-   export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | sed "s/:$IBUILD_FETCH_GRTSRV_PORT//g" | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $1'})
-   export IBUILD_FETCH_HEAD_REFS=$(echo $IBUILD_FETCH_HEAD_ENTRY | sed "s/:$IBUILD_FETCH_GRTSRV_PORT//g" | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $2'})
-   export IBUILD_FETCH_HEAD_PATH=$($REPO_CMD list | egrep ": $IBUILD_FETCH_HEAD_PROJECT$" | awk -F':' {'print $1'} | head -n1)
-   export IBUILD_FETCH_HEAD_ENTRY_FIX=$(echo $IBUILD_FETCH_HEAD_ENTRY | sed -e "s/$IBUILD_FETCH_GRTSRV_ID@//g" | sed -e "s/:$IBUILD_FETCH_GRTSRV_PORT//g")
-   [[ -z $IBUILD_FETCH_HEAD_PATH ]] && export IBUILD_FETCH_HEAD_PATH="NO_path_for_$IBUILD_FETCH_HEAD_PROJECT"
-   SPLIT_LINE "bundle: git fetch $IBUILD_FETCH_HEAD_REFS in $IBUILD_FETCH_HEAD_PATH"
-   echo "------------------------- $IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS" >>$LOG_PATH/bundle.log 2>&1
-   echo -e "cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH" >>$LOG_PATH/bundle.log 2>&1
-   cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH >>$LOG_PATH/bundle.log 2>&1
-   export STATUS_GIT=$?
-   echo -e "$IBUILD_FETCH_HEAD_ENTRY_FIX\n" >>$LOG_PATH/bundle.log 2>&1
-   time $IBUILD_FETCH_HEAD_ENTRY_FIX >>$LOG_PATH/bundle.log 2>&1
-   export STATUS_GIT=$?
-   echo $STATUS_GIT >>$LOG_PATH/bundle.log
-   if [[ $STATUS_GIT = 0 ]] ; then
-       echo -e "\ngit cherry-pick FETCH_HEAD\n" >>$LOG_PATH/bundle.log 2>&1
-       git cherry-pick FETCH_HEAD >>$LOG_PATH/bundle.log 2>&1
-       export STATUS_GIT=$?
-       echo $STATUS_GIT >>$LOG_PATH/bundle.log
-   fi
-   if [[ $STATUS_GIT != 0 && ! -z $IBUILD_FETCH_HEAD_REFS ]] ; then
-       FILTER_BAD_PATCH $IBUILD_FETCH_HEAD_REFS
-   fi
-   SETUP_ISTATUS "patch: $IBUILD_FETCH_HEAD_ENTRY" $ITASK_REV
-   LOG_STATUS $STATUS_GIT bundle $LOG_PATH/bundle.log
+    export IBUILD_FETCH_GRTSRV_ID=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F'@' {'print $1'} | awk -F'//' {'print $2'})
+    export IBUILD_FETCH_GRTSRV_PORT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F':' {'print $3'} | awk -F'/' {'print $1'})
+    export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | sed "s/:$IBUILD_FETCH_GRTSRV_PORT//g" | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $1'})
+    export IBUILD_FETCH_HEAD_REFS=$(echo $IBUILD_FETCH_HEAD_ENTRY | sed "s/:$IBUILD_FETCH_GRTSRV_PORT//g" | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $2'})
+    export IBUILD_FETCH_HEAD_PATH=$($REPO_CMD list | egrep ": $IBUILD_FETCH_HEAD_PROJECT$" | awk -F':' {'print $1'} | head -n1)
+    export IBUILD_FETCH_HEAD_ENTRY_FIX=$(echo $IBUILD_FETCH_HEAD_ENTRY | sed -e "s/$IBUILD_FETCH_GRTSRV_ID@//g" | sed -e "s/:$IBUILD_FETCH_GRTSRV_PORT//g")
+       [[ -z $IBUILD_FETCH_HEAD_PATH ]] && export IBUILD_FETCH_HEAD_PATH="NO_path_for_$IBUILD_FETCH_HEAD_PROJECT"
+    SPLIT_LINE "bundle: git fetch $IBUILD_FETCH_HEAD_REFS in $IBUILD_FETCH_HEAD_PATH"
+    echo "------------------------- $IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS" >>$LOG_PATH/bundle.log 2>&1
+    echo -e "cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH" >>$LOG_PATH/bundle.log 2>&1
+    cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH >>$LOG_PATH/bundle.log 2>&1
+    export STATUS_GIT=$?
+    echo -e "$IBUILD_FETCH_HEAD_ENTRY_FIX\n" >>$LOG_PATH/bundle.log 2>&1
+    time $IBUILD_FETCH_HEAD_ENTRY_FIX >>$LOG_PATH/bundle.log 2>&1
+    export STATUS_GIT=$?
+    echo $STATUS_GIT >>$LOG_PATH/bundle.log
+    if [[ $STATUS_GIT = 0 ]] ; then
+        echo -e "\ngit cherry-pick FETCH_HEAD\n" >>$LOG_PATH/bundle.log 2>&1
+        git cherry-pick FETCH_HEAD >>$LOG_PATH/bundle.log 2>&1
+        export STATUS_GIT=$?
+        echo $STATUS_GIT >>$LOG_PATH/bundle.log
+    fi
+    if [[ $STATUS_GIT != 0 && ! -z $IBUILD_FETCH_HEAD_REFS ]] ; then
+        FILTER_BAD_PATCH $IBUILD_FETCH_HEAD_REFS
+    fi
+    SETUP_ISTATUS "patch: $IBUILD_FETCH_HEAD_ENTRY" $ITASK_REV
+    LOG_STATUS $STATUS_GIT bundle $LOG_PATH/bundle.log
  done
 
  [[ -e $BUILD_PATH_TOP && $(pwd) != $BUILD_PATH_TOP ]] && pushd $BUILD_PATH_TOP
@@ -381,7 +381,7 @@ BUNDLE_BUILD()
 SPLIT_LINE()
 {
  export SPLIT_WORD=''
- [[ ! -z $1 ]] && export SPLIT_WORD=" $1 "
+    [[ ! -z $1 ]] && export SPLIT_WORD=" $1 "
  echo -e "\n-------------------------$SPLIT_WORD"
 }
 
@@ -392,7 +392,7 @@ BTRFS_CLEANUP_SUBV_REPO()
     export SUBV_REPO_CLEAN=''
     export SUBV_REPO_TIME=$(stat -c %Z $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5)
     export SUBV_REPO_SIZE=$(du -sh $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5/.repo 2>/dev/null | grep G | awk -F'G' {'print $1'} | awk -F'.' {'print $1'})
-    [[ ! -z $SUBV_REPO_SIZE && $SUBV_REPO_SIZE -ge 10 ]] && export SUBV_REPO_CLEAN=yes
+        [[ ! -z $SUBV_REPO_SIZE && $SUBV_REPO_SIZE -ge 10 ]] && export SUBV_REPO_CLEAN=yes
     [[ $(echo $FULL_TODAY - $SUBV_REPO_TIME | bc) -ge 2600000 ]] && export SUBV_REPO_CLEAN=yes
 
     if [[ ! -z $SUBV_REPO_CLEAN ]] ; then
@@ -415,7 +415,7 @@ BTRFS_CLEANUP()
  for SUBV_REPO_MD5 in $(ls $LOC_WORKSPACE/subv_repo | egrep -v 'info|tmp')
  do
     export SUBV_REPO_CLEAN=''
-    [[ ! -f $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5/Makefile ]] && export SUBV_REPO_CLEAN=yes
+    [[ ! -e $LOC_WORKSPACE/subv_repo/$SUBV_REPO_MD5/Makefile ]] && export SUBV_REPO_CLEAN=yes
     if [[ ! -z $SUBV_REPO_CLEAN ]] ; then
         export SEED=$RANDOM
         echo -------------------------
@@ -432,22 +432,22 @@ BTRFS_CLEANUP()
 
  for BTRFS_SUBVOL in $(ls $LOC_WORKSPACE/build/ | egrep -v 'tmp')
  do
-	mv $LOC_WORKSPACE/build/$BTRFS_SUBVOL $LOC_WORKSPACE/build/bad.$SEED.$RANDOM >/dev/null 2>&1
+    mv $LOC_WORKSPACE/build/$BTRFS_SUBVOL $LOC_WORKSPACE/build/bad.$SEED.$RANDOM >/dev/null 2>&1
  done
 
  for BTRFS_SUBVOL in $(sudo btrfs subvolume list $LOC_WORKSPACE | egrep -v 'subv_repo|tmp' | awk -F'path ' {'print $2'} | grep $BTRFS_TOP | awk -F'build/' {'print $2'})
  do
-	sleep 3
-	SPLIT_LINE clean_$LOC_WORKSPACE/$BTRFS_SUBVOL
-	rm -f $LOC_WORKSPACE/$BTRFS_SUBVOL.info
-        rm -f $LOC_WORKSPACE/build/* >/dev/null 2>&1
-	time sudo btrfs subvolume delete $LOC_WORKSPACE/build/$BTRFS_SUBVOL >>$LOG_PATH/fs_issue.log 2>&1
-	[[ $? != 0 ]] && echo "fs: "$(date) >>$LOCK_SPACE/count
+    sleep 3
+    SPLIT_LINE clean_$LOC_WORKSPACE/$BTRFS_SUBVOL
+    rm -f $LOC_WORKSPACE/$BTRFS_SUBVOL.info
+    rm -f $LOC_WORKSPACE/build/* >/dev/null 2>&1
+    time sudo btrfs subvolume delete $LOC_WORKSPACE/build/$BTRFS_SUBVOL >>$LOG_PATH/fs_issue.log 2>&1
+    [[ $? != 0 ]] && echo "fs: "$(date) >>$LOCK_SPACE/count
  done
 
  if [[ $(sudo btrfs subvolume list $LOC_WORKSPACE | grep $BTRFS_TOP) ]] ; then
-	sudo btrfs subvolume list $LOC_WORKSPACE | grep $BTRFS_TOP >>$LOG_PATH/fs_issue.log 2>&1
-	echo "fs_issue: "$(date) >>$LOCK_SPACE/count
+    sudo btrfs subvolume list $LOC_WORKSPACE | grep $BTRFS_TOP >>$LOG_PATH/fs_issue.log 2>&1
+    echo "fs_issue: "$(date) >>$LOCK_SPACE/count
  fi
 }
 
@@ -484,7 +484,7 @@ REPO_INFO()
  else
     export LOC_SUBV_REPO=$LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
  fi
-    [[ ! -e $LOC_SUBV_REPO ]] && SETUP_SUBV_REPO
+ [[ ! -e $LOC_SUBV_REPO ]] && SETUP_SUBV_REPO
 }
 
 SETUP_SUBV_REPO()
@@ -612,7 +612,7 @@ SETUP_BUILD_REPO()
 
  for BTRFS_OLD_PATH in $(ls $LOC_WORKSPACE/build/)
  do
-	BTRFS_CLEANUP $LOC_WORKSPACE/build/$BTRFS_OLD_PATH
+    BTRFS_CLEANUP $LOC_WORKSPACE/build/$BTRFS_OLD_PATH
  done
 
  SPLIT_LINE snapshot_$BUILD_PATH_TOP 
@@ -634,68 +634,68 @@ CCACHE_HOTFIX()
  export NEW_MD5=$(md5sum $NEW_CCACHE_URL | awk -F' ' {'print $1'})
  export ORIG_MD5=$(md5sum $ORIG_CCACHE_URL | awk -F' ' {'print $1'})
 
- if [[ -f $ORIG_CCACHE_URL && $NEW_MD5 != $ORIG_MD5 ]] ; then
-	/bin/cp $NEW_CCACHE_URL $ORIG_CCACHE_URL >/dev/null 2>&1
+ if [[ -e $ORIG_CCACHE_URL && $NEW_MD5 != $ORIG_MD5 ]] ; then
+    /bin/cp $NEW_CCACHE_URL $ORIG_CCACHE_URL >/dev/null 2>&1
  fi
 }
 
 SETUP_ISTATUS()
 {
  export ISTATUS_ENTRY=$1
- [[ -z $ITASK_REV ]] && export ITASK_REV=$(ls /tmp | grep log$ | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1)
+    [[ -z $ITASK_REV ]] && export ITASK_REV=$(ls /tmp | grep log$ | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1)
 
- if [[ ! -f $AUTOUT_UPLOAD_PATH/README ]] ; then
-     sshfs -o nonempty -p 2222 sshfs@$IBUILD_UPLOAD_URL $AUTOUT_UPLOAD_PATH >$LOG_PATH/sshfs.log 2>&1
-     export MOUNT_STATUS=$?
-     LOG_STATUS $MOUNT_STATUS sshfs_$AUTOUT_UPLOAD_PATH $LOG_PATH/sshfs.log
+ if [[ ! -e $AUTOUT_UPLOAD_PATH/README ]] ; then
+    sshfs -o nonempty -p 2222 sshfs@$IBUILD_UPLOAD_URL $AUTOUT_UPLOAD_PATH >$LOG_PATH/sshfs.log 2>&1
+    export MOUNT_STATUS=$?
+    LOG_STATUS $MOUNT_STATUS sshfs_$AUTOUT_UPLOAD_PATH $LOG_PATH/sshfs.log
  fi
 
  mkdir -p $AUTOUT_UPLOAD_PATH/$TODAY/istatus >/dev/null 2>&1
  touch $AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_REV
  touch $AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_ORDER
 
- if [[ $ITASK_REV = $ITASK_ORDER && -f $AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_REV ]] ; then
-     if [[ ! $(grep "|ibuild assign: $ITASK_REV" $AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_REV) ]] ; then
-         echo $(date +%y%m%d-%H%M%S)"|$HOSTNAME|ibuild assign: $ITASK_REV $IP" >>$AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_REV
-     fi
-     echo $(date +%y%m%d-%H%M%S)"|$HOSTNAME|$ISTATUS_ENTRY" >>$AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_REV
- elif [[ ! -z $ITASK_ORDER && -f $AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_REV ]] ; then
-     if [[ ! $(grep "|ibuild assign: $ITASK_REV" $AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_ORDER) ]] ; then
-         echo $(date +%y%m%d-%H%M%S)"|$HOSTNAME|ibuild assign: $ITASK_REV $IP" >>$AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_ORDER
-     fi
-     echo $(date +%y%m%d-%H%M%S)"|$HOSTNAME|$ISTATUS_ENTRY" >>$AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_ORDER
+ if [[ $ITASK_REV = $ITASK_ORDER && -e $AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_REV ]] ; then
+    if [[ ! $(grep "|ibuild assign: $ITASK_REV" $AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_REV) ]] ; then
+       echo $(date +%y%m%d-%H%M%S)"|$HOSTNAME|ibuild assign: $ITASK_REV $IP" >>$AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_REV
+    fi
+    echo $(date +%y%m%d-%H%M%S)"|$HOSTNAME|$ISTATUS_ENTRY" >>$AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_REV
+ elif [[ ! -z $ITASK_ORDER && -e $AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_REV ]] ; then
+    if [[ ! $(grep "|ibuild assign: $ITASK_REV" $AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_ORDER) ]] ; then
+        echo $(date +%y%m%d-%H%M%S)"|$HOSTNAME|ibuild assign: $ITASK_REV $IP" >>$AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_ORDER
+    fi
+    echo $(date +%y%m%d-%H%M%S)"|$HOSTNAME|$ISTATUS_ENTRY" >>$AUTOUT_UPLOAD_PATH/$TODAY/istatus/$ITASK_ORDER
  fi
 }
 
 SETUP_ISTATUS_OLD()
 {
  export ISTATUS_ENTRY=$1
- [[ -z $ITASK_REV ]] && export ITASK_REV=$(ls /tmp | grep log$ | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1)
+    [[ -z $ITASK_REV ]] && export ITASK_REV=$(ls /tmp | grep log$ | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1)
 
  if [[ ! -d $TASK_SPACE/istatus-$TOYEAR ]] ; then
-     rm -fr $TASK_SPACE/istatus-* >/dev/null 2>&1
-     svn co -q $IBUILD_SVN_OPTION svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR $TASK_SPACE/istatus-$TOYEAR >/dev/null 2>&1
-     if [[ $? != 0 ]] ; then
-         svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add istatus/$TOYEAR" svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR >/dev/null 2>&1
-         svn co -q $IBUILD_SVN_OPTION svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR $TASK_SPACE/istatus-$TOYEAR >/dev/null 2>&1
-     fi
+    rm -fr $TASK_SPACE/istatus-* >/dev/null 2>&1
+    svn co -q $IBUILD_SVN_OPTION svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR $TASK_SPACE/istatus-$TOYEAR >/dev/null 2>&1
+    if [[ $? != 0 ]] ; then
+        svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add istatus/$TOYEAR" svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR >/dev/null 2>&1
+        svn co -q $IBUILD_SVN_OPTION svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR $TASK_SPACE/istatus-$TOYEAR >/dev/null 2>&1
+    fi
  else
-     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/istatus-$TOYEAR >/dev/null 2>&1
+    svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/istatus-$TOYEAR >/dev/null 2>&1
  fi
 
  touch $TASK_SPACE/istatus-$TOYEAR/$ITASK_REV
  touch $TASK_SPACE/istatus-$TOYEAR/$ITASK_ORDER
 
- if [[ $ITASK_REV = $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOYEAR/$ITASK_REV ]] ; then
-     if [[ ! $(grep "|ibuild assign: $ITASK_REV" $TASK_SPACE/istatus-$TOYEAR/$ITASK_REV) ]] ; then
-         echo $(date +%y%m%d-%H%M%S)"|$HOSTNAME|ibuild assign: $ITASK_REV $IP" >>$TASK_SPACE/istatus-$TOYEAR/$ITASK_REV
-     fi
-     echo $(date +%y%m%d-%H%M%S)"|$HOSTNAME|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOYEAR/$ITASK_REV
- elif [[ ! -z $ITASK_ORDER && -f $TASK_SPACE/istatus-$TOYEAR/$ITASK_REV ]] ; then
-     if [[ ! $(grep "|ibuild assign: $ITASK_REV" $TASK_SPACE/istatus-$TOYEAR/$ITASK_ORDER) ]] ; then
-         echo $(date +%y%m%d-%H%M%S)"|$HOSTNAME|ibuild assign: $ITASK_REV $IP" >>$TASK_SPACE/istatus-$TOYEAR/$ITASK_ORDER
-     fi
-     echo $(date +%y%m%d-%H%M%S)"|$HOSTNAME|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOYEAR/$ITASK_ORDER
+ if [[ $ITASK_REV = $ITASK_ORDER && -e $TASK_SPACE/istatus-$TOYEAR/$ITASK_REV ]] ; then
+    if [[ ! $(grep "|ibuild assign: $ITASK_REV" $TASK_SPACE/istatus-$TOYEAR/$ITASK_REV) ]] ; then
+        echo $(date +%y%m%d-%H%M%S)"|$HOSTNAME|ibuild assign: $ITASK_REV $IP" >>$TASK_SPACE/istatus-$TOYEAR/$ITASK_REV
+    fi
+    echo $(date +%y%m%d-%H%M%S)"|$HOSTNAME|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOYEAR/$ITASK_REV
+ elif [[ ! -z $ITASK_ORDER && -e $TASK_SPACE/istatus-$TOYEAR/$ITASK_REV ]] ; then
+    if [[ ! $(grep "|ibuild assign: $ITASK_REV" $TASK_SPACE/istatus-$TOYEAR/$ITASK_ORDER) ]] ; then
+        echo $(date +%y%m%d-%H%M%S)"|$HOSTNAME|ibuild assign: $ITASK_REV $IP" >>$TASK_SPACE/istatus-$TOYEAR/$ITASK_ORDER
+    fi
+    echo $(date +%y%m%d-%H%M%S)"|$HOSTNAME|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOYEAR/$ITASK_ORDER
  fi
 
  svn add $TASK_SPACE/istatus-$TOYEAR/$ITASK_REV >/dev/null 2>&1
@@ -703,8 +703,8 @@ SETUP_ISTATUS_OLD()
 
  while [ $(ls $TASK_SPACE/istatus-$TOYEAR | wc -l) -ge 100 ] ;
  do
-     export OLD_STATUS=$(ls $TASK_SPACE/istatus-$TOYEAR | head -n1)
-     svn rm -q --force $TASK_SPACE/istatus-$TOYEAR/$OLD_STATUS
+    export OLD_STATUS=$(ls $TASK_SPACE/istatus-$TOYEAR | head -n1)
+    svn rm -q --force $TASK_SPACE/istatus-$TOYEAR/$OLD_STATUS
  done
 
  svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/istatus-$TOYEAR/
@@ -720,17 +720,17 @@ SETUP_IVERSION()
  export IVER_MANIFEST_NAME=$2.xml
 
  if [[ -d $TASK_SPACE/iversion-$TOYEAR ]] ; then
-     export IBUILD_SVN_REV_LOC=$(svn info $TASK_SPACE/iversion-$TOYEAR | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
-     if [[ $IBUILD_SVN_REV_SRV != $IBUILD_SVN_REV_LOC ]] ; then
-         svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOYEAR
-     fi
+    export IBUILD_SVN_REV_LOC=$(svn info $TASK_SPACE/iversion-$TOYEAR | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
+    if [[ $IBUILD_SVN_REV_SRV != $IBUILD_SVN_REV_LOC ]] ; then
+        svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOYEAR
+    fi
 else
-     rm -fr $TASK_SPACE/iversion-*
-     svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add iversion/$TOYEAR" svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR >/dev/null 2>&1
-     svn co -q $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR $TASK_SPACE/iversion-$TOYEAR
+    rm -fr $TASK_SPACE/iversion-*
+    svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add iversion/$TOYEAR" svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR >/dev/null 2>&1
+    svn co -q $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR $TASK_SPACE/iversion-$TOYEAR
  fi
  export LATEST_MANIFEST=$(ls $TASK_SPACE/iversion-$TOYEAR | grep xml$ | tail -n1)
- [[ ! -z $LATEST_MANIFEST ]] && svn cp $TASK_SPACE/iversion-$TOYEAR/$LATEST_MANIFEST $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME >/dev/null 2>&1
+    [[ ! -z $LATEST_MANIFEST ]] && svn cp $TASK_SPACE/iversion-$TOYEAR/$LATEST_MANIFEST $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME >/dev/null 2>&1
  cp $ORIG_MANIFEST_URL $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME
  export MANIFEST_VER=$(md5sum $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME | cut -c1-5)
 
@@ -749,7 +749,7 @@ else
  else
      SPLIT_LINE iversion_issue
      echo $IVER_MANIFEST_NAME
-     [[ -z $IBUILD_ID ]] && export IBUILD_ID=$(echo $BUILD_TIME | cut -c7-8).$MANIFEST_VER
+         [[ -z $IBUILD_ID ]] && export IBUILD_ID=$(echo $BUILD_TIME | cut -c7-8).$MANIFEST_VER
  fi
  SPLIT_LINE "$IVER_MANIFEST_NAME $IBUILD_ID"
  echo $IBUILD_ID >$LOCK_SPACE/IBUILD_ID
@@ -761,8 +761,8 @@ SETUP_ICASE()
  local ICASE_UPLOAD_URL=$1
 
  if [[ -z $END_SEC_TIME ]] ; then
-	export TIME_END=$(date +%y%m%d%H%M%S)
-	export END_SEC_TIME=$(date +%s)
+    export TIME_END=$(date +%y%m%d%H%M%S)
+    export END_SEC_TIME=$(date +%s)
  fi
 
  [[ -z $RESULT ]] && export RESULT=ISSUE
@@ -806,21 +806,21 @@ DOWNLOAD_PKG_NAME=$DOWNLOAD_PKG_NAME
 
  [[ ! -z $IVERIFY && $RESULT = PASSED ]] && SETUP_ISTATUS "iverify globe queue: queue/icase"
  if [[ $ITASK_ORDER != $ITASK_TMP ]] ; then
-     [[ -z $ITASK_ORDER && ! -z $ITASK_TMP ]] && export ITASK_ORDER=$ITASK_TMP
-     echo "ITASK_ORDER=$ITASK_ORDER" >>$LOG_PATH/build_info.txt
+    [[ -z $ITASK_ORDER && ! -z $ITASK_TMP ]] && export ITASK_ORDER=$ITASK_TMP
+    echo "ITASK_ORDER=$ITASK_ORDER" >>$LOG_PATH/build_info.txt
  fi
  cat $LOG_PATH/build_info.txt | sort -u | grep -v ^$ >$LOG_PATH/build_info.tmp
  mv $LOG_PATH/build_info.tmp $LOG_PATH/build_info.txt
  
  if [[ -d $TASK_SPACE/icase-$TOWEEK ]] ; then
-	export IBUILD_SVN_REV_LOC=$(svn info $TASK_SPACE/icase-$TOWEEK | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
-	if [[ $IBUILD_SVN_REV_SRV != $IBUILD_SVN_REV_LOC ]] ; then
-		svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/icase-$TOWEEK
-	fi
-else
-	rm -fr $TASK_SPACE/icase-*
-	svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add icase/$TOYEAR/$TOWEEK" svn://$ICASE_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK >/dev/null 2>&1
-	svn co -q $IBUILD_SVN_OPTION svn://$ICASE_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/icase-$TOWEEK
+    export IBUILD_SVN_REV_LOC=$(svn info $TASK_SPACE/icase-$TOWEEK | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
+    if [[ $IBUILD_SVN_REV_SRV != $IBUILD_SVN_REV_LOC ]] ; then
+        svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/icase-$TOWEEK
+    fi
+ else
+    rm -fr $TASK_SPACE/icase-*
+    svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add icase/$TOYEAR/$TOWEEK" svn://$ICASE_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK >/dev/null 2>&1
+    svn co -q $IBUILD_SVN_OPTION svn://$ICASE_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/icase-$TOWEEK
  fi
 
  if [[ ! -z $ITASK_REV ]] ; then
@@ -843,7 +843,7 @@ EXPORT_MANIFEST()
  export MANIFEST_VER=$(md5sum tmp_manifest.xml | cut -c1-5)
  /bin/cp tmp_manifest.xml $EXPORT_MANIFEST_URL >/dev/null 2>&1
  /bin/cp tmp_manifest.xml $EXPORT_MANIFEST_PATH/manifest.xml >/dev/null 2>&1
- if [[ -f Makefile && ! -z $AUTOUT_NAME ]] ; then
+ if [[ -e Makefile && ! -z $AUTOUT_NAME ]] ; then
     rm -f autout >/dev/null 2>&1
     ln -sf $AUTOUT_PATH/$AUTOUT_NAME autout >/dev/null 2>&1
     [[ ! -z $OUT ]] && rm -f $OUT/autout ; ln -sf $AUTOUT_PATH/$AUTOUT_NAME $OUT/autout >/dev/null 2>&1
@@ -856,9 +856,9 @@ DIFF_MANIFEST()
  export DIFF_MANIFEST=''
  export MANIFEST_MD5=$(md5sum $LOG_PATH/manifest.xml | awk -F' ' {'print $1'})
  if [[ -d $TASK_SPACE/iversion-$TOYEAR ]] ; then
-     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOYEAR
+    svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOYEAR
  else
-     svn co -q $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR $TASK_SPACE/iversion-$TOYEAR
+    svn co -q $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR $TASK_SPACE/iversion-$TOYEAR
  fi
  if [[ $(md5sum $TASK_SPACE/iversion-$TOYEAR/*itest* | grep $MANIFEST_MD5) ]] ; then
      touch $LOG_PATH/nobuild
@@ -872,7 +872,7 @@ SETUP_BUILD_OUT()
  cp $OUT/system/build.prop $BUILD_PATH_TOP/autout/ >/dev/null 2>&1
 
  if [[ $RESULT != FAILED ]] ; then
-    if [[ -f images_$IBUILD_TARGET_PRODUCT.txz ]] ; then
+    if [[ -e images_$IBUILD_TARGET_PRODUCT.txz ]] ; then
         cp images_$IBUILD_TARGET_PRODUCT.txz $AUTOUT_PATH/$AUTOUT_NAME/ 
         export DOWNLOAD_PKG_NAME=images_$IBUILD_TARGET_PRODUCT.txz
     elif [[ $(ls out/* | grep 'release-' | head -n1) ]] ; then
@@ -907,13 +907,13 @@ SETUP_BUILD_OUT()
 
  LOG_HTML $LOG_PATH $LOG_PATH
  cp -Ra $AUTOUT_PATH/log/* $LOG_PATH/ >/dev/null 2>&1
- [[ -f $LOG_PATH/BUILD_ERROR ]] && export IVEREV=$IVEREV.BUILD_ERROR
+ [[ -e $LOG_PATH/BUILD_ERROR ]] && export IVEREV=$IVEREV.BUILD_ERROR
  export SHORT_AUTOUT_NAME=$(echo $AUTOUT_NAME | sed 's/.not_define.//g')
  mv $AUTOUT_PATH/$AUTOUT_NAME $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME
  export LOG_PATH=$AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/log
 
 # please setup run_sshd.sh in docker
- if [[ ! -f $LOC_WORKSPACE/upload/README ]] ; then
+ if [[ ! -e $LOC_WORKSPACE/upload/README ]] ; then
      sshfs -o nonempty -p 2222 sshfs@$IBUILD_UPLOAD_URL $LOC_WORKSPACE/upload >$LOG_PATH/sshfs.log 2>&1
      export MOUNT_STATUS=$?
      LOG_STATUS $MOUNT_STATUS sshfs_$LOC_WORKSPACE/upload $LOG_PATH/sshfs.log
@@ -921,12 +921,12 @@ SETUP_BUILD_OUT()
 
  mkdir -p $AUTOUT_UPLOAD_PATH/$TODAY
  SPLIT_LINE "upload $TODAY $IVEREV.$SHORT_AUTOUT_NAME"
- [[ -z $ITASK_REV ]] && export ITASK_REV=$(ls /tmp | grep log$ | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1)
- [[ -f /tmp/build-$ITASK_REV.log ]] && LOG_HTML /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/log/ >/dev/null 2>&1
-# [[ -f /tmp/build-$ITASK_REV.log ]] && txt2html /tmp/build-$ITASK_REV.log --outfile $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/build-$ITASK_REV.log.html
- [[ -f /tmp/build-$ITASK_REV.log ]] && cp /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/build-$ITASK_REV.log.txt
+    [[ -z $ITASK_REV ]] && export ITASK_REV=$(ls /tmp | grep log$ | grep -v old | grep build- | awk -F'-' {'print $2'}| awk -F'.log' {'print $1'} | tail -n1)
+ [[ -e /tmp/build-$ITASK_REV.log ]] && LOG_HTML /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/log/ >/dev/null 2>&1
+# [[ -e /tmp/build-$ITASK_REV.log ]] && txt2html /tmp/build-$ITASK_REV.log --outfile $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/build-$ITASK_REV.log.html
+ [[ -e /tmp/build-$ITASK_REV.log ]] && cp /tmp/build-$ITASK_REV.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/build-$ITASK_REV.log.txt
 
- if [[ -f $LOG_PATH/BUILD_ERROR ]] ; then
+ if [[ -e $LOG_PATH/BUILD_ERROR ]] ; then
     cp $LOG_PATH/BUILD_ERROR $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/ >/dev/null 2>&1
     cp /tmp/build-*.log $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME/ >/dev/null 2>&1
  else
@@ -936,8 +936,8 @@ SETUP_BUILD_OUT()
  time cp -R $AUTOUT_PATH/$IVEREV.$SHORT_AUTOUT_NAME $AUTOUT_UPLOAD_PATH/$TODAY/ >/dev/null 2>&1
  export STATUS_CP=$?
 
- if [[ $AUTOUT_UPLOAD_PATH = $DIST_FS_SHARE && -f $LOC_WORKSPACE/upload/README ]] ; then
-    [[ -f $LOG_PATH/BUILD_ERROR && ! $(echo $IVEREV | grep BUILD_ERROR) ]] && export BUILD_ERROR=.BUILD_ERROR
+ if [[ $AUTOUT_UPLOAD_PATH = $DIST_FS_SHARE && -e $LOC_WORKSPACE/upload/README ]] ; then
+    [[ -e $LOG_PATH/BUILD_ERROR && ! $(echo $IVEREV | grep BUILD_ERROR) ]] && export BUILD_ERROR=.BUILD_ERROR
     mkdir -p $LOC_WORKSPACE/upload/$TODAY >/dev/null 2>&1
     ln -sf /local/share/DIST_FS/$HOSTNAME/$TODAY/$IVEREV$BUILD_ERROR.$SHORT_AUTOUT_NAME $LOC_WORKSPACE/upload/$TODAY/
  fi
@@ -959,7 +959,7 @@ LOG_HTML()
  do
 #    txt2html $LOG_INPUT_URL/$LOG_NAME --outfile $LOG_OUTPUT_URL/$LOG_NAME.html
      mv $LOG_INPUT_URL/$LOG_NAME $LOG_INPUT_URL/$LOG_NAME.txt
-#    [[ $(echo $LOG_NAME | egrep 'sync|full_build') && -f $LOG_OUTPUT_URL/$LOG_NAME.html ]] && rm -f $LOG_INPUT_URL/$LOG_NAME
+#    [[ $(echo $LOG_NAME | egrep 'sync|full_build') && -e $LOG_OUTPUT_URL/$LOG_NAME.html ]] && rm -e $LOG_INPUT_URL/$LOG_NAME
  done
 }
 
@@ -978,7 +978,7 @@ BUILD_ERROR()
     else
         cat $CHECK_LOG >>$LOG_PATH/error.log
     fi
- elif [[ -f $CHECK_LOG ]] ; then
+ elif [[ -e $CHECK_LOG ]] ; then
     tail -n 50 $CHECK_LOG
     cp $CHECK_LOG $LOG_PATH/error.log
  else
@@ -997,8 +997,8 @@ CLEAN_EXIT()
  rm -fr $AUTOUT_PATH/r*
  rm -fr $AUTOUT_PATH/*BUILD_ERROR* >/dev/null 2>&1
  rm -fr $LOG_PATH/*BUILD_ERROR* >/dev/null 2>&1
- [[ -f /tmp/build-$ITASK_REV.log ]] && mv /tmp/build-$ITASK_REV.log /tmp/old.build-$ITASK_REV.log
- if [[ -f $ORIG_CCACHE_URL ]] ; then
+ [[ -e /tmp/build-$ITASK_REV.log ]] && mv /tmp/build-$ITASK_REV.log /tmp/old.build-$ITASK_REV.log
+ if [[ -e $ORIG_CCACHE_URL ]] ; then
     export CCACHE_MAX_SIZE=$($ORIG_CCACHE_URL -s | grep size | grep max | awk -F' ' {'print $4'} | awk -F'.' {'print $1'}) 
     export CCACHE_SIZE=$($ORIG_CCACHE_URL -s | grep size | grep -v max | awk -F' ' {'print $3'} | awk -F'.' {'print $1'})
     [[ $(echo $CCACHE_MAX_SIZE - $CCACHE_SIZE | bc) -le 10 ]] && $ORIG_CCACHE_URL -Cc
@@ -1018,17 +1018,17 @@ LOG_STATUS()
 
  MASK_LOG $CHECK_LOG
  if [[ $CHECK_STATUS != 0 ]] ; then
-     SPLIT_LINE "ERROR LOG: $CHECK_SUBJECT"
-     BUILD_ERROR $CHECK_LOG
-     export RESULT=FAILED
-     echo $CHECK_LOG >$LOG_PATH/BUILD_ERROR
-     SETUP_BUILD_OUT
-     sleep 5 && pkill -9 $IBUILD_MAKE_TOOL >/dev/null 2>&1 &
+    SPLIT_LINE "ERROR LOG: $CHECK_SUBJECT"
+    BUILD_ERROR $CHECK_LOG
+    export RESULT=FAILED
+    echo $CHECK_LOG >$LOG_PATH/BUILD_ERROR
+    SETUP_BUILD_OUT
+    sleep 5 && pkill -9 $IBUILD_MAKE_TOOL >/dev/null 2>&1 &
 
-     SPLIT_LINE "STOP_BUILD $CHECK_LOG_NAME"
-     CLEAN_EXIT $CHECK_STATUS
+    SPLIT_LINE "STOP_BUILD $CHECK_LOG_NAME"
+    CLEAN_EXIT $CHECK_STATUS
  else
-     [[ -z $RESULT ]] && export RESULT=PASSED
+    [[ -z $RESULT ]] && export RESULT=PASSED
  fi
 }
 
@@ -1120,7 +1120,7 @@ GET_ICHANGE_STRING()
  export STRING_GERRIT_revision=$(echo $ICHANGE_STRING | awk -F'|' {'print $1'})
  export STRING_GERRIT_id=$(echo $ICHANGE_STRING | awk -F'|' {'print $2'})
  export STRING_GERRIT_email=$(echo $ICHANGE_STRING | awk -F'|' {'print $3'})
-        [[ -z $STRING_GERRIT_email ]] && export STRING_GERRIT_email=no_mail
+    [[ -z $STRING_GERRIT_email ]] && export STRING_GERRIT_email=no_mail
  export STRING_GERRIT_PATH=$(echo $ICHANGE_STRING | awk -F'|' {'print $4'})
  export STRING_GERRIT_PROJECT=$(echo $ICHANGE_STRING | awk -F'|' {'print $5'})
  export STRING_GERRIT_change_number=$(echo $ICHANGE_STRING | awk -F'|' {'print $6'})
