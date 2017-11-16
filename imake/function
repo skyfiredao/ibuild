@@ -538,6 +538,8 @@ REPO_SYNC()
  export REPO_SYNC_LOG_NAME=sync-$(basename $1)
  export INDEX_LOCK=''
 
+ pwd >>$AUTOUT_PATH/log/init.log
+
  if [[ ! -e $LOC_REF_REPO_PATH ]] ; then
     sudo umount /local/ref_repo >>$AUTOUT_PATH/log/init.log 2>&1
     sudo mount -a
@@ -578,7 +580,8 @@ REPO_SYNC()
  $IBUILD_ROOT/hotfix/clean_dirty.sh >/dev/null 2>&1
 
  SPLIT_LINE "repo_sync $REPO_SYNC_OPTION"
- time $REPO_CMD sync -j$JOBS --force-sync $REPO_SYNC_OPTION >$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+ pwd >$LOG_PATH/$REPO_SYNC_LOG_NAME.log
+ time $REPO_CMD sync -j$JOBS --force-sync $REPO_SYNC_OPTION >>$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
  export STATUS_SYNC=$?
  [[ -e $LOG_PATH ]] && rm -f log && ln -sf $LOG_PATH
  [[ -e /local/out ]] && rm -f out && ln -sf /local/out
