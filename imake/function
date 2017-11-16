@@ -297,7 +297,7 @@ do
         fi
         SETUP_ISTATUS "topic: $GERRIT_PROJECT $GERRIT_REFSPEC" $ITASK_REV
         LOG_STATUS $STATUS_GIT topic $LOG_PATH/topic.log
-        popd >/dev/null 2>&1
+        popd
     else
         SPLIT_LINE "Can NOT find $LOCAL_PROJECT_PATH in local workspace"
         LOG_STATUS 1 topic $LOG_PATH/topic.log
@@ -336,7 +336,7 @@ BUNDLE_BUILD()
         fi
         SETUP_ISTATUS "bundle: $GERRIT_PROJECT $GERRIT_REFSPEC" $ITASK_REV
         LOG_STATUS $STATUS_GIT topic $LOG_PATH/bundle.log
-        popd >/dev/null 2>&1
+        popd
    else
         SPLIT_LINE "Can NOT find $LOCAL_PROJECT_PATH in local workspace"
         LOG_STATUS 1 bundle $LOG_PATH/bundle.log
@@ -374,7 +374,7 @@ BUNDLE_BUILD()
     LOG_STATUS $STATUS_GIT bundle $LOG_PATH/bundle.log
  done
 
- [[ -e $BUILD_PATH_TOP && $(pwd) != $BUILD_PATH_TOP ]] && pushd $BUILD_PATH_TOP
+ [[ -e $BUILD_PATH_TOP && $(pwd) != $BUILD_PATH_TOP ]] && cd $BUILD_PATH_TOP
  EXPORT_MANIFEST $LOG_PATH/after_patch_manifest.xml
 }
 
@@ -477,7 +477,7 @@ REPO_INFO()
  export REPO_INIT_CMD_MD5_NAME=$(cat /tmp/$USER.repo_init.tmp | md5sum | awk -F' ' {'print $1'} | cut -c1-5)
  export BTRFS_NAME=$REPO_INIT_CMD_MD5_NAME
  export BUILD_PATH_TOP=$LOC_WORKSPACE/build/ibuild
- [[ -e $BUILD_PATH_TOP && $(pwd) != $BUILD_PATH_TOP ]] && pushd $BUILD_PATH_TOP
+ [[ -e $BUILD_PATH_TOP && $(pwd) != $BUILD_PATH_TOP ]] && cd $BUILD_PATH_TOP
  
  if [[ ! -z $IBUILD_SUBV_REPO && -e $LOC_WORKSPACE/subv_repo/$IBUILD_SUBV_REPO ]] ; then
     export LOC_SUBV_REPO=$LOC_WORKSPACE/subv_repo/$IBUILD_SUBV_REPO
@@ -864,21 +864,15 @@ DIFF_MANIFEST()
 
 SETUP_BUILD_OUT()
 {
- [[ -e $BUILD_PATH_TOP && $(pwd) != $BUILD_PATH_TOP ]] && pushd $BUILD_PATH_TOP
- # EXPORT_MANIFEST $LOG_PATH/after_build_manifest.xml
- cp $OUT/system/build.prop $BUILD_PATH_TOP/autout/ >/dev/null 2>&1
+ [[ -e $BUILD_PATH_TOP && $(pwd) != $BUILD_PATH_TOP ]] && cd $BUILD_PATH_TOP
+ if [[ -z $OUT ]] ; then
+    source build/envsetup.sh
+    lunch $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT
+ fi
+ [[ -e $OUT/system/build.prop ]] && cp $OUT/system/build.prop $BUILD_PATH_TOP/autout/ >/dev/null 2>&1
 
  if [[ $RESULT != FAILED ]] ; then
-    if [[ -e images_$IBUILD_TARGET_PRODUCT.txz ]] ; then
-        cp images_$IBUILD_TARGET_PRODUCT.txz $AUTOUT_PATH/$AUTOUT_NAME/ 
-        export DOWNLOAD_PKG_NAME=images_$IBUILD_TARGET_PRODUCT.txz
-    elif [[ $(ls out/* | grep 'release-' | head -n1) ]] ; then
-        cd out
-        export REL_PKG_NAME=$(ls | grep 'release-' | head -n1)
-        tar cf $REL_PKG_NAME.tar $REL_PKG_NAME
-        cp $REL_PKG_NAME.tar $AUTOUT_PATH/$AUTOUT_NAME/
-        export DOWNLOAD_PKG_NAME=$REL_PKG_NAME.tar
-    elif [[ -e $BUILD_PATH_TOP/release ]] ; then
+    if [[ -e $BUILD_PATH_TOP/release ]] ; then
         cp $OUT/system/build.prop $BUILD_PATH_TOP/release/ >/dev/null 2>&1
         [[ -z $BUILD_NUMBER ]] && export BUILD_NUMBER=$(cat $LOCK_SPACE/BUILD_NUMBER)
         export RELEASE_VER=$BUILD_NUMBER
