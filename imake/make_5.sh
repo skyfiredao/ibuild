@@ -55,7 +55,7 @@ fi
 [[ $(echo $IBUILD_NOTE | egrep "itest") ]] && DIFF_MANIFEST
 [[ -e $LOG_PATH/nobuild ]] && exit 0
 
-pushd $BUILD_PATH_TOP
+cd $BUILD_PATH_TOP
 EXPORT_MANIFEST $LOG_PATH/before_build_manifest.xml
 
 [[ ! -z $IBUILD_ADD_STEP_1 ]] && IBUILD_ADD_STEPS "$IBUILD_ADD_STEP_1"
