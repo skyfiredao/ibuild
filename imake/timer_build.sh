@@ -28,7 +28,7 @@ export BEFORE_TOYMD=$(date +%Y%m%d --date="$TOYMD 1 days ago")
 
 export IBUILD_ROOT=$HOME/ibuild
     [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
-if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
+if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
     echo -e "Please put ibuild in your $HOME"
     exit 0
 fi
@@ -47,7 +47,7 @@ fi
 
 svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec $TASK_SPACE/tmp.ispec.$SEED
 
-if [[ -f $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec ]] ; then
+if [[ -e $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec ]] ; then
     for SPEC_FILTER in $(cat $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec | sort -u)
     do
         for SPEC_NAME in $(ls $TASK_SPACE/tmp.ispec.$SEED/spec | grep $SPEC_FILTER)
@@ -59,7 +59,7 @@ if [[ -f $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec ]] ; then
     done
 fi
 
-if [[ -f $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec.bundle ]] ; then
+if [[ -e $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec.bundle ]] ; then
     for SPEC_FILTER in $(cat $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec.bundle | sort -u)
     do
         for SPEC_NAME in $(ls $TASK_SPACE/tmp.ispec.$SEED/spec | grep $SPEC_FILTER)

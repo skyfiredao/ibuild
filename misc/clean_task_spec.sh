@@ -27,12 +27,12 @@ export TASK_SPACE=/dev/shm
 
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
-if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
+if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
 	echo -e "Please put ibuild in your $HOME"
 	exit 0
 fi
 
-if [[ -d $TASK_SPACE/$USER.tasks.lock.$SEED ]] ; then
+if [[ -e $TASK_SPACE/$USER.tasks.lock.$SEED ]] ; then
 	echo -e "$TASK_SPACE/$USER.tasks.lock.$SEED"
 	exit
 fi

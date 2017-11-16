@@ -22,10 +22,10 @@ export LC_ALL=C
 export USER=$(whoami)
 export CMD=$1
 export CMD_LIST=~/cmd.list
-[[ -z $CMD && ! -f $CMD_LIST ]] && exit 1
-[[ -f $CMD ]] && export DIST_FILE=$CMD
+[[ -z $CMD && ! -e $CMD_LIST ]] && exit 1
+[[ -e $CMD ]] && export DIST_FILE=$CMD
 
-if [[ ! -d /dev/shm/inode.svn ]] ; then
+if [[ ! -e /dev/shm/inode.svn ]] ; then
     echo "Can NOT find /dev/shm/inode.svn"
     exit 1
 fi
@@ -43,7 +43,7 @@ do
         ssh $DIST_IP "sudo cp /tmp/$DIST_FILENAME $DIST_FILE"
     fi
     [[ ! -z $CMD && -z $DIST_PATH ]] && ssh $DIST_IP "$CMD"
-    if [[ -z $CMD && -f $CMD_LIST ]] ; then
+    if [[ -z $CMD && -e $CMD_LIST ]] ; then
          scp $CMD_LIST $DIST_IP:/tmp/cmd.list
          ssh $DIST_IP "bash /tmp/cmd.list && rm /tmp/cmd.list"
     fi

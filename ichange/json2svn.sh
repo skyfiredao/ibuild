@@ -22,8 +22,8 @@ export JSON_PATH=$1
 export GERRIT_SRV=$2
     [[ -z $GERRIT_SRV ]] && export GERRIT_SRV="your_default_gerrit"
 export IBUILD_ROOT=$HOME/ibuild
-    [[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
-if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
+    [[ ! -e $HOME/ibuild ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
+if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
     echo -e "Please put ibuild in your $HOME"
     exit 0
 fi        
@@ -60,7 +60,7 @@ export ICHANGE_SVN_SRV=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_SV
 export ICHANGE_SVN_OPTION=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_SVN_OPTION=' | awk -F'ICHANGE_SVN_OPTION=' {'print $2'})
 export ICHANGE_IGNORE_EVENTS=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_IGNORE_EVENTS=' | awk -F'ICHANGE_IGNORE_EVENTS=' {'print $2'})
 
-[[ ! -d $JSON_PATH || -z $GERRIT_SRV ]] && exit 0
+[[ ! -e $JSON_PATH || -z $GERRIT_SRV ]] && exit 0
 [[ -f $TASK_SPACE/itrack/json2svn.lock ]] && exit 0
 touch $TASK_SPACE/itrack/json2svn.lock
 mkdir -p $TASK_SPACE/itrack/$GERRIT_SRV.tmp >/dev/null 2>&1
@@ -69,11 +69,11 @@ if [[ ! `svn ls $ICHANGE_SVN_OPTION $ICHANGE_SVN_SRV/ | grep $TOYEAR` ]] ; then
     svn mkdir -q $ICHANGE_SVN_OPTION $ICHANGE_SVN_SRV/$TOYEAR -m "auto: create $TOYEAR"
 fi
 
-if [[ ! -f $TASK_SPACE/itrack/svn.$TOHOUR.lock ]] ; then
+if [[ ! -e $TASK_SPACE/itrack/svn.$TOHOUR.lock ]] ; then
     rm -fr $TASK_SPACE/itrack/svn
 fi
 
-if [[ -d $TASK_SPACE/itrack/svn ]] ; then
+if [[ -e $TASK_SPACE/itrack/svn ]] ; then
     export SVN_REPO_LOCAL=$(svn info $TASK_SPACE/itrack/svn | grep ^URL | awk -F': ' {'print $2'})
     if [[ `echo $ICHANGE_SVN_SRV/$TOYEAR | grep $SVN_REPO_LOCAL` ]] ; then
         svn up $ICHANGE_SVN_OPTION -q $TASK_SPACE/itrack/svn >/dev/null 2>&1
@@ -92,7 +92,7 @@ UPDATE_XML()
  rm -fr $TASK_SPACE/itrack/manifest >/dev/null 2>&1
  mkdir -p $TASK_SPACE/itrack/svn/manifest >/dev/null 2>&1
  git clone -b $GERRIT_BRANCH ssh://$GERRIT_SERVER:$GERRIT_SRV_PORT/$GERRIT_XML_URL $TASK_SPACE/itrack/manifest
- if [[ -d $TASK_SPACE/itrack/svn/manifest && -d $TASK_SPACE/itrack/manifest ]] ; then
+ if [[ -e $TASK_SPACE/itrack/svn/manifest && -e $TASK_SPACE/itrack/manifest ]] ; then
      cd $TASK_SPACE/itrack/manifest
      git checkout $GERRIT_BRANCH
      cp $TASK_SPACE/itrack/manifest/*.xml $TASK_SPACE/itrack/svn/manifest/
@@ -111,18 +111,18 @@ SPLIT_LINE()
 }
 
 SPLIT_LINE 'Format json and log'
-[[ -f /tmp/DEBUG ]] && mkdir -p /tmp/itrack.debug/{orig,json}
+[[ -e /tmp/DEBUG ]] && mkdir -p /tmp/itrack.debug/{orig,json}
 
 for JSON_FILE in `ls $JSON_PATH | grep json$`
 do
     if [[ $(egrep "$ICHANGE_IGNORE_EVENTS" $JSON_PATH/$JSON_FILE) ]] ; then
-        [[ -f /tmp/DEBUG ]] && cp $JSON_PATH/$JSON_FILE /tmp/itrack.debug/orig/
+        [[ -e /tmp/DEBUG ]] && cp $JSON_PATH/$JSON_FILE /tmp/itrack.debug/orig/
         rm -f $JSON_PATH/$JSON_FILE
     else
         export ORDER=$(date +%y%m%d%H%M%S).$RANDOM
 
         cat $JSON_PATH/$JSON_FILE | $IBUILD_ROOT/bin${ADD_PATH}/jq '.' >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json
-        [[ -f /tmp/DEBUG ]] && cp $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json /tmp/itrack.debug/json/
+        [[ -e /tmp/DEBUG ]] && cp $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json /tmp/itrack.debug/json/
         cat $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.json | grep commitMessage | awk -F'"' {'print $4'} | sed 's/\\n/\n/g' >$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log
         [[ $? = 0 ]] && rm -f $JSON_FILE
 

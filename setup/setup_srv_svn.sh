@@ -28,13 +28,13 @@ export LOCK_SPACE=/dev/shm/lock
 export HOSTNAME_A=$(hostname -A)
 export IP=$(/sbin/ifconfig | grep 'inet addr:' | egrep -v '127.0.0.1|:172.[0-9]' | awk -F':' {'print $2'} | awk -F' ' {'print $1'} | head -n1)
 export MAC=$(/sbin/ifconfig | grep HWaddr | awk -F'HWaddr ' {'print $2'} | sed s/://g | head -n1)
-[[ -z $MAC ]] && export MAC=1234567890ab
-[[ `cat /proc/cpuinfo | grep ARM` ]] && export ARM=arm
+    [[ -z $MAC ]] && export MAC=1234567890ab
+[[ $(cat /proc/cpuinfo | grep ARM) ]] && export ARM=arm
 export SRV_SVN_PATH=/local/srv/svn
 export IBUILD_SRC_PATH=/tmp/source
 export TMP_SVN_PATH=/tmp/svn
 
-if [[ -f ~/.ssh/id_rsa ]] ; then
+if [[ -e ~/.ssh/id_rsa ]] ; then
     export IBUILD_PASSWD=$(cat ~/.ssh/id_rsa | tail -n10 | head -n1 | cut -c10-18)
     export DW_PASSWD=$(cat ~/.ssh/id_rsa | tail -n9 | head -n1 | cut -c10-18)
     export irobot_PASSWD=$(cat ~/.ssh/id_rsa | tail -n8 | head -n1 | cut -c10-18)
@@ -48,7 +48,7 @@ else
     export readonly_PASSWD=$(echo $RANDOM | md5sum | cut -c10-18)
     export iverify_PASSWD=$(echo $RANDOM | md5sum | cut -c10-18)
 fi
-if [[ ! -d $SRV_SVN_PATH/repo ]] ; then
+if [[ ! -e $SRV_SVN_PATH/repo ]] ; then
     sudo mkdir -p $SRV_SVN_PATH/{repo,conf}
     sudo chown -R $USER $SRV_SVN_PATH/{repo,conf}
 fi
@@ -88,8 +88,8 @@ mkdir -p $TMP_SVN_PATH/{ibuild.source,iverify.source,itask.source,ichange.source
 export LOCAL_SVN_OPTION="--no-auth-cache --username dingwei --password $DW_PASSWD"
 # init local ibuild
 #
-if [[ -d $IBUILD_SRC_PATH/ibuild ]] ; then
-    if [[ -d $IBUILD_SRC_PATH/ibuild/.svn ]] ; then
+if [[ -e $IBUILD_SRC_PATH/ibuild ]] ; then
+    if [[ -e $IBUILD_SRC_PATH/ibuild/.svn ]] ; then
         svn up -q $IBUILD_SRC_PATH/ibuild
         svn export $IBUILD_SRC_PATH/ibuild $TMP_SVN_PATH/ibuild.source/ibuild
     else
@@ -111,10 +111,10 @@ fi
 
 # init local iverify
 #
-if [[ -d $IBUILD_SRC_PATH/iverify/.svn ]] ; then
+if [[ -e $IBUILD_SRC_PATH/iverify/.svn ]] ; then
     svn up -q $IBUILD_SRC_PATH/iverify
     svn export $IBUILD_SRC_PATH/iverify $TMP_SVN_PATH/iverify.source/iverify
-elif [[ -d $TMP_SVN_PATH/ibuild.source/ibuild/iverify ]] ; then
+elif [[ -e $TMP_SVN_PATH/ibuild.source/ibuild/iverify ]] ; then
     cp -Ra $TMP_SVN_PATH/ibuild.source/ibuild/iverify $TMP_SVN_PATH/iverify.source/iverify
 fi
 
@@ -128,17 +128,17 @@ fi
 
 # init local spec
 #
-if [[ -d $IBUILD_SRC_PATH/ispec/.svn ]] ; then
+if [[ -e $IBUILD_SRC_PATH/ispec/.svn ]] ; then
     svn up -q $IBUILD_SRC_PATH/ispec
     svn export $IBUILD_SRC_PATH/ispec $TMP_SVN_PATH/ispec.source
-elif [[ -d $TMP_SVN_PATH/ibuild.source/ibuild/ispec ]] ; then
+elif [[ -e $TMP_SVN_PATH/ibuild.source/ibuild/ispec ]] ; then
     cp -Ra $TMP_SVN_PATH/ibuild.source/ibuild/ispec $TMP_SVN_PATH/ispec.source/ispec
 fi
 
-if [[ -d $IBUILD_SRC_PATH/itask/.svn ]] ; then
+if [[ -e $IBUILD_SRC_PATH/itask/.svn ]] ; then
     svn up -q $IBUILD_SRC_PATH/itask
     svn export $IBUILD_SRC_PATH/itask $TMP_SVN_PATH/itask.source/itask
-elif [[ -d $TMP_SVN_PATH/ibuild.source/ibuild/itask ]] ; then
+elif [[ -e $TMP_SVN_PATH/ibuild.source/ibuild/itask ]] ; then
     cp -Ra $TMP_SVN_PATH/ibuild.source/ibuild/itask $TMP_SVN_PATH/itask.source/itask
 fi
 

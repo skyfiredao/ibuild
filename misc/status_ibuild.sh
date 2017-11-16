@@ -31,8 +31,8 @@ export TASK_SPACE=/dev/shm
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
 export IBUILD_ROOT=$HOME/ibuild
-    [[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
-if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
+    [[ ! -e $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
+if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
     echo -e "Please put ibuild in your $HOME"
     exit 0
 else
@@ -163,7 +163,7 @@ CLEAN_IBUILD_UPLOAD_SPACE()
 {
  export IBUILD_UPLOAD_URL=$(grep '^IBUILD_UPLOAD_URL=' * | awk -F'IBUILD_UPLOAD_URL=' {'print $2'} | sort -u | awk -F':' {'print $2'})
 
- if [[ -d $IBUILD_UPLOAD_URL ]] ; then
+ if [[ -e $IBUILD_UPLOAD_URL ]] ; then
      while [[ `ls $IBUILD_UPLOAD_URL | wc -l` -ge 100 ]] ;
      do
          export OLD_IBUILD_UPLOAD_SPACE=$(ls -d $IBUILD_UPLOAD_URL/* | grep -v README | head -n1)

@@ -30,30 +30,30 @@ export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
 export IBUILD_ROOT=$HOME/ibuild
-	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
-if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
-	echo -e "Please put ibuild in your $HOME"
-	exit 0
+    [[ ! -e $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
+if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
+    echo -e "Please put ibuild in your $HOME"
+    exit 0
 fi
 
 date
 
 CHK_ITASK_LOCK()
 {
- if [[ -f $TASK_SPACE/spec.build ]] ; then
-	echo "$TASK_SPACE/spec.build locked"
-	exit 0
+ if [[ -e $TASK_SPACE/spec.build ]] ; then
+    echo "$TASK_SPACE/spec.build locked"
+    exit 0
  fi
- if [[ -f $LOCK_SPACE/itask.lock ]] ; then
-	echo -e "$LOCK_SPACE/itask.lock"
-	exit 0
+ if [[ -e $LOCK_SPACE/itask.lock ]] ; then
+    echo -e "$LOCK_SPACE/itask.lock"
+    exit 0
  fi
 }
 
 NODE_STANDBY()
 {
  export NETCAT=`which nc`
-	[[ -z $NETCAT ]] && export NETCAT="$IBUILD_ROOT/bin/netcat.openbsd-u14.04"
+    [[ -z $NETCAT ]] && export NETCAT="$IBUILD_ROOT/bin/netcat.openbsd-u14.04"
  export HOST_MD5=`echo $HOSTNAME | md5sum | awk -F' ' {'print $1'}`
 
  CHK_ITASK_LOCK
@@ -63,8 +63,8 @@ NODE_STANDBY()
  
  echo $ITASK_PATH >$LOCK_SPACE/itask.lock
  if [[ -z $JOBS_REV ]] ; then
-	rm -f $LOCK_SPACE/itask.lock
-	exit
+    rm -f $LOCK_SPACE/itask.lock
+    exit
  fi
  export JOBS_MD5=`echo $JOBS_REV | md5sum | awk -F' ' {'print $1'}`
  export NOW=`date +%y%m%d%H%M%S`
@@ -73,24 +73,24 @@ NODE_STANDBY()
  echo "$NOW|$JOBS_MD5|$HOST_MD5" | $NETCAT -l 4321
  
  if [[ ! -z $JOBS_REV ]] ; then
-	sleep 3
-	svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn/jobs.txt
-        svn cleanup $IBUILD_ROOT
-	svn up -q $IBUILD_ROOT
-	if [[ `cat $TASK_SPACE/itask/svn/jobs.txt | grep ^$JOBS_REV | grep $HOSTNAME` ]] ; then
-		$IBUILD_ROOT/imake/build.sh $JOBS_REV >/tmp/build-$JOBS_REV.log 2>&1
-		echo "build: "`date` >>$LOCK_SPACE/count
-	fi
+    sleep 3
+    svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn/jobs.txt
+    svn cleanup $IBUILD_ROOT
+    svn up -q $IBUILD_ROOT
+    if [[ `cat $TASK_SPACE/itask/svn/jobs.txt | grep ^$JOBS_REV | grep $HOSTNAME` ]] ; then
+        $IBUILD_ROOT/imake/build.sh $JOBS_REV >/tmp/build-$JOBS_REV.log 2>&1
+        echo "build: "`date` >>$LOCK_SPACE/count
+    fi
  fi
  rm -f $LOCK_SPACE/itask.jobs
 }
 
 CHK_ITASK_LOCK
 
-while [ ! -f $LOCK_SPACE/itask.lock ] ; 
+while [ ! -e $LOCK_SPACE/itask.lock ] ; 
 do
     CHK_ITASK_LOCK
-    if [[ -f $TASK_SPACE/EXIT ]] ; then
+    if [[ -e $TASK_SPACE/EXIT ]] ; then
         $NETCAT 127.0.0.1 1234
         export NC_PID=$(ps aux | grep nc | grep 1234 | awk -F' ' {'print $2'})
         kill -9 $NC_PID >/dev/null 2>&1

@@ -28,12 +28,12 @@ export SEED=$RANDOM
 export TODAY=$(date +%y%m%d)
 export TOWEEK=$(date +%yw%V)
 export TOYEAR=$(date +%Y)
-[[ ! -d $HOME/ibuild ]] && export HOME=/local
+[[ ! -e $HOME/ibuild ]] && export HOME=/local
 export IBUILD_ROOT=$HOME/ibuild
-	[[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
-if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
-	echo -e "Please put ibuild in your $HOME"
-	exit 0
+    [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
+if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
+    echo -e "Please put ibuild in your $HOME"
+    exit 0
 fi
 
 export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})

@@ -70,7 +70,7 @@ do
 
     pushd $LOCAL_GIT >/dev/null 2>&1
     mkdir -p $LOCAL_GIT/$PROJECT_PATH
-    if [[ -d $PROJECT ]] ; then
+    if [[ -e $PROJECT ]] ; then
         echo $PROJECT >>$LOCAL_REPO/issue.list
         echo -e "\n>>>>>>>>>> Duplicate $PROJECT\n"
         git rm -r $PROJECT
@@ -83,7 +83,7 @@ do
 done
 popd >/dev/null 2>&1
 
-[[ -f $LOCAL_REPO/issue.list ]] && cat $LOCAL_REPO/issue.list
+[[ -e $LOCAL_REPO/issue.list ]] && cat $LOCAL_REPO/issue.list
 mv $LOCAL_REPO/{snapshot.xml,project.list,issue.list} /tmp/
 rsync -a --exclude ".git" --exclude ".repo" $LOCAL_REPO/ $LOCAL_GIT/
 git status

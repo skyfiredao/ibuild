@@ -23,7 +23,7 @@ export SEED=$RANDOM
 export TASK_SPACE=/dev/shm
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
-if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
+if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
 	echo -e "Please put ibuild in your $HOME"
 	exit 0
 fi
@@ -46,30 +46,30 @@ MATCHING()
  export LEVEL_NUMBER=$1
  export FREE_NODE=''
 
- if [[ ! -d $TASK_SPACE/inode.svn ]] ; then
+ if [[ ! -e $TASK_SPACE/inode.svn ]] ; then
      svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/inode $TASK_SPACE/inode.svn
      chmod 777 -R $TASK_SPACE/inode.svn >/dev/null 2>&1
  else
     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/inode.svn 
  fi
 
- if [[ ! -d $LOCK_SPACE/inode ]] ; then
+ if [[ ! -e $LOCK_SPACE/inode ]] ; then
      mkdir -p $LOCK_SPACE/inode >/dev/null 2>&1
      rsync -r --delete --exclude ".svn" $TASK_SPACE/inode.svn/ $LOCK_SPACE/inode/
  fi
 
  for NODE in `cat $IBUILD_ROOT/conf/priority/[$LEVEL_NUMBER]-floor.conf`
  do
-     if [[ -f $TASK_SPACE/inode.svn/$NODE && -f $LOCK_SPACE/inode/$NODE ]] ; then
+     if [[ -e $TASK_SPACE/inode.svn/$NODE && -e $LOCK_SPACE/inode/$NODE ]] ; then
          /bin/cp $TASK_SPACE/inode.svn/$NODE $LOCK_SPACE/inode/ >/dev/null 2>&1
-     elif [[ ! -f $TASK_SPACE/inode.svn/$NODE ]] ; then
+     elif [[ ! -e $TASK_SPACE/inode.svn/$NODE ]] ; then
         rm -f $LOCK_SPACE/inode/$NODE
      fi
  done
 
  for NODE in `cat $IBUILD_ROOT/conf/priority/[$IBUILD_PRIORITY]-floor.conf`
  do
-     if [[ -f $TASK_SPACE/inode.svn/$NODE && -f $LOCK_SPACE/inode/$NODE ]] ; then
+     if [[ -e $TASK_SPACE/inode.svn/$NODE && -e $LOCK_SPACE/inode/$NODE ]] ; then
          export FREE_NODE=true
          /bin/cp $TASK_SPACE/inode.svn/$NODE $LOCK_SPACE/inode/ >/dev/null 2>&1
          break
@@ -86,7 +86,7 @@ MATCHING()
 
  for NODE in `cat $IBUILD_ROOT/conf/priority/[$LEVEL_NUMBER]-floor.conf`
  do
-     if [[ -f $LOCK_SPACE/inode/$NODE ]] ; then
+     if [[ -e $LOCK_SPACE/inode/$NODE ]] ; then
          export NODE_IP=$(grep '^IP=' $LOCK_SPACE/inode/$NODE | awk -F'IP=' {'print $2'}) 
          export NODE_MD5=$(echo $NODE | md5sum | awk -F' ' {'print $1'})
 
@@ -107,7 +107,7 @@ ASSIGN_JOB()
 #    svn rm -q $IBUILD_SVN_OPTION -m "auto: remove $PRIORITY_ITASK_REV" svn://$IBUILD_SVN_SRV/itask/queue/itask/$PRIORITY_ITASK_REV
     rm -f $QUEUE_SPACE/*.$ITASK_REV
 #    svn up -q $IBUILD_SVN_OPTION $QUEUE_SPACE
-#    if [[ -f $QUEUE_SPACE/$PRIORITY_ITASK_REV ]] ; then
+#    if [[ -e $QUEUE_SPACE/$PRIORITY_ITASK_REV ]] ; then
 #        rm -fr $QUEUE_SPACE
 #        svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/queue $QUEUE_SPACE
 #        chmod 777 -R $QUEUE_SPACE
@@ -132,11 +132,11 @@ for PRIORITY_ITASK_REV in `ls $QUEUE_SPACE`
 do
     export IBUILD_PRIORITY=$(echo $PRIORITY_ITASK_REV | awk -F'.' {'print $1'})
     export ITASK_REV=$(echo $PRIORITY_ITASK_REV | awk -F'.' {'print $2'})
-    [[ -f /tmp/EXIT ]] && EXIT
+    [[ -e /tmp/EXIT ]] && EXIT
     echo $ITASK_REV >$LOCK_SPACE/queue_itask.lock
     chmod 777 $LOCK_SPACE/queue_itask.lock
 
-    if [[ -f $TASK_SPACE/itask/itask.svn.$TODAY.lock && -d $TASK_SPACE/itask/itask.svn/.svn ]] ; then
+    if [[ -e $TASK_SPACE/itask/itask.svn.$TODAY.lock && -e $TASK_SPACE/itask/itask.svn/.svn ]] ; then
         svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/itask.lock
     else
         mkdir -p $TASK_SPACE/itask 

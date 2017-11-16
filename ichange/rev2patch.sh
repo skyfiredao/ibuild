@@ -21,7 +21,7 @@ export REV=$1
 export ICHANGE_LOC=~/svn/ichange
 export TOYEAR=$(date +%Y)
 
-[[ -z $REV || ! -d $ICHANGE_LOC ]] && exit
+[[ -z $REV || ! -e $ICHANGE_LOC ]] && exit
 
 export ICHANGE_RECORD=$(svn log -r $REV -v $ICHANGE_LOC | egrep ' M ' | grep -v all-change | awk -F' ' {'print $2'})
 export ICHANGE_ENTRY=$(svn blame ~/svn/ichange/$ICHANGE_RECORD | grep $REV | awk -F' ' {'print $3'})

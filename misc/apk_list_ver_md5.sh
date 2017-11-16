@@ -36,7 +36,7 @@ echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 <table border="1">
 <tr><td align=center>APK Name</td><td align=center>Package Name</td><td align=right>Version</td><td align=center>MD5</td></tr>' >/tmp/apk.list.html
 
-[[ ! -f file.list ]] && find >file.list
+[[ ! -e file.list ]] && find >file.list
 [[ ! $(grep out/target/product file.list) ]] && find out/ >>file.list
 export AAPT=$(cat file.list | grep linux-x86/bin/aapt$ | head -n1)
 

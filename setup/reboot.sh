@@ -40,7 +40,7 @@ REBOOT_STEP()
 
 touch $LOCK_SPACE/count
 
-if [[ $(date +%u) = 1 && ! -f $LOCK_SPACE/update-$TOWEEK ]] ; then
+if [[ $(date +%u) = 1 && ! -e $LOCK_SPACE/update-$TOWEEK ]] ; then
     sudo aptitude update
     sudo aptitude -y full-upgrade
     rm -f $LOCK_SPACE/update-*
@@ -56,11 +56,11 @@ if [[ $(w | grep days | awk -F' ' {'print $3'}) -ge 2 ]] ; then
     touch $TASK_SPACE/reboot
 fi
 
-if [[ -f $TASK_SPACE/reboot && ! -f $TASK_SPACE/spec.build && ! $(hostname | grep ibuild) ]] ; then
+if [[ -e $TASK_SPACE/reboot && ! -e $TASK_SPACE/spec.build && ! $(hostname | grep ibuild) ]] ; then
     REBOOT_STEP
 fi
 
-if [[ -f /dev/shm/spec.build ]] ; then
+if [[ -e /dev/shm/spec.build ]] ; then
     export SPEC_TIME=$(stat /dev/shm/spec.build | grep Modify | awk -F' ' {'print $2'} | awk -F'-' {'print $3'})
     export LOAD_NOW=$(w | grep average | awk -F'average: ' {'print $2'} | awk -F'.' {'print $1'})
     if [[ $(echo $(date +%d) - $SPEC_TIME | bc) -ge 2 && $LOAD_NOW -le 3 ]] ; then

@@ -29,7 +29,7 @@ echo $TOHOUR >$LOCK_SPACE/repo_sync.lock
 
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
-if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
+if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
 	echo -e "Please put ibuild in your $HOME"
 	exit 0
 fi
@@ -39,10 +39,10 @@ export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.co
 
 mkdir -p ~/.ssh
 cd ~/.ssh
-if [[ ! -f id_rsa-irobot ]] ; then
+if [[ ! -e id_rsa-irobot ]] ; then
 	scp $IBUILD_SVN_SRV:.ssh/* .
 fi
-[[ ! -f ~/.gitconfig ]] && ln -sf ~/.ssh/gitconfig ~/.gitconfig
+[[ ! -e ~/.gitconfig ]] && ln -sf ~/.ssh/gitconfig ~/.gitconfig
 
 chown $USER -R /local/workspace
 sudo mkdir -p /mnt/tmp

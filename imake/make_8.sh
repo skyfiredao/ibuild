@@ -23,7 +23,7 @@ export LC_ALL=C
 unset DISPLAY
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
-if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
+if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
 	echo -e "Please put ibuild in your $HOME"
 	exit 0
 fi
@@ -32,7 +32,7 @@ source $IBUILD_ROOT/imake/function >/dev/null 2>&1
 EXPORT_IBUILD_CONF >/dev/null 2>&1
 EXPORT_IBUILD_SPEC >/dev/null 2>&1
 
-if [[ -d $JDK_PATH ]] ; then
+if [[ -e $JDK_PATH ]] ; then
 	sudo rm -f /usr/local/jdk
 	sudo ln -sf $JDK_PATH /usr/local/jdk
 	export PATH=$JDK_PATH/bin:$PATH:
@@ -55,7 +55,7 @@ fi
 
 [[ ! -z $GERRIT_CHANGE_NUMBER && $IBUILD_MODE = patch ]] && GIT_CHERRY_PICK
 [[ $(echo $IBUILD_NOTE | egrep "itest") ]] && DIFF_MANIFEST
-[[ -f $LOG_PATH/nobuild ]] && exit 0
+[[ -e $LOG_PATH/nobuild ]] && exit 0
 
 EXPORT_MANIFEST $LOG_PATH/before_build_manifest.xml
 

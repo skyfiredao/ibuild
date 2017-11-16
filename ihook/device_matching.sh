@@ -23,11 +23,11 @@ export TASK_SPACE=/dev/shm
 export LOCK_SPACE=/dev/shm/lock
 export SEED=$RANDOM
 [[ `echo $* | grep debug` ]] && export DEBUG=echo
-[[ ! -d $HOME/ibuild ]] && export HOME=/local
+[[ ! -e $HOME/ibuild ]] && export HOME=/local
 
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
-if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
+if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
 	echo -e "Please put ibuild in your $HOME"
 	exit 0
 fi
@@ -49,12 +49,12 @@ MATCHING()
  export ICASE_REV=$(echo $PRIORITY_ICASE_REV | awk -F'.' {'print $2'})
  export IBUILD_TARGET_PRODUCT=$(echo $PRIORITY_ICASE_REV | awk -F'.' {'print $3'})
 
- if [[ ! -d $IVERIFY_SPACE/inode.lock/.svn ]] ; then
+ if [[ ! -e $IVERIFY_SPACE/inode.lock/.svn ]] ; then
      svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/iverify/iverify/inode $IVERIFY_SPACE/inode.lock
  fi
 
  export ICASE_URL=$(svn log -v -r $ICASE_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
- if [[ ! -d $IVERIFY_SPACE/icase.svn/.svn ]] ; then
+ if [[ ! -e $IVERIFY_SPACE/icase.svn/.svn ]] ; then
      svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $IVERIFY_SPACE/icase.svn
  fi
  export BUILD_INFO_NAME=$(basename $ICASE_URL | head -n1)
@@ -77,7 +77,7 @@ MATCHING()
 #         svn rm -q $IBUILD_SVN_OPTION -m "auto: remove $PRIORITY_ICASE_REV" svn://$IBUILD_SVN_SRV/itask/queue/icase/$PRIORITY_ICASE_REV
          rm -f /local/queue/icase/$PRIORITY_ICASE_REV
 #         svn up -q $IBUILD_SVN_OPTION $QUEUE_SPACE
-         if [[ -f $QUEUE_SPACE/$PRIORITY_ICASE_REV ]] ; then
+         if [[ -e $QUEUE_SPACE/$PRIORITY_ICASE_REV ]] ; then
 #             svn rm --force $QUEUE_SPACE/$PRIORITY_ICASE_REV
              rm -f /local/queue/icase/$PRIORITY_ICASE_REV
              rm -f $IVERIFY_SPACE/inode.lock/$HOST_DEVICE
@@ -95,11 +95,11 @@ MATCHING()
 export QUEUE_SPACE=$1
 export IVERIFY_SPACE=$TASK_SPACE/tmp/iverify.$SEED
 
-[[ ! -d $IVERIFY_SPACE ]] && mkdir -p $IVERIFY_SPACE >/dev/null 2>&1
+[[ ! -e $IVERIFY_SPACE ]] && mkdir -p $IVERIFY_SPACE >/dev/null 2>&1
 
 for PRIORITY_ICASE_REV in `ls $QUEUE_SPACE`
 do
-    [[ -f /tmp/EXIT ]] && EXIT
+    [[ -e /tmp/EXIT ]] && EXIT
     echo $PRIORITY_ICASE_REV >$LOCK_SPACE/queue_icase.lock
     chmod 777 $LOCK_SPACE/queue_icase.lock
 

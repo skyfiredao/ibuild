@@ -25,11 +25,11 @@ export TODAY=$(date +%y%m%d)
 export TOWEEK=$(date +%yw%V)
 export TOYEAR=$(date +%Y)
 [[ `echo $* | grep debug` ]] && export DEBUG=echo
-[[ ! -d $HOME/ibuild ]] && export HOME=/local
+[[ ! -e $HOME/ibuild ]] && export HOME=/local
 
 export IBUILD_ROOT=$HOME/ibuild
         [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
-if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
+if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
 	echo -e "Please put ibuild in your $HOME"
 	exit 0
 fi
@@ -39,7 +39,7 @@ export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.c
 
 export QUEUE_SPACE=/local/queue/icase
 export QUEUE_SPACE_TOP=$(dirname $QUEUE_SPACE)
-#if [[ ! -d $QUEUE_SPACE_TOP ]] ; then
+#if [[ ! -e $QUEUE_SPACE_TOP ]] ; then
 #    svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/queue $QUEUE_SPACE_TOP
 #    chmod 777 -R $QUEUE_SPACE_TOP
 #else
@@ -82,7 +82,7 @@ if [[ $RESULT = PASSED && -z $STATUS_MAKE && ! -z $DOWNLOAD_PKG_NAME && ! -z $IV
         svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT" $QUEUE_SPACE/$IVERIFY_PRIORITY.$ICASE_REV.$IBUILD_TARGET_PRODUCT
         echo icase: `ls $QUEUE_SPACE | wc -l`
 
-        if [[ -d $TASK_SPACE/ispec.svn/.svn ]] ; then
+        if [[ -e $TASK_SPACE/ispec.svn/.svn ]] ; then
             svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/ispec.svn
         else
             rm -fr $TASK_SPACE/ispec.svn >/dev/null 2>&1
@@ -102,14 +102,14 @@ else
     exit
 fi
 
-if [[ -f $LOCK_SPACE/queue_icase.lock ]] ; then
+if [[ -e $LOCK_SPACE/queue_icase.lock ]] ; then
     rm -fr $TASK_SPACE/tmp/icase.$SEED
     exit
 fi
 
 while [[ `ls $QUEUE_SPACE` ]] ;
 do
-    if [[ -f /tmp/EXIT ]] ; then
+    if [[ -e /tmp/EXIT ]] ; then
         rm -f $LOCK_SPACE/queue_icase.lock
         exit
     fi

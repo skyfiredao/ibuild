@@ -22,14 +22,14 @@ export IHOOK_REV="$2"
 export IHOOK_TXN_NAME="$3"
 
 export LC_CTYPE=C
-[[ ! -d $HOME/ibuild ]] && export HOME=/local
+[[ ! -e $HOME/ibuild ]] && export HOME=/local
 export IBUILD_ROOT=$HOME/ibuild
 source /etc/bash.bashrc
 export TODAY=$(date +%y%m%d)
 
 # echo --------------------------------------- >>/tmp/ihook-ichange.log
 # echo $IHOOK_REPOS $IHOOK_REV `date` >>/tmp/ihook-ichange.log
-[[ -f /tmp/debug-$TODAY ]] && export STOP_WATCH=stopwatch
+[[ -e /tmp/debug-$TODAY ]] && export STOP_WATCH=stopwatch
 
 $IBUILD_ROOT/ihook/watch.sh $IHOOK_REV $STOP_WATCH >>/tmp/watch-$(date +%y%m%d).log 2>&1 &
 

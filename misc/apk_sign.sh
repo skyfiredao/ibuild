@@ -27,12 +27,12 @@ export TASK_SPACE=/dev/shm
 
 export APK=$1
 export KEY=$2
-if [[ ! -f $APK ]] ; then
+if [[ ! -e $APK ]] ; then
     echo "Can NOT find $APK"
     exit
 fi
 
-if [[ ! -d $ANDROID_BUILD_TOP/build/target/product/security ]] ; then
+if [[ ! -e $ANDROID_BUILD_TOP/build/target/product/security ]] ; then
     echo "can NOT find $ANDROID_BUILD_TOP/build/target/product/security"
     exit
 else
@@ -46,9 +46,9 @@ if [[ -z $KEY || ! `ls $ANDROID_BUILD_TOP/build/target/product/security | grep p
 fi
 
 
-if [[ -f $ANDROID_BUILD_TOP/prebuilts/sdk/tools/lib/signapk.jar ]] ; then
+if [[ -e $ANDROID_BUILD_TOP/prebuilts/sdk/tools/lib/signapk.jar ]] ; then
     export SIGNAPK=$ANDROID_BUILD_TOP/prebuilts/sdk/tools/lib/signapk.jar
-elif [[ -f $ANDROID_BUILD_TOP/out/host/linux-x86/framework/signapk.jar ]] ; then
+elif [[ -e $ANDROID_BUILD_TOP/out/host/linux-x86/framework/signapk.jar ]] ; then
     export SIGNAPK=$ANDROID_BUILD_TOP/out/host/linux-x86/framework/signapk.jar
 fi
 

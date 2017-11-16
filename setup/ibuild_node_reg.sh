@@ -34,7 +34,7 @@ export JOBS=$(cat /proc/cpuinfo | grep 'model name' | wc -l)
 export TOWEEK=$(date +%yw%V)
 export TODAY=$(date +%y%m%d)
 
-if [[ -d /local/ibuild/conf ]] ; then
+if [[ -e /local/ibuild/conf ]] ; then
     sudo chown $USER -R /local/ibuild
     [[ ! -L $HOME/ibuild ]] && ln -sf /local/ibuild $HOME/ibuild
     [[ ! -e /local/.subversion/config && -e $HOME/.subversion/config ]] && rm -fr /local/.subversion && ln -sf $HOME/.subversion /local/.subversion
@@ -74,7 +74,7 @@ export ITASK_SVN_SRV=$(grep '^ITASK_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | aw
 export ITASK_SVN_SRV_HOSTNAME=$(echo $ITASK_SVN_SRV | awk -F'.' {'print $1'})
 export DIST_FS_SHARE=$(grep '^DIST_FS_SHARE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'DIST_FS_SHARE=' {'print $2'})
 export SHARE_POINT=/local/share/build
-[[ ! -f $SHARE_POINT/README ]] && export SHARE_POINT=$(df | grep local | grep share | grep upload | awk -F' ' {'print $6'})
+[[ ! -e $SHARE_POINT/README ]] && export SHARE_POINT=$(df | grep local | grep share | grep upload | awk -F' ' {'print $6'})
 
 $IBUILD_ROOT/setup/reboot.sh
 
@@ -153,7 +153,7 @@ if [[ $(svn st $TASK_SPACE/itask/svn/inode/$HOSTNAME | grep $HOSTNAME) ]] ; then
     fi
 fi
 
-if [[ ! $(crontab -l | grep ibuild_node_reg) && -f $IBUILD_ROOT/setup/ibuild_node_reg.sh ]] ; then
+if [[ ! $(crontab -l | grep ibuild_node_reg) && -e $IBUILD_ROOT/setup/ibuild_node_reg.sh ]] ; then
     echo "# m h  dom mon dow   command
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
@@ -176,7 +176,7 @@ RESET_INODE()
 RESET_GANGLIA()
 {
  echo RESET_GANGLIA
- if [[ ! -f $LOCK_SPACE/ganglia-$(date +%p) ]] ; then
+ if [[ ! -e $LOCK_SPACE/ganglia-$(date +%p) ]] ; then
     rm -f $LOCK_SPACE/ganglia-*
     touch $LOCK_SPACE/ganglia-$(date +%p)
     sudo /etc/init.d/gmetad restart
@@ -224,7 +224,7 @@ RESET_SHARE_POINT()
 
  for RM_LINK in $(cat $TASK_SPACE/clean_link.log)
  do
-    [[ ! -f $RM_LINK/build_info.txt ]] && rm -f $RM_LINK
+    [[ ! -e $RM_LINK/build_info.txt ]] && rm -f $RM_LINK
  done
 
  echo CLEAN_AFTER_NEW_PATCHSET
@@ -234,7 +234,7 @@ RESET_SHARE_POINT()
     export LAST_KEEP_ENTRY=$(grep "^$ENTRY_GERRIT_CHANGE_NUMBER$" $SHARE_POINT/*/*/build_info.txt | tail -n1 | awk -F'/build_info.txt:' {'print $1'})
     for RM_OLD_ENTRY in $(grep "^$ENTRY_GERRIT_CHANGE_NUMBER$" $SHARE_POINT/*/*/build_info.txt | egrep -v "$LAST_KEEP_ENTRY" | awk -F'/build_info.txt:' {'print $1'})
     do
-        echo "[[ -d $RM_OLD_ENTRY ]] && rm -fr $RM_OLD_ENTRY" >>/tmp/clean_share.sh
+        echo "[[ -e $RM_OLD_ENTRY ]] && rm -fr $RM_OLD_ENTRY" >>/tmp/clean_share.sh
     done
  done
 
@@ -244,7 +244,7 @@ RESET_SHARE_POINT()
     export ENTRY_GERRIT_CHANGE_NUMBER='GERRIT_CHANGE_NUMBER='$(grep ^GERRIT_CHANGE_STATUS=change-merged $LS_URL/build_info.txt | awk -F' ' {'print $2'})
     for RM_OLD_ENTRY in $(grep "^$ENTRY_GERRIT_CHANGE_NUMBER$" $SHARE_POINT/*/*/build_info.txt | awk -F'/build_info.txt:' {'print $1'})
     do
-        echo "[[ -d $RM_OLD_ENTRY ]] && rm -fr $RM_OLD_ENTRY" >>/tmp/clean_share.sh
+        echo "[[ -e $RM_OLD_ENTRY ]] && rm -fr $RM_OLD_ENTRY" >>/tmp/clean_share.sh
     done
  done
  echo "rm -f /tmp/clean_share.sh" >>/tmp/clean_share.sh
@@ -264,17 +264,17 @@ if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
             svn rm $TASK_SPACE/itask/svn/inode/$CHK_HOST
         fi
         if [[ $NC_CHECK_STATUS = 0 && ! -z $DIST_FS_SHARE && $CHK_HOST != $HOSTNAME ]] ; then
-            [[ ! -d /local/share/DIST_FS/$CHK_HOST ]] && mkdir -p /local/share/DIST_FS/$CHK_HOST >/dev/null 2>&1
-            [[ ! -f /local/share/DIST_FS/$CHK_HOST/README && ! -z $DIST_FS ]] && sshfs -o nonempty,allow_other,sync_read,cache_timeout=7 -p 22 $CHK_HOST_IP:$DIST_FS_SHARE /local/share/DIST_FS/$CHK_HOST &
+            [[ ! -e /local/share/DIST_FS/$CHK_HOST ]] && mkdir -p /local/share/DIST_FS/$CHK_HOST >/dev/null 2>&1
+            [[ ! -e /local/share/DIST_FS/$CHK_HOST/README && ! -z $DIST_FS ]] && sshfs -o nonempty,allow_other,sync_read,cache_timeout=7 -p 22 $CHK_HOST_IP:$DIST_FS_SHARE /local/share/DIST_FS/$CHK_HOST &
         fi
     done
 
     INTIME_CLEAN_SHARE_POINT
     RESET_INODE
 #   RESET_GANGLIA
-    [[ ! -f $LOCK_SPACE/reset_share_point-$TODAY ]] && RESET_SHARE_POINT
+    [[ ! -e $LOCK_SPACE/reset_share_point-$TODAY ]] && RESET_SHARE_POINT
 
-    if [[ ! -f $LOCK_SPACE/clean_task_spec-$TOWEEK ]] ; then
+    if [[ ! -e $LOCK_SPACE/clean_task_spec-$TOWEEK ]] ; then
         rm -f $LOCK_SPACE/clean_task_spec-*
         touch $LOCK_SPACE/clean_task_spec-$TOWEEK
         $IBUILD_ROOT/misc/clean_task_spec.sh >/tmp/clean_task_spec.log

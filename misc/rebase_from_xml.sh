@@ -28,9 +28,9 @@ echo -e "$0 <snapshot_manifest.xml> <rebase_project_list.branch>"
 export LOCAL_REPO=$(pwd)
   [[ ! $(ls $LOCAL_REPO/.repo | grep manifests) ]] && exit 1
 export MANIFEST=$1
-  [[ ! -f $MANIFEST ]] && exit 1
+  [[ ! -e $MANIFEST ]] && exit 1
 export REBASE_PROJ_LIST=$2
-  [[ ! -f $REBASE_PROJ_LIST ]] && exit 1
+  [[ ! -e $REBASE_PROJ_LIST ]] && exit 1
 export BRANCH=$(echo $REBASE_PROJ_LIST | awk -F'.' {'print $2'})
   [[ -z $BRANCH ]] && exit 1
 export BRANCH_NAME=$(basename $BRANCH)

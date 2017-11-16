@@ -44,7 +44,7 @@ REPO_SYNC()
 {
  cd $1
  $CMD_REPO sync -j$JOBS >/tmp/repo_sync.log 2>&1
- if [[ ! -f /tmp/repo_git_gc.log ]] ; then
+ if [[ ! -e /tmp/repo_git_gc.log ]] ; then
     $CMD_REPO forall -c 'git remote update --prune ; git prune ; git gc' -j$JOBS >/tmp/repo_git_gc.log
  fi
  export SYNC_STATUS=$?
@@ -53,16 +53,16 @@ REPO_SYNC()
 
 BTRFS_SYNC()
 {
- [[ ! -d $LOC_REF_REPO/tmp.$SRV_NAME ]] && /sbin/btrfs subvolume snapshot $LOC_REF_REPO/$SRV_NAME $LOC_REF_REPO/tmp.$SRV_NAME >/dev/null 2>&1
+ [[ ! -e $LOC_REF_REPO/tmp.$SRV_NAME ]] && /sbin/btrfs subvolume snapshot $LOC_REF_REPO/$SRV_NAME $LOC_REF_REPO/tmp.$SRV_NAME >/dev/null 2>&1
  REPO_SYNC $LOC_REF_REPO/$SRV_NAME
- if [[ $SYNC_STATUS = 0 && -d $LOC_REF_REPO/tmp.$SRV_NAME ]] ; then
+ if [[ $SYNC_STATUS = 0 && -e $LOC_REF_REPO/tmp.$SRV_NAME ]] ; then
     sudo /sbin/btrfs subvolume delete $LOC_REF_REPO/tmp.$SRV_NAME >/dev/null 2>&1
-#    [[ ! -d $LOC_REF_REPO/old.$SRV_NAME ]] && mv $LOC_REF_REPO/tmp.$SRV_NAME $LOC_REF_REPO/old.$SRV_NAME
-#    [[ ! -d $LOC_REF_REPO/$SRV_NAME ]] && mv $LOC_REF_REPO/tmp.$SRV_NAME $LOC_REF_REPO/$SRV_NAME
+#    [[ ! -e $LOC_REF_REPO/old.$SRV_NAME ]] && mv $LOC_REF_REPO/tmp.$SRV_NAME $LOC_REF_REPO/old.$SRV_NAME
+#    [[ ! -e $LOC_REF_REPO/$SRV_NAME ]] && mv $LOC_REF_REPO/tmp.$SRV_NAME $LOC_REF_REPO/$SRV_NAME
  else
     echo "sync issue: $SRV_NAME"
  fi
-# [[ -d $LOC_REF_REPO/$SRV_NAME/.repo ]] && sudo /sbin/btrfs subvolume delete $LOC_REF_REPO/tmp.$SRV_NAME >/dev/null 2>&1
+# [[ -e $LOC_REF_REPO/$SRV_NAME/.repo ]] && sudo /sbin/btrfs subvolume delete $LOC_REF_REPO/tmp.$SRV_NAME >/dev/null 2>&1
 }
 
 for SRV_NAME in `ls $LOC_REF_REPO/*/.repo | egrep -v 'tmp|android.googlesource.com' | grep ":" | awk -F'/.repo' {'print $1'} | awk -F"$LOC_REF_REPO/" {'print $2'}`

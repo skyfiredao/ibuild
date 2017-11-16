@@ -24,7 +24,7 @@ export NOW=`date +%y%m%d%H%M%S`
 export TASK_SPACE=/dev/shm
 export REPO_PATH=/local/srv/svn/repo
 
-[[ ! -d $REPO_PATH/itask ]] && echo "No repo:itask in $REPO_PATH" && exit
+[[ ! -e $REPO_PATH/itask ]] && echo "No repo:itask in $REPO_PATH" && exit
 
 pushd $REPO_PATH
 mv itask itask.$NOW

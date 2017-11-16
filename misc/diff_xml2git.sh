@@ -31,7 +31,7 @@ export LOC_REPO_WS=$3
 export P_LOC_REPO_WS=$(dirname $LOC_REPO_WS)
 [[ ! $(ls $LOC_REPO_WS/.repo | grep manifest) && $(ls $P_LOC_REPO_WS/.repo | grep manifest) ]] && export LOC_REPO_WS=$P_LOC_REPO_WS
 
-[[ ! -f $MANIFEST_LEFT && ! -f $MANIFEST_RIGHT ]] && exit
+[[ ! -e $MANIFEST_LEFT && ! -e $MANIFEST_RIGHT ]] && exit
 [[ ! $(ls $LOC_REPO_WS/.repo | grep manifest) || -z $REPO_CMD ]] && exit
 
 rm -f /tmp/diff_xml2git_*.txt

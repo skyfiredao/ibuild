@@ -20,8 +20,8 @@
 [[ `echo $* | grep debug` ]] && export DEBUG=echo
 
 export IBUILD_ROOT=$HOME/ibuild
-	[[ ! -d $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
-if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
+	[[ ! -e $HOME/ibuild ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
+if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
 	echo -e "Please put ibuild in your $HOME"
 	exit 0
 fi
@@ -32,7 +32,7 @@ svn up -q $IBUILD_ROOT
 #export TASK_SPACE=`df | grep shm | grep none | tail -n1 | awk -F' ' {'print $6'}`
 export TASK_SPACE=/run/shm
 export HOSTNAME=`hostname`
-if [[ ! -f $ITRACK_PATH/conf/$HOSTNAME.conf ]] ; then
+if [[ ! -e $ITRACK_PATH/conf/$HOSTNAME.conf ]] ; then
         echo -e "Can NOT find $ITRACK_PATH/conf/$HOSTNAME.conf"
         for KILL_PID in `ps aux | grep ssh | grep gerrit | grep stream-events | awk -F' ' {'print $2'}`
         do

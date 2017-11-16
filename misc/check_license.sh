@@ -43,7 +43,7 @@ echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 <table border="1">
 <tr><td align=center>NOTICE</td><td align=center>License</td><td align=right>Module</td><td align=center>Target</td></tr>' >/tmp/$TARGET_PATH_NAME.list.html
 
-[[ ! -f file.list ]] && find >file.list
+[[ ! -e file.list ]] && find >file.list
 [[ ! $(grep out/target/product file.list) ]] && find out/ >>file.list
 
 for FILE_URL in $(cat file.list | egrep -v 'hardware/qcom|/prebuilts/|/eclipse-|/tools/' | grep NOTICE$)
@@ -53,10 +53,10 @@ do
     export MK_PATH=$(dirname $FILE_URL)
     export MODULE_NAME=''
     export TARGET_MODULE_NAME=''
-    [[ -f $MK_PATH/Android.mk ]] && export MODULE_NAME=$(egrep 'LOCAL_MODULE :=|LOCAL_MODULE:=' $MK_PATH/Android.mk | awk -F'=' {'print $2'} | head -n1)
+    [[ -e $MK_PATH/Android.mk ]] && export MODULE_NAME=$(egrep 'LOCAL_MODULE :=|LOCAL_MODULE:=' $MK_PATH/Android.mk | awk -F'=' {'print $2'} | head -n1)
 [[ -z $MODULE_NAME ]] && echo $MK_PATH
     [[ ! -z $MODULE_NAME ]] && export TARGET_MODULE_URL=$(cat file.list | grep out/target | grep "$MODULE_NAME." | head -n1)
-    [[ -f $TARGET_MODULE_URL ]] && export TARGET_MODULE_NAME=$(basename $TARGET_MODULE_URL)
+    [[ -e $TARGET_MODULE_URL ]] && export TARGET_MODULE_NAME=$(basename $TARGET_MODULE_URL)
     [[ ! -z $MODULE_NAME ]] && echo "<tr><td align=left>$(echo $FILE_URL | awk -F'^./' {'print $2'})</td><td align=left>$NOTICE_LICENSE</td><td align=right>$MODULE_NAME</td><td align=right>$TARGET_MODULE_NAME</td></tr>" >>/tmp/$TARGET_PATH_NAME.list.html
 done
 popd >/dev/null 2>&1

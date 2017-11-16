@@ -38,7 +38,7 @@ do
         rm -f *signed_*
         [[ `echo $APK | grep orig_` ]] && export APK=$(echo $APK | awk -F'orig_' {'print $2'})
         echo $OUT/system/app/$APP/$APK
-        [[ ! -f orig_$APK ]] && cp $APK orig_$APK
+        [[ ! -e orig_$APK ]] && cp $APK orig_$APK
         rm -f $APK
         redex orig_$APK -o $APK
         $TOOL_PATH/apk_sign.sh $APK platform

@@ -30,18 +30,18 @@ ECHO()
 [[ ! `which repo` ]] && ECHO 'no repo'
 [[ ! `which svn` ]] && ECHO 'no svn'
 [[ ! `which git` ]] && ECHO 'no git'
-[[ ! -f /etc/bash.ibuild.bashrc || ! `grep bash.ibuild.bashrc /etc/bash.bashrc` ]] && ECHO 'no /etc/bash.ibuild.bashrc'
+[[ ! -e /etc/bash.ibuild.bashrc || ! `grep bash.ibuild.bashrc /etc/bash.bashrc` ]] && ECHO 'no /etc/bash.ibuild.bashrc'
 [[ ! `ccache -V | grep 3.2` ]] && ECHO 'no ccache 3.2'
-[[ ! -f ~/.gitconfig ]] && ECHO 'no ~/.gitconfig'
-[[ ! -f ~/.ssh/id_rsa-irobot ]] && ECHO 'no irobot ssh key'
+[[ ! -e ~/.gitconfig ]] && ECHO 'no ~/.gitconfig'
+[[ ! -e ~/.ssh/id_rsa-irobot ]] && ECHO 'no irobot ssh key'
 [[ ! `mount | grep btrfs` ]] && ECHO 'no btrfs'
 [[ ! `df | grep ccache$` ]] && ECHO 'no ccache'
 [[ ! `df | grep out$` ]] && ECHO 'no out'
 [[ ! `grep ibuild /etc/ganglia/gmond.conf` ]] && ECHO 'no right ganglia setup'
 [[ ! `sudo -l | grep ALL | grep NOPASSWD` ]] && ECHO 'no sudo permission'
-[[ `readlink /bin/sh` = dash && -f /bin/bash ]] && ECHO 'bash is not default shell'
+[[ `readlink /bin/sh` = dash && -e /bin/bash ]] && ECHO 'bash is not default shell'
 
-if [[ ! -f ~/ibuild/conf/ibuild.conf ]] ; then
+if [[ ! -e ~/ibuild/conf/ibuild.conf ]] ; then
 	ECHO 'no ibuild in right place'
 else
 	export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' ~/ibuild/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
@@ -50,9 +50,9 @@ else
 	export LOC_WORKSPACE=$(grep '^LOC_WORKSPACE=' ~/ibuild/conf/ibuild.conf | awk -F'LOC_WORKSPACE=' {'print $2'})
 	export JDK7_PATH=$(grep '^JDK7_PATH=' ~/ibuild/conf/ibuild.conf | awk -F'JDK7_PATH=' {'print $2'})
 	[[ ! `svn ls $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec` ]] && ECHO 'no right svn setup'
-	[[ ! -d $JDK7_PATH ]] && ECHO 'no jdk1.7'
-	[[ ! -d $LOC_WORKSPACE ]] && ECHO "no $LOC_WORKSPACE"
-	[[ ! -d $LOC_REF_REPO_PATH ]] && ECHO "no $LOC_REF_REPO_PATH"
+	[[ ! -e $JDK7_PATH ]] && ECHO 'no jdk1.7'
+	[[ ! -e $LOC_WORKSPACE ]] && ECHO "no $LOC_WORKSPACE"
+	[[ ! -e $LOC_REF_REPO_PATH ]] && ECHO "no $LOC_REF_REPO_PATH"
 fi
 
 ECHO

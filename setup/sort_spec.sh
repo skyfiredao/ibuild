@@ -25,7 +25,7 @@ export TOWEEK=`date +%yw%V`
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
-[[ ! -f ~/ibuild/imake/function || ! -d ~/spec ]] && exit
+[[ ! -e ~/ibuild/imake/function || ! -e ~/spec ]] && exit
 
 cd ~/spec
 

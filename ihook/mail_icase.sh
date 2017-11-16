@@ -25,11 +25,11 @@ export TODAY=$(date +%y%m%d)
 export TOWEEK=$(date +%yw%V)
 export TOYEAR=$(date +%Y)
 [[ `echo $* | grep debug` ]] && export DEBUG=echo
-[[ ! -d $HOME/ibuild ]] && export HOME=/local
+[[ ! -e $HOME/ibuild ]] && export HOME=/local
 
 export IBUILD_ROOT=$HOME/ibuild
-    [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
-if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
+   [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
+if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
     echo -e "Please put ibuild in your $HOME"
     exit 0
 fi
@@ -132,7 +132,7 @@ if [[ $RESULT != PASSED ]] ; then
     echo -e "Error Log:\n$DOWNLOAD_URL/log/error.log.txt" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
     rm -f $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt >/dev/null 2>&1
     export URL_RBS=$(echo $DOWNLOAD_URL | awk -F'/build/' {'print $2'})
-    if [[ -f /local/share/build/$URL_RBS/log/error.log.txt ]] ; then
+    if [[ -e /local/share/build/$URL_RBS/log/error.log.txt ]] ; then
         cp /local/share/build/$URL_RBS/log/error.log.txt $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt
     else
         wget --no-proxy -q $DOWNLOAD_URL/log/error.log.txt -O $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt
@@ -173,7 +173,7 @@ fi
 
 [[ ! -z $IBUILD_MODE && -z $SUB_IBUILD_MODE ]] && export SUB_IBUILD_MODE="[$IBUILD_MODE]"
 
-if [[ -f $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt ]] ; then
+if [[ -e $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt ]] ; then
     export ERROR_FILTER='cannot | failed |error: package |duplicate annotation|cannot find symbol|ERROR Resource entry|No resource found that matches the given name|make: ***|fatal error: |file not found|Errot 41|Error 1|error: method does not override or implement a method from a supertype|error: could not apply |hint: after resolving the conflicts'
     echo -e "\n------------------------- Error log:\n" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
     cat $TASK_SPACE/tmp/icase.mail.$SEED/error.log.txt | egrep -v '32m|0m' | egrep -3 "$ERROR_FILTER" | tail -n30 >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail

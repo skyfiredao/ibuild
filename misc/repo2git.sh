@@ -23,7 +23,7 @@ export NOW=$(date +%y%m%d%H%M%S)
 export LOC_WS=$(dirname $GIT_PATH)
 [[ `echo $* | egrep ' debug'` ]] && export DEBUG=echo
 
-[[ ! -d $REPO_PATH/.repo || ! -d $GIT_PATH/.git ]] && exit 1
+[[ ! -e $REPO_PATH/.repo || ! -e $GIT_PATH/.git ]] && exit 1
 
 
 mkdir -p $LOC_WS/$NOW
@@ -33,7 +33,7 @@ repo manifest -r -o manifest-$(date +%y%m%d).xml
 
 mv $REPO_PATH/.repo $LOC_WS/$NOW/repo
 mv $GIT_PATH/.git $LOC_WS/$NOW/git
-[[ -d $REPO_PATH/out ]] && mv $REPO_PATH/out $LOC_WS/$NOW/out.repo
+[[ -e $REPO_PATH/out ]] && mv $REPO_PATH/out $LOC_WS/$NOW/out.repo
 rm -f $GIT_PATH/manifest*.xml
 
 find | awk -F'^./' {'print $2'} >$LOC_WS/$NOW/file_repo.list
@@ -94,12 +94,12 @@ done
 for GIT_IGNORE in `cat $LOC_WS/$NOW/file_repo.list | egrep '.git$|.gitattributes$'`
 do
     export GIT_IGNORE_PATH=`dirname $GIT_IGNORE`
-    [[ -d $GIT_IGNORE ]] && cp $GIT_PATH/$GIT_IGNORE $REPO_PATH/$GIT_IGNORE
+    [[ -e $GIT_IGNORE ]] && cp $GIT_PATH/$GIT_IGNORE $REPO_PATH/$GIT_IGNORE
 done
 
 for GIT_ADD in `cat $LOC_WS/$NOW/git.status | egrep -v 'deleted|modified|\:|\(|#$|branch' | awk -F'/' {'print $1'} | sort -u`
 do
-    if [[ -d $GIT_PATH/$GIT_ADD ]] ; then
+    if [[ -e $GIT_PATH/$GIT_ADD ]] ; then
         cd $GIT_PATH/$GIT_ADD
 $DEBUG        git add *
 $DEBUG        git commit -m "add new file in $GIT_ADD" *

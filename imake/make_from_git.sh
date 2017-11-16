@@ -43,7 +43,7 @@ export DISABLE_DEXPREOPT=true
 
 
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
-[[ -f $LOCK_SPACE/build.lock ]] && exit
+[[ -e $LOCK_SPACE/build.lock ]] && exit
 
 if [[ `cat $LOCK_SPACE/build.$GIR_REPO.lock` = $TOHOUR || `ps aux | grep rsync | grep -v grep` ]] ; then
     exit
@@ -58,7 +58,7 @@ git checkout master
 git pull
 git fetch
 
-if [[ -d $BUILD_REPO/$GIR_REPO ]] ; then
+if [[ -e $BUILD_REPO/$GIR_REPO ]] ; then
     mv $BUILD_REPO/$GIR_REPO $BUILD_REPO/bad.$SEED.$GIR_REPO
     sudo btrfs subvolume delete $BUILD_REPO/bad.$SEED.$GIR_REPO
 fi
@@ -72,7 +72,7 @@ git checkout $BRANCH_NAME >$AUTOUT/log/checkout.log 2>&1
 git pull >>$AUTOUT/log/checkout.log 2>&1
 #export GIT_VER=$(git log HEAD | head -n1 | awk -F' ' {'print $2'} | cut -c34-40)
 export GIT_VER=$(git describe --always)
-if [[ -f $LOCK_SPACE/ver.$GIT_VER ]] ; then
+if [[ -e $LOCK_SPACE/ver.$GIT_VER ]] ; then
     rm -f $LOCK_SPACE/build.lock $AUTOUT/log/checkout.log
     exit
 fi
@@ -94,7 +94,7 @@ mkdir -p $AUTOUT/$BUILD_OUT_FOLDER/log
 cd $OUT
 [[ $STATUS_BUILD = 0 ]] && tar cf $AUTOUT/$BUILD_OUT_FOLDER/release.$GIT_VER.tar *.{img,txt}
 
-[[ -d $SHARE_PATH/$TODAY ]] || mkdir -p $SHARE_PATH/$TODAY
+[[ -e $SHARE_PATH/$TODAY ]] || mkdir -p $SHARE_PATH/$TODAY
 cp -Ra $AUTOUT/$BUILD_OUT_FOLDER $SHARE_PATH/$TODAY/ && rm -fr $AUTOUT/$BUILD_OUT_FOLDER
 
 for LOG in `ls $AUTOUT/log`

@@ -56,7 +56,7 @@ RANDOM_LIST()
  fi
 }
 
-[[ ! -f $CONFIG_PATH/reviewer.$PROJECT_NAME ]] && EXIT "Can NOT find $CONFIG_PATH/reviewer.$PROJECT_NAME"
+[[ ! -e $CONFIG_PATH/reviewer.$PROJECT_NAME ]] && EXIT "Can NOT find $CONFIG_PATH/reviewer.$PROJECT_NAME"
 
 RANDOM_LIST $CONFIG_PATH/reviewer.$PROJECT_NAME
 

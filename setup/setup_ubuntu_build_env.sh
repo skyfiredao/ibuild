@@ -34,15 +34,15 @@ if [[ $(whoami) != root ]] ; then
 	exit 0
 fi
 
-[[ -f ~/bash.ibuild.bashrc ]] && source ~/bash.ibuild.bashrc
-[[ -f /etc/bash.ibuild.bashrc ]] && source /etc/bash.ibuild.bashrc
+[[ -e ~/bash.ibuild.bashrc ]] && source ~/bash.ibuild.bashrc
+[[ -e /etc/bash.ibuild.bashrc ]] && source /etc/bash.ibuild.bashrc
 
 # $DEBUG apt-get update
 # $DEBUG apt-get --force-yes -y install subversion openssh-server aptitude vim
 
 export IBUILD_ROOT=/local/ibuild
-	[[ ! -d $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
-if [[ ! -f $HOME/ibuild/conf/ibuild.conf ]] ; then
+	[[ ! -e $IBUILD_ROOT ]] && export IBUILD_ROOT=`dirname $0 | awk -F'/ibuild' {'print $1'}`'/ibuild'
+if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
         echo -e "Please put ibuild in your $HOME"
         echo -e "svn co svn://YOUR_SVN_SRV/ibuild/ibuild"
         exit 0
@@ -70,7 +70,7 @@ export REPO=`which repo`
 mkdir -p $HOME/.ssh
 echo "StrictHostKeyChecking=no" >> $HOME/.ssh/config
 
-if [[ `readlink /bin/sh` = dash && -f /bin/bash ]] ; then
+if [[ `readlink /bin/sh` = dash && -e /bin/bash ]] ; then
     $DEBUG rm -f /bin/sh
     $DEBUG ln -sf /bin/bash /bin/sh
 fi
@@ -113,7 +113,7 @@ libevent-dev libdouble-conversion-dev libgoogle-glog-dev libgflags-dev liblz4-de
 liblzma-dev libsnappy-dev make binutils-dev libjemalloc-dev libssl-dev \
 libiberty-dev
 
-[[ -f /usr/lib/i386-linux-gnu/mesa/libGL.so.1 ]] && $DEBUG ln -s /usr/lib/i386-linux-gnu/mesa/libGL.so.1 /usr/lib/i386-linux-gnu/libGL.so
+[[ -e /usr/lib/i386-linux-gnu/mesa/libGL.so.1 ]] && $DEBUG ln -s /usr/lib/i386-linux-gnu/mesa/libGL.so.1 /usr/lib/i386-linux-gnu/libGL.so
 
 
 # install old build tool
@@ -157,9 +157,9 @@ if [[ `echo $RUN_OPTION | egrep 'jdk1.6'` ]] ; then
     $DEBUG tar xfj jdk1.6.0_45.bz2 -C /usr/local/
     rm jdk1.6.0_45.bz2
 
-    if [[ -d /usr/lib/jvm/java-6-sun ]] ; then
+    if [[ -e /usr/lib/jvm/java-6-sun ]] ; then
         $DEBUG ln -sf /usr/lib/jvm/java-6-sun /usr/local/jdk1.6
-    elif [[ -d /usr/local/jdk1.6.0_45 ]] ; then
+    elif [[ -e /usr/local/jdk1.6.0_45 ]] ; then
         $DEBUG ln -sf /usr/local/jdk1.6.0_45 /usr/local/jdk1.6
     else
         echo 'No jdk1.6'
@@ -209,7 +209,7 @@ if [[ `echo $RUN_OPTION | egrep 'nomail'` ]] ; then
     $DEBUG aptitude -y purge nbSMTP exim4 exim4-base exim4-daemon-light libpam-smbpass
 fi
 
-[[ -f /usr/bin/fromdos ]] && $DEBUG ln -s /usr/bin/fromdos /usr/local/bin/dos2unix
+[[ -e /usr/bin/fromdos ]] && $DEBUG ln -s /usr/bin/fromdos /usr/local/bin/dos2unix
 
 
 echo "export LC_ALL=C
@@ -227,7 +227,7 @@ alias screen='screen -R -DD'
 alias ccache=/usr/bin/ccache
 export VISUAL=vim
 " >>/tmp/bash.ibuild.bashrc
-if [[ -f ~/bash.ibuild.bashrc ]] ; then
+if [[ -e ~/bash.ibuild.bashrc ]] ; then
     $DEBUG cp ~/bash.ibuild.bashrc /etc
 else
     $DEBUG cp /tmp/bash.ibuild.bashrc /etc

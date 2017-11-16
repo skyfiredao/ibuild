@@ -20,7 +20,7 @@
 export URL_LIST=$1
 export ICHANGE_LOC=~/svn/ichange
 
-[[ ! -f $URL_LIST || ! -d $ICHANGE_LOC ]] && exit
+[[ ! -f $URL_LIST || ! -e $ICHANGE_LOC ]] && exit
 
 rm -f ~/patch.list
 
