@@ -722,12 +722,9 @@ SETUP_IVERSION()
  export ORIG_MANIFEST_URL=$1
  export IVER_MANIFEST_NAME=$2.xml
 
- if [[ -e $TASK_SPACE/iversion-$TOYEAR ]] ; then
-    export IBUILD_SVN_REV_LOC=$(svn info $TASK_SPACE/iversion-$TOYEAR | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
-    if [[ $IBUILD_SVN_REV_SRV != $IBUILD_SVN_REV_LOC ]] ; then
-        svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOYEAR
-    fi
-else
+ if [[ -e $TASK_SPACE/iversion-$TOYEAR/.svn ]] ; then
+    svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOYEAR
+ else
     rm -fr $TASK_SPACE/iversion-*
     svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add iversion/$TOYEAR" svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR >/dev/null 2>&1
     svn co -q $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR $TASK_SPACE/iversion-$TOYEAR
@@ -816,10 +813,7 @@ DOWNLOAD_PKG_NAME=$DOWNLOAD_PKG_NAME
  mv $LOG_PATH/build_info.tmp $LOG_PATH/build_info.txt
  
  if [[ -e $TASK_SPACE/icase-$TOWEEK ]] ; then
-    export IBUILD_SVN_REV_LOC=$(svn info $TASK_SPACE/icase-$TOWEEK | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
-    if [[ $IBUILD_SVN_REV_SRV != $IBUILD_SVN_REV_LOC ]] ; then
-        svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/icase-$TOWEEK
-    fi
+    svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/icase-$TOWEEK
  else
     rm -fr $TASK_SPACE/icase-*
     svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add icase/$TOYEAR/$TOWEEK" svn://$ICASE_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK >/dev/null 2>&1
