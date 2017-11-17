@@ -687,7 +687,7 @@ SETUP_ISTATUS_OLD()
     rm -fr $TASK_SPACE/istatus-* >/dev/null 2>&1
     SVN_CMD "co -q $IBUILD_SVN_OPTION svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR $TASK_SPACE/istatus-$TOYEAR"
     if [[ $? != 0 ]] ; then
-        SVN_CMD "mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add istatus/$TOYEAR" svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR"
+        SVN_CMD "mkdir -q --parents $IBUILD_SVN_OPTION -m 'auto: add istatus/$TOYEAR' svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR"
         SVN_CMD "co -q $IBUILD_SVN_OPTION svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR $TASK_SPACE/istatus-$TOYEAR"
     fi
  else
@@ -719,7 +719,7 @@ SETUP_ISTATUS_OLD()
  done
 
  SVN_CMD "up -q $IBUILD_SVN_OPTION $TASK_SPACE/istatus-$TOYEAR/"
- SVN_CMD "ci -q $IBUILD_SVN_OPTION -m "auto: add $ITASK_REV and clean old" $TASK_SPACE/istatus-$TOYEAR/*"
+ SVN_CMD "ci -q $IBUILD_SVN_OPTION -m 'auto: add $ITASK_REV and clean old' $TASK_SPACE/istatus-$TOYEAR/*"
  if [[ $? != 0 ]] ; then
     rm -fr $TASK_SPACE/istatus-$TOYEAR >/dev/null 2>&1
  fi
@@ -735,7 +735,7 @@ SETUP_IVERSION()
     SVN_CMD "up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOYEAR"
  else
     rm -fr $TASK_SPACE/iversion-*
-    SVN_CMD "mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add iversion/$TOYEAR" svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR"
+    SVN_CMD "mkdir -q --parents $IBUILD_SVN_OPTION -m 'auto: add iversion/$TOYEAR' svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR"
     SVN_CMD "co -q $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR $TASK_SPACE/iversion-$TOYEAR"
  fi
  export LATEST_MANIFEST=$(ls $TASK_SPACE/iversion-$TOYEAR | grep xml$ | tail -n1)
@@ -744,7 +744,7 @@ SETUP_IVERSION()
  export MANIFEST_VER=$(md5sum $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME | cut -c1-5)
 
  SVN_CMD "add $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME"
- SVN_CMD "ci -q $IBUILD_SVN_OPTION -m "auto: add $IVER_MANIFEST_NAME" $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME"
+ SVN_CMD "ci -q $IBUILD_SVN_OPTION -m 'auto: add $IVER_MANIFEST_NAME' $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME"
  if [[ $? = 0 ]] ; then
 #    export IBUILD_ID=$(echo $BUILD_TIME | cut -c7-8).r$(svn info $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
      if [[ -z $IBUILD_ID && ! -z $BUILD_NUMBER && -z $IVERSION ]] ; then
@@ -826,7 +826,7 @@ REMOTE_NAME=$REMOTE_NAME
     SVN_CMD "up -q $IBUILD_SVN_OPTION $TASK_SPACE/icase-$TOWEEK"
  else
     rm -fr $TASK_SPACE/icase-*
-    SVN_CMD "mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add icase/$TOYEAR/$TOWEEK" svn://$ICASE_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK"
+    SVN_CMD "mkdir -q --parents $IBUILD_SVN_OPTION -m 'auto: add icase/$TOYEAR/$TOWEEK' svn://$ICASE_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK"
     SVN_CMD "co -q $IBUILD_SVN_OPTION svn://$ICASE_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/icase-$TOWEEK"
  fi
 
@@ -837,7 +837,7 @@ REMOTE_NAME=$REMOTE_NAME
  fi
  cp $LOG_PATH/build_info.txt $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt
  SVN_CMD "add $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt"
- SVN_CMD "ci -q $IBUILD_SVN_OPTION -m "auto: add $IVEREV.build_info.txt" $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt"
+ SVN_CMD "ci -q $IBUILD_SVN_OPTION -m 'auto: add $IVEREV.build_info.txt' $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt"
  cp $LOG_PATH/build_info.txt $AUTOUT_UPLOAD_PATH/$ICASE_UPLOAD_URL/
 }
 
