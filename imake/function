@@ -448,8 +448,6 @@ BTRFS_CLEANUP()
  do
     sleep 3
     SPLIT_LINE clean_$LOC_WORKSPACE/$BTRFS_SUBVOL
-    rm -f $LOC_WORKSPACE/$BTRFS_SUBVOL.info
-    rm -f $LOC_WORKSPACE/build/* >/dev/null 2>&1
     time sudo btrfs subvolume delete $LOC_WORKSPACE/build/$BTRFS_SUBVOL >>$LOG_PATH/fs_issue.log 2>&1
     [[ $? != 0 ]] && echo "fs: "$(date) >>$LOCK_SPACE/count
  done
@@ -458,6 +456,7 @@ BTRFS_CLEANUP()
     sudo btrfs subvolume list $LOC_WORKSPACE | grep $BTRFS_TOP >>$LOG_PATH/fs_issue.log 2>&1
     echo "fs_issue: "$(date) >>$LOCK_SPACE/count
  fi
+ rm -fr $LOC_WORKSPACE/build/bad.* >/dev/null 2>&1
 }
 
 MASK_LOG()
