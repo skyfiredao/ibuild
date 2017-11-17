@@ -104,7 +104,7 @@ $BUILD_SPEC_NAME
 " >$TASK_SPACE/tmp/itask.$SEED/$ITASK_REV.mail
 
 if [[ ! -z $GERRIT_CHANGE_NUMBER ]] ; then
-    echo -e "Patch URL:\nhttps://$IBUILD_GRTSRV/gerrit/$GERRIT_CHANGE_NUMBER\n" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
+    echo -e "Patch URL:\nhttps://$IBUILD_GRTSRV/gerrit/$GERRIT_CHANGE_NUMBER\n" >>$TASK_SPACE/tmp/itask.$SEED/$ITASK_REV.mail
 fi
 
 if [[ ! -z $GERRIT_PATCHSET_REVISION ]] ; then
