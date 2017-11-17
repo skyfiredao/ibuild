@@ -96,6 +96,9 @@ export GERRIT_PATCHSET_NUMBER=$(grep '^GERRIT_PATCHSET_NUMBER=' $BUILD_INFO | aw
 export GERRIT_CHANGE_STATUS=$(grep '^GERRIT_CHANGE_STATUS=' $BUILD_INFO | awk -F'GERRIT_CHANGE_STATUS=' {'print $2'})
 export GERRIT_PATCHSET_REVISION=$(grep '^GERRIT_PATCHSET_REVISION=' $BUILD_INFO | awk -F'GERRIT_PATCHSET_REVISION=' {'print $2'})
 export GERRIT_PROJECT=$(grep '^GERRIT_PROJECT=' $BUILD_INFO | awk -F'GERRIT_PROJECT=' {'print $2'})
+export GERRIT_REFSPEC=$(grep '^GERRIT_REFSPEC=' $BUILD_INFO | awk -F'GERRIT_REFSPEC=' {'print $2'})
+export REMOTE_NAME=$(grep '^REMOTE_NAME=' $BUILD_INFO | awk -F'REMOTE_NAME=' {'print $2'})
+    [[ $REMOTE_NAME = No_Remote_Name || -z $REMOTE_NAME ]] &&  export REMOTE_NAME='' || export REMOTE_NAME=$REMOTE_NAME/
 if [[ ! -z $GERRIT_PROJECT && $(grep $GERRIT_PROJECT $TASK_SPACE/tmp/icase.mail.$SEED/ispec/conf/project.conf) ]] ; then
     export OWNER_EMAIL=$GERRIT_CHANGE_OWNER_EMAIL
 fi
@@ -148,7 +151,7 @@ $BUILD_SPEC" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
 if [[ ! -z $GERRIT_PATCHSET_REVISION && $IBUILD_MODE = patch ]] ; then
     echo -e "------------------------- $GERRIT_CHANGE_OWNER_EMAIL" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
     echo "GERRIT_CHANGE_ID: $GERRIT_CHANGE_ID" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
-    export MAIL_REPO_CMD="$GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER"
+    export MAIL_REPO_CMD="git fetch ssh://$IBUILD_GRTSRV/$REMOTE_NAME$GERRIT_PROJECT $GERRIT_REFSPEC && git cherry-pick FETCH_HEAD"
     echo "$MAIL_REPO_CMD" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
     [[ -z $GERRIT_CHANGE_NUMBER && ! -z $GERRIT_PATCHSET_NUMBER ]] && export PATCH_INFO=merged || export PATCH_INFO="$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER"
     export SUB_IBUILD_MODE="[patch][$PATCH_INFO]"
