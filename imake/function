@@ -877,8 +877,8 @@ SETUP_BUILD_OUT()
  [[ -e $BUILD_PATH_TOP && $(pwd) != $BUILD_PATH_TOP ]] && cd $BUILD_PATH_TOP
  if [[ -z $OUT ]] ; then
     cd $BUILD_PATH_TOP
-    source build/envsetup.sh
-    lunch $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT
+    source build/envsetup.sh >/dev/null 2>&1
+    lunch $IBUILD_TARGET_PRODUCT-$IBUILD_TARGET_BUILD_VARIANT >/dev/null 2>&1
  fi
  [[ -e $OUT/system/build.prop ]] && cp $OUT/system/build.prop $BUILD_PATH_TOP/autout/ >/dev/null 2>&1
 
@@ -1036,7 +1036,7 @@ LOG_STATUS()
 
 REPO_DOWNLOAD()
 {
- pushd $LOC_WORKSPACE/build/ibuild
+ pushd $BUILD_PATH_TOP
  SPLIT_LINE "repo download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER"
  time $REPO_CMD download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER >>$LOG_PATH/repo_download.log 2>&1
  export STATUS_REPO=$?
