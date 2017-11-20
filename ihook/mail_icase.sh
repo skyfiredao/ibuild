@@ -98,7 +98,7 @@ export GERRIT_PATCHSET_REVISION=$(grep '^GERRIT_PATCHSET_REVISION=' $BUILD_INFO 
 export GERRIT_PROJECT=$(grep '^GERRIT_PROJECT=' $BUILD_INFO | awk -F'GERRIT_PROJECT=' {'print $2'})
 export GERRIT_REFSPEC=$(grep '^GERRIT_REFSPEC=' $BUILD_INFO | awk -F'GERRIT_REFSPEC=' {'print $2'})
 export REMOTE_NAME=$(grep '^REMOTE_NAME=' $BUILD_INFO | awk -F'REMOTE_NAME=' {'print $2'})
-    [[ $REMOTE_NAME = No_Remote_Name || -z $REMOTE_NAME ]] &&  export REMOTE_NAME='' || export REMOTE_NAME=$REMOTE_NAME/
+    [[ -z $REMOTE_NAME ]] && export REMOTE_NAME='' || export REMOTE_NAME=$REMOTE_NAME/
 if [[ ! -z $GERRIT_PROJECT && $(grep $GERRIT_PROJECT $TASK_SPACE/tmp/icase.mail.$SEED/ispec/conf/project.conf) ]] ; then
     export OWNER_EMAIL=$GERRIT_CHANGE_OWNER_EMAIL
 fi
