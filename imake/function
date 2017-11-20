@@ -242,6 +242,21 @@ GIT_LOG()
  cd -
 }
 
+GET_REMOTE_NAME()
+{
+ export REMOTE_NAME=$(cat $BUILD_PATH_TOP/.repo/manifests/*.xml | grep remote= | awk -F'="' {'print $2'} | awk -F'"' {'print $1'} | sort -u)
+ if [[ ! -z $REMOTE_NAME && $(echo $GERRIT_PROJECT | grep $REMOTE_NAME) ]] ; then
+    export REAL_GERRIT_PROJECT=$(echo $GERRIT_PROJECT | sed "s/$REMOTE_NAME\///g")
+    export FETCH_GERRIT_PROJECT=$GERRIT_PROJECT
+ elif [[ ! -z $REMOTE_NAME && ! $(echo $GERRIT_PROJECT | grep $REMOTE_NAME) ]] ; then
+    export REAL_GERRIT_PROJECT=$GERRIT_PROJECT
+    export FETCH_GERRIT_PROJECT=$REMOTE_NAME/$GERRIT_PROJECT
+ else
+    export REAL_GERRIT_PROJECT=$GERRIT_PROJECT
+    export FETCH_GERRIT_PROJECT=$GERRIT_PROJECT
+ fi
+}
+
 TOPIC_BUILD()
 {
  export Change_ID=$RANDOM
@@ -268,8 +283,7 @@ TOPIC_BUILD()
  done
 
 [[ ! -z $GERRIT_TOPIC ]] && echo "GERRIT_TOPIC=$GERRIT_TOPIC" >>$LOG_PATH/build_info.txt
-export REMOTE_NAME=$(cat $BUILD_PATH_TOP/.repo/manifests/*.xml | grep remote= | awk -F'="' {'print $2'} | awk -F'"' {'print $1'} | sort -u)
-    [[ -z $REMOTE_NAME ]] && export REMOTE_NAME=No_Remote_Name
+GET_REMOTE_NAME
 
 for TOPIC_ID in $(ls /tmp/ | grep topic.I)
 do
@@ -283,12 +297,12 @@ do
     fi
 
     if [[ ! -z $LOCAL_PROJECT_PATH ]] ; then
-        echo -e "git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC \n" >>$LOG_PATH/build_info.txt
+        echo -e "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC \n" >>$LOG_PATH/build_info.txt
         echo -e "cd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH" >>$LOG_PATH/topic.log 2>&1
         SPLIT_LINE "topic: git fetch $GERRIT_REFSPEC in $LOCAL_PROJECT_PATH"
         echo "------------------------- $GERRIT_PROJECT $GERRIT_REFSPEC" >>$LOG_PATH/topic.log 2>&1
         pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH
-        git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/topic.log 2>&1
+        git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/topic.log 2>&1
         export STATUS_GIT=$?
         if [[ $STATUS_GIT = 0 ]] ; then
              git cherry-pick FETCH_HEAD >>$LOG_PATH/topic.log 2>&1
@@ -296,7 +310,7 @@ do
              echo $STATUS_GIT >>$LOG_PATH/topic.log
         fi
         popd
-        SETUP_ISTATUS "topic: $GERRIT_PROJECT $GERRIT_REFSPEC" $ITASK_REV
+        SETUP_ISTATUS "topic: $FETCH_GERRIT_PROJECT $GERRIT_REFSPEC" $ITASK_REV
         LOG_STATUS $STATUS_GIT topic $LOG_PATH/topic.log
     else
         SPLIT_LINE "Can NOT find $LOCAL_PROJECT_PATH in local workspace"
@@ -309,8 +323,7 @@ do
 
 BUNDLE_BUILD()
 {
- export REMOTE_NAME=$(cat $BUILD_PATH_TOP/.repo/manifests/*.xml | grep remote= | awk -F'="' {'print $2'} | awk -F'"' {'print $1'} | sort -u)
-    [[ -z $REMOTE_NAME ]] && export REMOTE_NAME=No_Remote_Name
+ GET_REMOTE_NAME
 
  grep '^BUNDLE_PATCH=' $IBUILD_SPEC | awk -F'BUNDLE_PATCH=' {'print $2'} | while read BUNDLE_PATCH_ENTRY
  do
@@ -322,12 +335,12 @@ BUNDLE_BUILD()
 
     SPLIT_LINE "bundle: $REAL_GERRIT_PROJECT $GERRIT_REFSPEC"
     if [[ ! -z $LOCAL_PROJECT_PATH ]] ; then
-        echo -e "git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC \n" >>$LOG_PATH/build_info.txt
+        echo -e "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC \n" >>$LOG_PATH/build_info.txt
         echo -e "cd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH" >>$LOG_PATH/bundle.log 2>&1
         SPLIT_LINE "bundle: git fetch $GERRIT_REFSPEC in $LOCAL_PROJECT_PATH"
-        echo "------------------------- $EMAIL_PATCH_OWNER|$GERRIT_PROJECT $GERRIT_REFSPEC" >>$LOG_PATH/topic.log 2>&1
+        echo "------------------------- $EMAIL_PATCH_OWNER|$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC" >>$LOG_PATH/bundle.log 2>&1
         pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH
-        git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/topic.log 2>&1
+        git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/bundle.log 2>&1
         export STATUS_GIT=$?
         if [[ $STATUS_GIT = 0 ]] ; then
              git cherry-pick FETCH_HEAD >>$LOG_PATH/bundle.log 2>&1
@@ -336,7 +349,7 @@ BUNDLE_BUILD()
         fi
         popd
         SETUP_ISTATUS "bundle: $GERRIT_PROJECT $GERRIT_REFSPEC" $ITASK_REV
-        LOG_STATUS $STATUS_GIT topic $LOG_PATH/bundle.log
+        LOG_STATUS $STATUS_GIT bundle $LOG_PATH/bundle.log
    else
         SPLIT_LINE "Can NOT find $LOCAL_PROJECT_PATH in local workspace"
         LOG_STATUS 1 bundle $LOG_PATH/bundle.log
@@ -1032,17 +1045,7 @@ REPO_DOWNLOAD()
 
 GIT_CHERRY_PICK()
 {
- export REMOTE_NAME=$(cat $BUILD_PATH_TOP/.repo/manifests/*.xml | grep remote= | awk -F'="' {'print $2'} | awk -F'"' {'print $1'} | sort -u)
- if [[ ! -z $REMOTE_NAME && $(echo $GERRIT_PROJECT | grep $REMOTE_NAME) ]] ; then
-    export REAL_GERRIT_PROJECT=$(echo $GERRIT_PROJECT | sed "s/$REMOTE_NAME\///g")
-    export FETCH_GERRIT_PROJECT=$GERRIT_PROJECT
- elif [[ ! -z $REMOTE_NAME && ! $(echo $GERRIT_PROJECT | grep $REMOTE_NAME) ]] ; then
-    export REAL_GERRIT_PROJECT=$GERRIT_PROJECT
-    export FETCH_GERRIT_PROJECT=$REMOTE_NAME/$GERRIT_PROJECT
- else
-    export REAL_GERRIT_PROJECT=$GERRIT_PROJECT
-    export FETCH_GERRIT_PROJECT=$GERRIT_PROJECT
- fi
+ GET_REMOTE_NAME
 
  export LOCAL_PROJECT_PATH=$(cat /tmp/repo.list | egrep ": $REAL_GERRIT_PROJECT$" | awk -F':' {'print $1'} | head -n1)
  export MANIFEST_PATCHSET=''
