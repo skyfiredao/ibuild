@@ -76,6 +76,7 @@ export GERRIT_PATCHSET_NUMBER=$(grep '^GERRIT_PATCHSET_NUMBER=' $BUILD_SPEC | aw
 export GERRIT_PATCHSET_REVISION=$(grep '^GERRIT_PATCHSET_REVISION=' $BUILD_SPEC | awk -F'GERRIT_PATCHSET_REVISION=' {'print $2'})
 export GERRIT_PROJECT=$(grep '^GERRIT_PROJECT=' $BUILD_SPEC | awk -F'GERRIT_PROJECT=' {'print $2'})
 export GERRIT_REFSPEC=$(grep '^GERRIT_REFSPEC=' $BUILD_INFO | awk -F'GERRIT_REFSPEC=' {'print $2'})
+export GERRIT_TOPIC=$(grep '^GERRIT_TOPIC=' $BUILD_INFO | awk -F'GERRIT_TOPIC=' {'print $2'})
 export EMAIL_TMP=$(grep '^EMAIL_TMP=' $BUILD_SPEC | awk -F'EMAIL_TMP=' {'print $2'})
 
 export MAIL_LIST="-r $IBUILD_FOUNDER_EMAIL $IBUILD_FOUNDER_EMAIL"
@@ -105,6 +106,10 @@ $BUILD_SPEC_NAME
 
 if [[ ! -z $GERRIT_CHANGE_NUMBER ]] ; then
     echo -e "Patch URL:\nhttps://$IBUILD_GRTSRV/gerrit/$GERRIT_CHANGE_NUMBER\n" >>$TASK_SPACE/tmp/itask.$SEED/$ITASK_REV.mail
+fi
+
+if [[ ! -z $GERRIT_TOPIC ]] ; then
+    echo "GERRIT_TOPIC: $GERRIT_TOPIC" >>$TASK_SPACE/tmp/itask.$SEED/$ITASK_REV.mail
 fi
 
 if [[ ! -z $GERRIT_PATCHSET_REVISION ]] ; then
