@@ -99,7 +99,7 @@ EXPORT_IBUILD_SPEC()
 {
  export ITASK_REV=$1
  if [[ ! -z $ITASK_REV ]] ; then
-     SVN_CMD "up -q $IBUILD_SVN_OPTION $ITASK_PATH"
+     svn up -q $IBUILD_SVN_OPTION $ITASK_PATH
      export IBUILD_SPEC_NAME=$(svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$ITASK_SVN_SRV/itask/itask | egrep 'A |M ' | head -n1 | awk -F'tasks/' {'print $2'} | awk -F' ' {'print $1'})
      if [[ ! $(grep IBUILD_GRTSRV $ITASK_PATH/tasks/$IBUILD_SPEC_NAME) ]] ; then
          SPLIT_LINE "$ITASK_PATH/tasks/$IBUILD_SPEC_NAME is not a spec.build"
@@ -201,15 +201,6 @@ EXPORT_IBUILD_SPEC()
     cat $TASK_SPACE/spec.build >>$LOG_PATH/build_info.txt
 }
 
-SVN_CMD()
-{
- pushd /tmp >/dev/null 2>&1
- svn $1
- export STATUS_SVN_CMD=$?
- popd
- return $STATUS_SVN_CMD
-}
-
 FILTER_BAD_PATCH()
 {
  export BAD_PATCH_FILTER=$1
@@ -231,7 +222,7 @@ FILTER_BAD_PATCH()
 
  rm -f /tmp/itask $TASK_SPACE/tmp.spec.$SEED
 
- SVN_CMD "export -q $IBUILD_SVN_OPTION svn://$ITASK_SVN_SRV/ispec/ispec/itask /tmp"
+ svn export -q $IBUILD_SVN_OPTION svn://$ITASK_SVN_SRV/ispec/ispec/itask /tmp
  chmod +x /tmp/itask
 
  SPLIT_LINE "add new task after remove $BAD_PATCH_ENTRY"
@@ -294,9 +285,9 @@ do
     if [[ ! -z $LOCAL_PROJECT_PATH ]] ; then
         echo -e "git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC \n" >>$LOG_PATH/build_info.txt
         echo -e "cd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH" >>$LOG_PATH/topic.log 2>&1
-        pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH
         SPLIT_LINE "topic: git fetch $GERRIT_REFSPEC in $LOCAL_PROJECT_PATH"
         echo "------------------------- $GERRIT_PROJECT $GERRIT_REFSPEC" >>$LOG_PATH/topic.log 2>&1
+        pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH
         git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/topic.log 2>&1
         export STATUS_GIT=$?
         if [[ $STATUS_GIT = 0 ]] ; then
@@ -304,9 +295,9 @@ do
              export STATUS_GIT=$?
              echo $STATUS_GIT >>$LOG_PATH/topic.log
         fi
+        popd
         SETUP_ISTATUS "topic: $GERRIT_PROJECT $GERRIT_REFSPEC" $ITASK_REV
         LOG_STATUS $STATUS_GIT topic $LOG_PATH/topic.log
-        popd
     else
         SPLIT_LINE "Can NOT find $LOCAL_PROJECT_PATH in local workspace"
         LOG_STATUS 1 topic $LOG_PATH/topic.log
@@ -333,9 +324,9 @@ BUNDLE_BUILD()
     if [[ ! -z $LOCAL_PROJECT_PATH ]] ; then
         echo -e "git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC \n" >>$LOG_PATH/build_info.txt
         echo -e "cd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH" >>$LOG_PATH/bundle.log 2>&1
-        pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH
         SPLIT_LINE "bundle: git fetch $GERRIT_REFSPEC in $LOCAL_PROJECT_PATH"
         echo "------------------------- $EMAIL_PATCH_OWNER|$GERRIT_PROJECT $GERRIT_REFSPEC" >>$LOG_PATH/topic.log 2>&1
+        pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH
         git fetch ssh://$IBUILD_GRTSRV/$GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/topic.log 2>&1
         export STATUS_GIT=$?
         if [[ $STATUS_GIT = 0 ]] ; then
@@ -343,9 +334,9 @@ BUNDLE_BUILD()
              export STATUS_GIT=$?
              echo $STATUS_GIT >>$LOG_PATH/bundle.log
         fi
+        popd
         SETUP_ISTATUS "bundle: $GERRIT_PROJECT $GERRIT_REFSPEC" $ITASK_REV
         LOG_STATUS $STATUS_GIT topic $LOG_PATH/bundle.log
-        popd
    else
         SPLIT_LINE "Can NOT find $LOCAL_PROJECT_PATH in local workspace"
         LOG_STATUS 1 bundle $LOG_PATH/bundle.log
@@ -505,12 +496,11 @@ SETUP_SUBV_REPO()
     chmod 775 $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
     popd
 
-    pushd $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
+    cd $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
     /bin/bash $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME.info >$LOG_PATH/init.log 2>&1
     MASK_LOG $LOG_PATH/init.log
     REPO_SYNC $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME
     cp $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME.info $LOC_WORKSPACE/subv_repo/$REPO_INIT_CMD_MD5_NAME/ >/dev/null 2>&1
-    popd
  fi
 }
 
@@ -539,7 +529,7 @@ REPO_SYNC()
     exit 0
  fi
 
- pushd $REPO_WORKSPACE
+ cd $REPO_WORKSPACE
  sudo sysctl -w net.ipv4.tcp_window_scaling=0 >/dev/null 2>&1
 
  export REPO_SYNC_MD5_INFO=$1.info
@@ -571,7 +561,7 @@ REPO_SYNC()
     echo $BUILD_NUMBER >$LOCK_SPACE/BUILD_NUMBER
     touch $LOG_PATH/$MANIFEST_NAME
 
-    SVN_CMD "export -q -r $IVERSION $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion/$IVER_MANIFEST_URL $LOG_PATH/manifest-r$IVERSION.xml"
+    svn export -q -r $IVERSION $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion/$IVER_MANIFEST_URL $LOG_PATH/manifest-r$IVERSION.xml
     rm -f .repo/manifests/manifest-r*.xml >/dev/null 2>&1
     cp $LOG_PATH/manifest-r$IVERSION.xml .repo/manifests/
 
@@ -613,8 +603,6 @@ REPO_SYNC()
     LOG_STATUS $STATUS_SYNC repo_sync $LOG_PATH/$REPO_SYNC_LOG_NAME.log
     CCACHE_HOTFIX
  fi
-
- popd
 }
 
 SETUP_BUILD_REPO()
@@ -685,13 +673,13 @@ SETUP_ISTATUS_OLD()
 
  if [[ ! -e $TASK_SPACE/istatus-$TOYEAR ]] ; then
     rm -fr $TASK_SPACE/istatus-* >/dev/null 2>&1
-    SVN_CMD "co -q $IBUILD_SVN_OPTION svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR $TASK_SPACE/istatus-$TOYEAR"
+    svn co -q $IBUILD_SVN_OPTION svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR $TASK_SPACE/istatus-$TOYEAR
     if [[ $? != 0 ]] ; then
-        SVN_CMD "mkdir -q --parents $IBUILD_SVN_OPTION -m 'auto: add istatus/$TOYEAR' svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR"
-        SVN_CMD "co -q $IBUILD_SVN_OPTION svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR $TASK_SPACE/istatus-$TOYEAR"
+        svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add istatus/$TOYEAR" svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR
+        svn co -q $IBUILD_SVN_OPTION svn://$ISTATUS_SVN_SRV/istatus/$TOYEAR $TASK_SPACE/istatus-$TOYEAR
     fi
  else
-    SVN_CMD "up -q $IBUILD_SVN_OPTION $TASK_SPACE/istatus-$TOYEAR"
+    svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/istatus-$TOYEAR
  fi
  
  touch $TASK_SPACE/istatus-$TOYEAR/$ITASK_REV
@@ -709,21 +697,20 @@ SETUP_ISTATUS_OLD()
     echo $(date +%y%m%d-%H%M%S)"|$HOSTNAME|$ISTATUS_ENTRY" >>$TASK_SPACE/istatus-$TOYEAR/$ITASK_ORDER
  fi
 
- SVN_CMD "add $TASK_SPACE/istatus-$TOYEAR/$ITASK_REV"
- SVN_CMD "add $TASK_SPACE/istatus-$TOYEAR/$ITASK_ORDER"
+ svn add $TASK_SPACE/istatus-$TOYEAR/$ITASK_REV
+ svn add $TASK_SPACE/istatus-$TOYEAR/$ITASK_ORDER
 
  while [ $(ls $TASK_SPACE/istatus-$TOYEAR | wc -l) -ge 100 ] ;
  do
     export OLD_STATUS=$(ls $TASK_SPACE/istatus-$TOYEAR | head -n1)
-    SVN_CMD "rm -q --force $TASK_SPACE/istatus-$TOYEAR/$OLD_STATUS"
+    svn rm -q --force $TASK_SPACE/istatus-$TOYEAR/$OLD_STATUS
  done
 
- SVN_CMD "up -q $IBUILD_SVN_OPTION $TASK_SPACE/istatus-$TOYEAR/"
- SVN_CMD "ci -q $IBUILD_SVN_OPTION -m 'auto: add $ITASK_REV and clean old' $TASK_SPACE/istatus-$TOYEAR/*"
+ svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/istatus-$TOYEAR/
+ svn ci -q $IBUILD_SVN_OPTION -m "auto: add $ITASK_REV and clean old" $TASK_SPACE/istatus-$TOYEAR/*
  if [[ $? != 0 ]] ; then
     rm -fr $TASK_SPACE/istatus-$TOYEAR >/dev/null 2>&1
  fi
- popd >/dev/null 2>&1
 }
 
 SETUP_IVERSION()
@@ -732,19 +719,19 @@ SETUP_IVERSION()
  export IVER_MANIFEST_NAME=$2.xml
 
  if [[ -e $TASK_SPACE/iversion-$TOYEAR/.svn ]] ; then
-    SVN_CMD "up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOYEAR"
+    svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOYEAR
  else
     rm -fr $TASK_SPACE/iversion-*
-    SVN_CMD "mkdir -q --parents $IBUILD_SVN_OPTION -m 'auto: add iversion/$TOYEAR' svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR"
-    SVN_CMD "co -q $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR $TASK_SPACE/iversion-$TOYEAR"
+    svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add iversion/$TOYEAR" svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR
+    svn co -q $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR $TASK_SPACE/iversion-$TOYEAR
  fi
  export LATEST_MANIFEST=$(ls $TASK_SPACE/iversion-$TOYEAR | grep xml$ | tail -n1)
-    [[ ! -z $LATEST_MANIFEST ]] && SVN_CMD "cp $TASK_SPACE/iversion-$TOYEAR/$LATEST_MANIFEST $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME"
+    [[ ! -z $LATEST_MANIFEST ]] && svn cp $TASK_SPACE/iversion-$TOYEAR/$LATEST_MANIFEST $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME
  cp $ORIG_MANIFEST_URL $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME
  export MANIFEST_VER=$(md5sum $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME | cut -c1-5)
 
- SVN_CMD "add $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME"
- SVN_CMD "ci -q $IBUILD_SVN_OPTION -m 'auto: add $IVER_MANIFEST_NAME' $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME"
+ svn add $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME
+ svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVER_MANIFEST_NAME" $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME
  if [[ $? = 0 ]] ; then
 #    export IBUILD_ID=$(echo $BUILD_TIME | cut -c7-8).r$(svn info $TASK_SPACE/iversion-$TOYEAR/$IVER_MANIFEST_NAME | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
      if [[ -z $IBUILD_ID && ! -z $BUILD_NUMBER && -z $IVERSION ]] ; then
@@ -823,11 +810,11 @@ REMOTE_NAME=$REMOTE_NAME
  mv $LOG_PATH/build_info.tmp $LOG_PATH/build_info.txt
  
  if [[ -e $TASK_SPACE/icase-$TOWEEK ]] ; then
-    SVN_CMD "up -q $IBUILD_SVN_OPTION $TASK_SPACE/icase-$TOWEEK"
+    svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/icase-$TOWEEK
  else
     rm -fr $TASK_SPACE/icase-*
-    SVN_CMD "mkdir -q --parents $IBUILD_SVN_OPTION -m 'auto: add icase/$TOYEAR/$TOWEEK' svn://$ICASE_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK"
-    SVN_CMD "co -q $IBUILD_SVN_OPTION svn://$ICASE_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/icase-$TOWEEK"
+    svn mkdir -q --parents $IBUILD_SVN_OPTION -m "auto: add icase/$TOYEAR/$TOWEEK" svn://$ICASE_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK
+    svn co -q $IBUILD_SVN_OPTION svn://$ICASE_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/icase-$TOWEEK
  fi
 
  if [[ ! -z $ITASK_REV ]] ; then
@@ -836,8 +823,8 @@ REMOTE_NAME=$REMOTE_NAME
     export IVEREV=$IBUILD_ID
  fi
  cp $LOG_PATH/build_info.txt $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt
- SVN_CMD "add $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt"
- SVN_CMD "ci -q $IBUILD_SVN_OPTION -m 'auto: add $IVEREV.build_info.txt' $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt"
+ svn add $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt
+ svn ci -q $IBUILD_SVN_OPTION -m "auto: add $IVEREV.build_info.txt" $TASK_SPACE/icase-$TOWEEK/$IVEREV.build_info.txt
  cp $LOG_PATH/build_info.txt $AUTOUT_UPLOAD_PATH/$ICASE_UPLOAD_URL/
 }
 
@@ -863,9 +850,9 @@ DIFF_MANIFEST()
  export DIFF_MANIFEST=''
  export MANIFEST_MD5=$(md5sum $LOG_PATH/manifest.xml | awk -F' ' {'print $1'})
  if [[ -e $TASK_SPACE/iversion-$TOYEAR ]] ; then
-    SVN_CMD "up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOYEAR"
+    svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/iversion-$TOYEAR
  else
-    SVN_CMD "co -q $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR $TASK_SPACE/iversion-$TOYEAR"
+    svn co -q $IBUILD_SVN_OPTION svn://$IVERSION_SVN_SRV/iversion/iversion/$TOYEAR $TASK_SPACE/iversion-$TOYEAR
  fi
  if [[ $(md5sum $TASK_SPACE/iversion-$TOYEAR/*itest* | grep $MANIFEST_MD5) ]] ; then
      touch $LOG_PATH/nobuild
@@ -1036,12 +1023,11 @@ LOG_STATUS()
 
 REPO_DOWNLOAD()
 {
- pushd $BUILD_PATH_TOP
+ cd $BUILD_PATH_TOP
  SPLIT_LINE "repo download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER"
  time $REPO_CMD download $GERRIT_PROJECT $GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER >>$LOG_PATH/repo_download.log 2>&1
  export STATUS_REPO=$?
  LOG_STATUS $STATUS_REPO repo_download $LOG_PATH/repo_download.log
- popd
 }
 
 GIT_CHERRY_PICK()
@@ -1067,7 +1053,7 @@ GIT_CHERRY_PICK()
     SPLIT_LINE manifest_change
  fi
 
- pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH
+ cd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH
 
  if [[ $? != 0 || -z $LOCAL_PROJECT_PATH ]] ; then
     SPLIT_LINE "nobuild: Cannot find $GERRIT_PROJECT local path"
@@ -1103,7 +1089,7 @@ GIT_CHERRY_PICK()
     rm -f /tmp/diff-$NOW.tmp
     exit 0
  fi
- popd
+ cd $BUILD_PATH_TOP
 
  if [[ $MANIFEST_PATCHSET = true ]] ; then
     SPLIT_LINE "Clean workspace and sync again"

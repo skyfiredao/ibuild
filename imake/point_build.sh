@@ -44,13 +44,13 @@ mkdir -p $TASK_SPACE/tmp/$SEED
 svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase $TASK_SPACE/tmp/$SEED/icase
 svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec $TASK_SPACE/tmp/$SEED/ispec
 
-pushd $TASK_SPACE/tmp/$SEED/icase
+cd $TASK_SPACE/tmp/$SEED/icase
 export BUILD_INFO=$(find | egrep "/r$IVER." | hear -n1)
 if [[ $(egrep 'RESULT=FAILED|RESULT=ISSUE' $BUILD_INFO) ]] ; then
     echo "The build hase issue, please change to another version."
     exit
 fi
-popd
+
 
 export ITASK_CMD=$(which itask)
 [[ -z $ITASK_CMD ]] && export ITASK_CMD=$TASK_SPACE/tmp/$SEED/ispec/itask && echo "Use $TASK_SPACE/tmp/$SEED/ispec/itask"
