@@ -299,14 +299,14 @@ do
     fi
 
     if [[ ! -z $LOCAL_PROJECT_PATH ]] ; then
-        SPLIT_LINE "topic: git fetch $GERRIT_REFSPEC in $LOCAL_PROJECT_PATH"
+        SPLIT_LINE "$LOCAL_PROJECT_PATH: $FETCH_GERRIT_PROJECT $GERRIT_REFSPEC"
 
-        echo "------------------------- topic: $GERRIT_TOPIC $(echo $TOPIC_ID | awk -F'topic.' {'print $2'})" >>$LOG_PATH/topic.log 2>&1
+        echo "------------------------- topic: $GERRIT_TOPIC $(echo $TOPIC_ID | awk -F'.' {'print $2'})" >>$LOG_PATH/topic.log 2>&1
         echo "cd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH" >>$LOG_PATH/topic.log 2>&1
         echo "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC" >>$LOG_PATH/topic.log 2>&1
         echo -e "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC \n" >>$LOG_PATH/build_info.txt
 
-        pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH
+        pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH >$LOG_PATH/topic.log 2>&1
         git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/topic.log 2>&1
         export STATUS_GIT=$?
         if [[ $STATUS_GIT = 0 ]] ; then
@@ -314,7 +314,7 @@ do
              export STATUS_GIT=$?
              echo $STATUS_GIT >>$LOG_PATH/topic.log
         fi
-        popd
+        popd >$LOG_PATH/topic.log 2>&1
 
         SETUP_ISTATUS "topic: $FETCH_GERRIT_PROJECT $GERRIT_REFSPEC" $ITASK_REV
         LOG_STATUS $STATUS_GIT topic $LOG_PATH/topic.log
@@ -330,6 +330,7 @@ do
 BUNDLE_BUILD()
 {
  $REPO_CMD list >/tmp/repo.list
+ SPLIT_LINE "bundle_build"
 
  grep '^BUNDLE_PATCH=' $IBUILD_SPEC | awk -F'BUNDLE_PATCH=' {'print $2'} | while read BUNDLE_PATCH_ENTRY
  do
@@ -340,9 +341,9 @@ BUNDLE_BUILD()
     export REAL_GERRIT_PROJECT=$(echo $GERRIT_PROJECT | sed "s/$REMOTE_NAME\///g")
     export LOCAL_PROJECT_PATH=$(cat /tmp/repo.list | egrep ": $REAL_GERRIT_PROJECT$" | awk -F':' {'print $1'} | head -n1)
 
-    SPLIT_LINE "bundle: $REAL_GERRIT_PROJECT $GERRIT_REFSPEC"
+    SPLIT_LINE "$LOCAL_PROJECT_PATH: $FETCH_GERRIT_PROJECT $GERRIT_REFSPEC"
     if [[ ! -z $LOCAL_PROJECT_PATH ]] ; then
-        SPLIT_LINE "bundle: git fetch $GERRIT_REFSPEC in $LOCAL_PROJECT_PATH"
+        SPLIT_LINE "$LOCAL_PROJECT_PATH: $FETCH_GERRIT_PROJECT $GERRIT_REFSPEC"
 
         echo "------------------------- $EMAIL_PATCH_OWNER" >>$LOG_PATH/bundle.log 2>&1
         echo "cd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH" >>$LOG_PATH/bundle.log 2>&1
