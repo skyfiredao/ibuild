@@ -300,7 +300,7 @@ do
         echo -e "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC \n" >>$LOG_PATH/build_info.txt
         echo -e "cd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH" >>$LOG_PATH/topic.log 2>&1
         SPLIT_LINE "topic: git fetch $GERRIT_REFSPEC in $LOCAL_PROJECT_PATH"
-        echo "------------------------- $GERRIT_PROJECT $GERRIT_REFSPEC" >>$LOG_PATH/topic.log 2>&1
+        echo "------------------------- git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC" >>$LOG_PATH/topic.log 2>&1
         pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH
         git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/topic.log 2>&1
         export STATUS_GIT=$?
@@ -338,7 +338,8 @@ BUNDLE_BUILD()
         echo -e "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC \n" >>$LOG_PATH/build_info.txt
         echo -e "cd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH" >>$LOG_PATH/bundle.log 2>&1
         SPLIT_LINE "bundle: git fetch $GERRIT_REFSPEC in $LOCAL_PROJECT_PATH"
-        echo "------------------------- $EMAIL_PATCH_OWNER|$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC" >>$LOG_PATH/bundle.log 2>&1
+        echo "------------------------- $EMAIL_PATCH_OWNER" >>$LOG_PATH/bundle.log 2>&1
+        echo "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC" >>$LOG_PATH/bundle.log 2>&1
         pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH
         git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/bundle.log 2>&1
         export STATUS_GIT=$?
