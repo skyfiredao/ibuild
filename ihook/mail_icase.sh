@@ -167,7 +167,7 @@ fi
 if [[ $IBUILD_MODE = topic ]] ; then
     export GERRIT_TOPIC=$(grep '^GERRIT_TOPIC=' $BUILD_INFO | awk -F'GERRIT_TOPIC=' {'print $2'})
     export SUB_IBUILD_MODE="[topic][$GERRIT_TOPIC]"
-    echo -e "------------------------- topic:$GERRIT_TOPIC $GERRIT_CHANGE_OWNER_EMAIL\n" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
+    echo -e "------------------------- topic: $GERRIT_TOPIC $GERRIT_CHANGE_OWNER_EMAIL\n" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
     grep '^git fetch' $BUILD_INFO | while read TOPIC_PATCH_ENTRY
     do
         echo -e $(echo $TOPIC_PATCH_ENTRY | awk -F' ' {'print $3" "$4'})"\n" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
