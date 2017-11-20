@@ -255,6 +255,7 @@ GET_REMOTE_NAME()
     export REAL_GERRIT_PROJECT=$GERRIT_PROJECT
     export FETCH_GERRIT_PROJECT=$GERRIT_PROJECT
  fi
+ echo "REMOTE_NAME=$REMOTE_NAME" >>$LOG_PATH/build_info.txt
 }
 
 TOPIC_BUILD()
@@ -287,8 +288,9 @@ TOPIC_BUILD()
 for TOPIC_ID in $(ls /tmp/ | grep topic.I)
 do
     GET_REMOTE_NAME
-    export REAL_GERRIT_PROJECT=$(cat /tmp/$TOPIC_ID | sort -u | grep '^project: ' | sed "s/$REMOTE_NAME\///g" | awk -F': ' {'print $2'})
     export GERRIT_PROJECT=$(cat /tmp/$TOPIC_ID | sort -u | grep '^project: ' | awk -F': ' {'print $2'})
+    GET_REMOTE_NAME
+    export REAL_GERRIT_PROJECT=$(cat /tmp/$TOPIC_ID | sort -u | grep '^project: ' | sed "s/$REMOTE_NAME\///g" | awk -F': ' {'print $2'})
     export LOCAL_PROJECT_PATH=$(cat /tmp/repo.list | egrep ": $REAL_GERRIT_PROJECT$" | awk -F':' {'print $1'} | head -n1)
     export GERRIT_REFSPEC=$(cat /tmp/$TOPIC_ID | grep '^ref: ' | tail -n1 | awk -F': ' {'print $2'})
 
@@ -327,14 +329,16 @@ do
 
 BUNDLE_BUILD()
 {
+ $REPO_CMD list >/tmp/repo.list
+
  grep '^BUNDLE_PATCH=' $IBUILD_SPEC | awk -F'BUNDLE_PATCH=' {'print $2'} | while read BUNDLE_PATCH_ENTRY
  do
-    GET_REMOTE_NAME
     export EMAIL_PATCH_OWNER=$(echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $1'})
     export GERRIT_PROJECT=$(echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $2'} | awk -F' ' {'print $1'})
+    export GERRIT_REFSPEC=$(echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $2'} | awk -F': ' {'print $2'})
+    GET_REMOTE_NAME
     export REAL_GERRIT_PROJECT=$(echo $GERRIT_PROJECT | sed "s/$REMOTE_NAME\///g")
     export LOCAL_PROJECT_PATH=$(cat /tmp/repo.list | egrep ": $REAL_GERRIT_PROJECT$" | awk -F':' {'print $1'} | head -n1)
-    export GERRIT_REFSPEC=$(echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $2'} | awk -F': ' {'print $2'})
 
     SPLIT_LINE "bundle: $REAL_GERRIT_PROJECT $GERRIT_REFSPEC"
     if [[ ! -z $LOCAL_PROJECT_PATH ]] ; then
@@ -355,7 +359,7 @@ BUNDLE_BUILD()
         fi
         popd
 
-        SETUP_ISTATUS "bundle: $GERRIT_PROJECT $GERRIT_REFSPEC" $ITASK_REV
+        SETUP_ISTATUS "bundle: $FETCH_GERRIT_PROJECT $GERRIT_REFSPEC" $ITASK_REV
         LOG_STATUS $STATUS_GIT bundle $LOG_PATH/bundle.log
    else
         SPLIT_LINE "Can NOT find $LOCAL_PROJECT_PATH in local workspace"
@@ -363,35 +367,49 @@ BUNDLE_BUILD()
    fi
  done
 
- grep '^git fetch' $IBUILD_SPEC | awk -F'&&' {'print $1'} | while read IBUILD_FETCH_HEAD_ENTRY
+ grep '^git fetch' $IBUILD_SPEC | awk -F'&&' {'print $1'} | while read BUNDLE_PATCH_ENTRY
  do
-    export IBUILD_FETCH_GRTSRV_ID=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F'@' {'print $1'} | awk -F'//' {'print $2'})
-    export IBUILD_FETCH_GRTSRV_PORT=$(echo $IBUILD_FETCH_HEAD_ENTRY | awk -F':' {'print $3'} | awk -F'/' {'print $1'})
-    export IBUILD_FETCH_HEAD_PROJECT=$(echo $IBUILD_FETCH_HEAD_ENTRY | sed "s/:$IBUILD_FETCH_GRTSRV_PORT//g" | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $1'})
-    export IBUILD_FETCH_HEAD_REFS=$(echo $IBUILD_FETCH_HEAD_ENTRY | sed "s/:$IBUILD_FETCH_GRTSRV_PORT//g" | awk -F"$IBUILD_FETCH_GRTSRV/" {'print $2'} | awk -F' ' {'print $2'})
-    export IBUILD_FETCH_HEAD_PATH=$($REPO_CMD list | egrep ": $IBUILD_FETCH_HEAD_PROJECT$" | awk -F':' {'print $1'} | head -n1)
-    export IBUILD_FETCH_HEAD_ENTRY_FIX=$(echo $IBUILD_FETCH_HEAD_ENTRY | sed -e "s/$IBUILD_FETCH_GRTSRV_ID@//g" | sed -e "s/:$IBUILD_FETCH_GRTSRV_PORT//g")
-       [[ -z $IBUILD_FETCH_HEAD_PATH ]] && export IBUILD_FETCH_HEAD_PATH="NO_path_for_$IBUILD_FETCH_HEAD_PROJECT"
-    SPLIT_LINE "bundle: git fetch $IBUILD_FETCH_HEAD_REFS in $IBUILD_FETCH_HEAD_PATH"
-    echo "------------------------- $IBUILD_FETCH_HEAD_PROJECT $IBUILD_FETCH_HEAD_REFS" >>$LOG_PATH/bundle.log 2>&1
-    echo -e "cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH" >>$LOG_PATH/bundle.log 2>&1
-    cd $BUILD_PATH_TOP/$IBUILD_FETCH_HEAD_PATH >>$LOG_PATH/bundle.log 2>&1
-    export STATUS_GIT=$?
-    echo -e "$IBUILD_FETCH_HEAD_ENTRY_FIX\n" >>$LOG_PATH/bundle.log 2>&1
-    time $IBUILD_FETCH_HEAD_ENTRY_FIX >>$LOG_PATH/bundle.log 2>&1
-    export STATUS_GIT=$?
-    echo $STATUS_GIT >>$LOG_PATH/bundle.log
-    if [[ $STATUS_GIT = 0 ]] ; then
-        echo -e "\ngit cherry-pick FETCH_HEAD\n" >>$LOG_PATH/bundle.log 2>&1
-        git cherry-pick FETCH_HEAD >>$LOG_PATH/bundle.log 2>&1
+    if [[ $(echo $BUNDLE_PATCH_ENTRY | grep @) ]] ; then
+        export BUNDLE_USER_ID=$(echo $BUNDLE_PATCH_ENTRY | awk -F'@' {'print $1'} | awk -F'//' {'print $2'})
+        export BUNDLE_PATCH_ENTRY=$(echo $BUNDLE_PATCH_ENTRY | sed "s/$BUNDLE_USER_ID@//g")
+    fi
+    if [[ $(echo $BUNDLE_PATCH_ENTRY | sed 's/ssh://g' | grep ":") ]] ; then
+        export BUNDLE_PATCH_GRTSRV_PORT=$(echo $BUNDLE_PATCH_ENTRY | awk -F':' {'print $3'} | awk -F'/' {'print $1'})
+        export BUNDLE_PATCH_ENTRY=$(echo $BUNDLE_PATCH_ENTRY | sed "s/:$IBUILD_FETCH_GRTSRV_PORT//g")
+    fi
+    export BUNDLE_PATCH_GRTSRV=$(echo $BUNDLE_PATCH_ENTRY | awk -F'//' {'print $2'} | awk -F'/' {'print $1'})
+
+    export GERRIT_PROJECT=$(echo $BUNDLE_PATCH_ENTRY | awk -F'$BUNDLE_PATCH_GRTSRV/' {'print $2'} | awk -F' ' {'print $1'})
+    export GERRIT_REFSPEC=$(echo $BUNDLE_PATCH_ENTRY | awk -F'$BUNDLE_PATCH_GRTSRV/' {'print $2'} | awk -F' ' {'print $2'})
+    GET_REMOTE_NAME
+    export REAL_GERRIT_PROJECT=$(echo $GERRIT_PROJECT | sed "s/$REMOTE_NAME\///g")
+    export LOCAL_PROJECT_PATH=$(cat /tmp/repo.list | egrep ": $REAL_GERRIT_PROJECT$" | awk -F':' {'print $1'} | head -n1)
+
+    SPLIT_LINE "bundle: $REAL_GERRIT_PROJECT $GERRIT_REFSPEC"
+    if [[ ! -z $LOCAL_PROJECT_PATH ]] ; then
+        SPLIT_LINE "bundle: git fetch $GERRIT_REFSPEC in $LOCAL_PROJECT_PATH"
+
+        echo "------------------------- bundle: " >>$LOG_PATH/bundle.log 2>&1
+        echo "cd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH" >>$LOG_PATH/bundle.log 2>&1
+        echo "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC" >>$LOG_PATH/bundle.log 2>&1
+        echo -e "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC \n" >>$LOG_PATH/build_info.txt
+
+        pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH
+        git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/bundle.log 2>&1
         export STATUS_GIT=$?
-        echo $STATUS_GIT >>$LOG_PATH/bundle.log
-    fi
-    if [[ $STATUS_GIT != 0 && ! -z $IBUILD_FETCH_HEAD_REFS ]] ; then
-        FILTER_BAD_PATCH $IBUILD_FETCH_HEAD_REFS
-    fi
-    SETUP_ISTATUS "patch: $IBUILD_FETCH_HEAD_ENTRY" $ITASK_REV
-    LOG_STATUS $STATUS_GIT bundle $LOG_PATH/bundle.log
+        if [[ $STATUS_GIT = 0 ]] ; then
+             git cherry-pick FETCH_HEAD >>$LOG_PATH/bundle.log 2>&1
+             export STATUS_GIT=$?
+             echo $STATUS_GIT >>$LOG_PATH/bundle.log
+        fi
+        popd
+
+        SETUP_ISTATUS "bundle: $FETCH_GERRIT_PROJECT $GERRIT_REFSPEC" $ITASK_REV
+        LOG_STATUS $STATUS_GIT bundle $LOG_PATH/bundle.log
+   else
+        SPLIT_LINE "Can NOT find $LOCAL_PROJECT_PATH in local workspace"
+        LOG_STATUS 1 bundle $LOG_PATH/bundle.log
+   fi
  done
 
  [[ -e $BUILD_PATH_TOP && $(pwd) != $BUILD_PATH_TOP ]] && cd $BUILD_PATH_TOP

@@ -26,5 +26,5 @@ IBUILD_UPLOAD_URL=sshfs_server_name:/local/share/build
 IVERIFY=yes
 IVERIFY_PRIORITY=
 IVERSION=
-repo download build 102012/3
-repo download kernel/common 102011/6
+git fetch ssh://gerrit_server/frameworks/base refs/changes/81/186118/5
+git fetch ssh://gerrit_server/vendor/google/packages/apps/Abc refs/changes/91/220290/2
