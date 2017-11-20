@@ -244,7 +244,7 @@ GIT_LOG()
 
 GET_REMOTE_NAME()
 {
- export REMOTE_NAME=$(cat $BUILD_PATH_TOP/.repo/manifests/*.xml | grep remote= | awk -F'="' {'print $2'} | awk -F'"' {'print $1'} | sort -u)
+ [[ -z $REMOTE_NAME ]] && export REMOTE_NAME=$(cat $BUILD_PATH_TOP/.repo/manifests/*.xml | grep remote= | awk -F'="' {'print $2'} | awk -F'"' {'print $1'} | sort -u)
  if [[ ! -z $REMOTE_NAME && $(echo $GERRIT_PROJECT | grep $REMOTE_NAME) ]] ; then
     export REAL_GERRIT_PROJECT=$(echo $GERRIT_PROJECT | sed "s/$REMOTE_NAME\///g")
     export FETCH_GERRIT_PROJECT=$GERRIT_PROJECT
@@ -299,9 +299,10 @@ do
     if [[ ! -z $LOCAL_PROJECT_PATH ]] ; then
         SPLIT_LINE "topic: git fetch $GERRIT_REFSPEC in $LOCAL_PROJECT_PATH"
 
+        echo "------------------------- topic: $GERRIT_TOPIC $(echo $TOPIC_ID | awk -F'topic.' {'print $2'})" >>$LOG_PATH/topic.log 2>&1
+        echo "cd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH" >>$LOG_PATH/topic.log 2>&1
+        echo "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC" >>$LOG_PATH/topic.log 2>&1
         echo -e "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC \n" >>$LOG_PATH/build_info.txt
-        echo -e "cd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH" >>$LOG_PATH/topic.log 2>&1
-        echo "------------------------- git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC" >>$LOG_PATH/topic.log 2>&1
 
         pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH
         git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/topic.log 2>&1
@@ -339,10 +340,10 @@ BUNDLE_BUILD()
     if [[ ! -z $LOCAL_PROJECT_PATH ]] ; then
         SPLIT_LINE "bundle: git fetch $GERRIT_REFSPEC in $LOCAL_PROJECT_PATH"
 
-        echo -e "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC \n" >>$LOG_PATH/build_info.txt
-        echo -e "cd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH" >>$LOG_PATH/bundle.log 2>&1
         echo "------------------------- $EMAIL_PATCH_OWNER" >>$LOG_PATH/bundle.log 2>&1
+        echo "cd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH" >>$LOG_PATH/bundle.log 2>&1
         echo "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC" >>$LOG_PATH/bundle.log 2>&1
+        echo -e "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC \n" >>$LOG_PATH/build_info.txt
 
         pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH
         git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/bundle.log 2>&1
