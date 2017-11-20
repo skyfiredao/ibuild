@@ -268,7 +268,7 @@ TOPIC_BUILD()
  done
 
 [[ ! -z $GERRIT_TOPIC ]] && echo "GERRIT_TOPIC=$GERRIT_TOPIC" >>$LOG_PATH/build_info.txt
-export REMOTE_NAME=$(cat .repo/manifests/*.xml | grep remote= | awk -F'="' {'print $2'} | awk -F'"' {'print $1'} | sort -u)
+export REMOTE_NAME=$(cat $BUILD_PATH_TOP/.repo/manifests/*.xml | grep remote= | awk -F'="' {'print $2'} | awk -F'"' {'print $1'} | sort -u)
     [[ -z $REMOTE_NAME ]] && export REMOTE_NAME=No_Remote_Name
 
 for TOPIC_ID in $(ls /tmp/ | grep topic.I)
@@ -309,7 +309,7 @@ do
 
 BUNDLE_BUILD()
 {
- export REMOTE_NAME=$(cat .repo/manifests/*.xml | grep remote= | awk -F'="' {'print $2'} | awk -F'"' {'print $1'} | sort -u)
+ export REMOTE_NAME=$(cat $BUILD_PATH_TOP/.repo/manifests/*.xml | grep remote= | awk -F'="' {'print $2'} | awk -F'"' {'print $1'} | sort -u)
     [[ -z $REMOTE_NAME ]] && export REMOTE_NAME=No_Remote_Name
 
  grep '^BUNDLE_PATCH=' $IBUILD_SPEC | awk -F'BUNDLE_PATCH=' {'print $2'} | while read BUNDLE_PATCH_ENTRY
