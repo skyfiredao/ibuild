@@ -245,6 +245,13 @@ $DEBUG /bin/mv /tmp/ccache/ccache /usr/bin/ccache
 . /etc/bash.ibuild.bashrc
 ccache -M 150G
 
+cp /etc/security/limits.conf /tmp
+echo "
+ibuild    hard    nofile    65535
+ibuild    soft    nofile    65535
+" >>/tmp/limits.conf
+sudo cp /tmp/limits.conf /etc/security/limits.conf
+
 mkdir -p /local/srv
 
 # setup svn server
