@@ -336,7 +336,7 @@ BUNDLE_BUILD()
  do
     export EMAIL_PATCH_OWNER=$(echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $1'})
     export GERRIT_PROJECT=$(echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $2'} | awk -F' ' {'print $1'})
-    export GERRIT_REFSPEC=$(echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $2'} | awk -F': ' {'print $2'})
+    export GERRIT_REFSPEC=$(echo $BUNDLE_PATCH_ENTRY | awk -F'|' {'print $2'} | awk -F' ' {'print $2'})
     GET_REMOTE_NAME
     export REAL_GERRIT_PROJECT=$(echo $GERRIT_PROJECT | sed "s/$REMOTE_NAME\///g")
     export LOCAL_PROJECT_PATH=$(cat /tmp/repo.list | egrep ": $REAL_GERRIT_PROJECT$" | awk -F':' {'print $1'} | head -n1)
