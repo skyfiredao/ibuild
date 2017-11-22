@@ -306,7 +306,7 @@ do
         echo "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC" >>$LOG_PATH/topic.log 2>&1
         echo -e "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC \n" >>$LOG_PATH/build_info.txt
 
-        pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH >$LOG_PATH/topic.log 2>&1
+        pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH >>$LOG_PATH/topic.log 2>&1
         git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/topic.log 2>&1
         export STATUS_GIT=$?
         if [[ $STATUS_GIT = 0 ]] ; then
@@ -314,7 +314,7 @@ do
              export STATUS_GIT=$?
              echo $STATUS_GIT >>$LOG_PATH/topic.log
         fi
-        popd >$LOG_PATH/topic.log 2>&1
+        popd >>$LOG_PATH/topic.log 2>&1
 
         SETUP_ISTATUS "topic: $FETCH_GERRIT_PROJECT $GERRIT_REFSPEC" $ITASK_REV
         LOG_STATUS $STATUS_GIT topic $LOG_PATH/topic.log
