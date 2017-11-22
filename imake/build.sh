@@ -43,6 +43,7 @@ hostname
 echo $IP
 date
 echo itask:$ITASK_REV
+uptime
 
 REPO_INFO
 $IBUILD_ROOT/imake/$IBUILD_MAKE_TOOL
