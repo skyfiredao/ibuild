@@ -1032,6 +1032,8 @@ CLEAN_EXIT()
     [[ $(echo $CCACHE_MAX_SIZE - $CCACHE_SIZE | bc) -le 10 ]] && $ORIG_CCACHE_URL -Cc
  fi
  pkill -9 java
+ pkill -9 javadoc
+ pkill -9 aapt
  exit $1
 }
 
