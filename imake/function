@@ -350,7 +350,7 @@ BUNDLE_BUILD()
         echo "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC" >>$LOG_PATH/bundle.log 2>&1
         echo -e "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC \n" >>$LOG_PATH/build_info.txt
 
-        pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH
+        pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH >>$LOG_PATH/bundle.log 2>&1
         git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/bundle.log 2>&1
         export STATUS_GIT=$?
         if [[ $STATUS_GIT = 0 ]] ; then
@@ -358,7 +358,7 @@ BUNDLE_BUILD()
              export STATUS_GIT=$?
              echo $STATUS_GIT >>$LOG_PATH/bundle.log
         fi
-        popd
+        popd >>$LOG_PATH/bundle.log 2>&1
 
         [[ $STATUS_GIT != 0 ]] && FILTER_BAD_PATCH $GERRIT_REFSPEC
 
