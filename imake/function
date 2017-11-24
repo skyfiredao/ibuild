@@ -360,9 +360,12 @@ BUNDLE_BUILD()
         fi
         popd
 
+        [[ $STATUS_GIT != 0 ]] && FILTER_BAD_PATCH $GERRIT_REFSPEC
+
         SETUP_ISTATUS "bundle: $FETCH_GERRIT_PROJECT $GERRIT_REFSPEC" $ITASK_REV
         LOG_STATUS $STATUS_GIT bundle $LOG_PATH/bundle.log
    else
+        FILTER_BAD_PATCH $GERRIT_REFSPEC
         SPLIT_LINE "Can NOT find $LOCAL_PROJECT_PATH in local workspace"
         LOG_STATUS 1 bundle $LOG_PATH/bundle.log
    fi
