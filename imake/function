@@ -211,7 +211,7 @@ FILTER_BAD_PATCH()
  [[ $(echo $BAD_PATCH_ENTRY | grep '|') ]] && export BAD_PATCH_ENTRY=$BAD_PATCH_FILTER
  cp $IBUILD_SPEC /tmp/$NEW_IBUILD_SPEC_NAME
 
- echo $BAD_PATCH_ENTRY >>$LOG_PATH/rebundle.log 2>&1
+ grep $BAD_PATCH_ENTRY /tmp/$NEW_IBUILD_SPEC_NAME >>$LOG_PATH/rebundle.log 2>&1
  egrep -v "$BAD_PATCH_ENTRY|^ITASK_ORDER=$" /tmp/$NEW_IBUILD_SPEC_NAME >$TASK_SPACE/tmp.spec.$SEED
 
  if [[ ! $(grep '^ITASK_ORDER=' $TASK_SPACE/tmp.spec.$SEED) ]] ; then
