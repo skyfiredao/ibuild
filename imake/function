@@ -295,7 +295,7 @@ do
     export GERRIT_REFSPEC=$(cat /tmp/$TOPIC_ID | grep '^ref: ' | tail -n1 | awk -F': ' {'print $2'})
 
     if [[ $(echo $REAL_GERRIT_PROJECT | grep manifest) ]] ; then
-        export LOCAL_PROJECT_PATH=$BUILD_PATH_TOP/.repo/manifests
+        export LOCAL_PROJECT_PATH=.repo/manifests
     fi
 
     if [[ ! -z $LOCAL_PROJECT_PATH ]] ; then
