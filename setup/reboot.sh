@@ -61,9 +61,9 @@ if [[ -e $TASK_SPACE/reboot && ! -e $TASK_SPACE/spec.build && ! $(hostname | gre
 fi
 
 if [[ -e /dev/shm/spec.build ]] ; then
-    export SPEC_TIME=$(stat /dev/shm/spec.build | grep Modify | awk -F' ' {'print $2'} | awk -F'-' {'print $3'})
-    export LOAD_NOW=$(w | grep average | awk -F'average: ' {'print $2'} | awk -F'.' {'print $1'})
-    if [[ $(echo $(date +%d) - $SPEC_TIME | bc) -ge 2 ]] ; then
+    export SPEC_TIME=$(date -d"$(stat /dev/shm/spec.build | grep Modify | awk -F' ' {'print $2'})" +%s)
+#    export LOAD_NOW=$(w | grep average | awk -F'average: ' {'print $2'} | awk -F'.' {'print $1'})
+    if [[ $(echo $(date +%s) - $SPEC_TIME | bc) -gt 7200 ]] ; then
         pkill -9 java
         pkill -9 aapt
         rm -f /dev/shm/spec.build
