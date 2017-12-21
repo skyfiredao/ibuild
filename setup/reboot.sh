@@ -32,8 +32,9 @@ REBOOT_STEP()
  nc 127.0.0.1 1234
  sync
  if [[ ! -z $IBUILD_FOUNDER_EMAIL && $(which mail) ]] ; then
-    last >~/last_reboot
     ls -la /dev/shm/ >>~/last_reboot
+    ps auxww >>~/last_reboot
+    last >~/last_reboot
     cat ~/last_reboot | mail -s "[ibuild][reboot]$(hostname)" $IBUILD_FOUNDER_EMAIL
     sleep 5
  fi
