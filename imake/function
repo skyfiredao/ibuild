@@ -307,6 +307,7 @@ do
         echo -e "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC \n" >>$LOG_PATH/build_info.txt
 
         pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH >>$LOG_PATH/topic.log 2>&1
+        git clean -fxd
         git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/topic.log 2>&1
         export STATUS_GIT=$?
         if [[ $STATUS_GIT = 0 ]] ; then
@@ -351,6 +352,7 @@ BUNDLE_BUILD()
         echo -e "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC \n" >>$LOG_PATH/build_info.txt
 
         pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH >>$LOG_PATH/bundle.log 2>&1
+        git clean -fxd
         git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/bundle.log 2>&1
         export STATUS_GIT=$?
         if [[ $STATUS_GIT = 0 ]] ; then
@@ -399,6 +401,7 @@ BUNDLE_BUILD()
         echo -e "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC \n" >>$LOG_PATH/build_info.txt
 
         pushd $BUILD_PATH_TOP/$LOCAL_PROJECT_PATH
+        git clean -fxd
         git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/bundle.log 2>&1
         export STATUS_GIT=$?
         if [[ $STATUS_GIT = 0 ]] ; then
@@ -1096,6 +1099,7 @@ GIT_CHERRY_PICK()
  fi
 
  git remote update
+ git clean -fxd
 
  SPLIT_LINE "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC"
  git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC >$LOG_PATH/patch.log 2>&1
