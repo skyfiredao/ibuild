@@ -226,6 +226,7 @@ alias h=htop
 alias screen='screen -R -DD'
 alias ccache=/usr/bin/ccache
 export VISUAL=vim
+export GIT_SSH_VARIANT=ssh
 " >>/tmp/bash.ibuild.bashrc
 if [[ -e ~/bash.ibuild.bashrc ]] ; then
     $DEBUG cp ~/bash.ibuild.bashrc /etc

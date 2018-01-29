@@ -37,6 +37,7 @@ export BUILD_TIME=$(date +%y%m%d%H%M%S)
 export BUILD_SEC_TIME=$(date +%s)
 export DISTRIB_ID=$(grep '^DISTRIB_ID=' /etc/lsb-release | awk -F'=' {'print $2'})
 export DISTRIB_RELEASE=$(grep '^DISTRIB_RELEASE=' /etc/lsb-release | awk -F'=' {'print $2'})
+export GIT_SSH_VARIANT=ssh
 
 export IBUILD_ROOT=$HOME/ibuild
     [[ -z $IBUILD_ROOT ]] && export IBUILD_ROOT=$(dirname $0 | awk -F'/ibuild' {'print $1'})'/ibuild'
