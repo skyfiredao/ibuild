@@ -55,7 +55,7 @@ if [[ $(cat $LOCK_SPACE/count | wc -l) -ge 100 && ! $(hostname | grep ibuild) ]]
     touch $TASK_SPACE/reboot
 fi
 
-if [[ $(w | grep days | awk -F' ' {'print $3'}) -ge 2 ]] ; then
+if [[ $(w | grep days | awk -F' ' {'print $3'} | head -n1) -ge 2 ]] ; then
     touch $TASK_SPACE/reboot
 fi
 
