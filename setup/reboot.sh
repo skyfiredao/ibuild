@@ -67,7 +67,7 @@ if [[ -e /dev/shm/spec.build ]] ; then
     export SPEC_TIME=$(stat /dev/shm/spec.build | grep Modify | awk -F' ' {'print $2" "$3'})
     export SPEC_TIME_SEC=$(date -d"$SPEC_TIME" +%s)
 #    export LOAD_NOW=$(w | grep average | awk -F'average: ' {'print $2'} | awk -F'.' {'print $1'})
-    if [[ $(echo $(date +%s) - $SPEC_TIME_SEC | bc) -gt 7200 ]] ; then
+    if [[ $(echo $(date +%s) - $SPEC_TIME_SEC | bc) -gt 9000 ]] ; then
         pkill -9 java
         pkill -9 aapt
         rm -f /dev/shm/spec.build
