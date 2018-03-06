@@ -246,10 +246,10 @@ GIT_LOG()
 GET_REMOTE_NAME()
 {
  [[ -z $REMOTE_NAME ]] && export REMOTE_NAME=$(cat $BUILD_PATH_TOP/.repo/manifests/*.xml | grep remote= | awk -F'="' {'print $2'} | awk -F'"' {'print $1'} | sort -u)
- if [[ ! -z $REMOTE_NAME && $(echo $GERRIT_PROJECT | grep $REMOTE_NAME) ]] ; then
+ if [[ ! -z $REMOTE_NAME && $(echo $GERRIT_PROJECT | egrep "^$REMOTE_NAME/") ]] ; then
     export REAL_GERRIT_PROJECT=$(echo $GERRIT_PROJECT | sed "s/$REMOTE_NAME\///g")
     export FETCH_GERRIT_PROJECT=$GERRIT_PROJECT
- elif [[ ! -z $REMOTE_NAME && ! $(echo $GERRIT_PROJECT | grep $REMOTE_NAME) ]] ; then
+ elif [[ ! -z $REMOTE_NAME && ! $(echo $GERRIT_PROJECT | egrep "^$REMOTE_NAME/") ]] ; then
     export REAL_GERRIT_PROJECT=$GERRIT_PROJECT
     export FETCH_GERRIT_PROJECT=$REMOTE_NAME/$GERRIT_PROJECT
  else
