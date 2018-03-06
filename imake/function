@@ -316,18 +316,18 @@ do
              export STATUS_GIT=$?
              if [[ $STATUS_GIT != 0 ]] ; then
                  SPLIT_LINE "git cherry-pick -m 1 FETCH_HEAD"
-                 git cherry-pick --abort
-                 git reset --hard
-                 git clean -fxd
-                 git cherry-pick -m 1 FETCH_HEAD >$LOG_PATH/topic.log 2>&1
+                 git cherry-pick --abort >>$LOG_PATH/topic.log 2>&1
+                 git reset --hard >>$LOG_PATH/topic.log 2>&1
+                 git clean -fxd >>$LOG_PATH/topic.log 2>&1
+                 git cherry-pick -m 1 FETCH_HEAD >>$LOG_PATH/topic.log 2>&1
                  export STATUS_GIT=$?
              fi
              if [[ $STATUS_GIT != 0 ]] ; then
                  SPLIT_LINE "git cherry-pick -m 2 FETCH_HEAD"
-                 git cherry-pick --abort
-                 git reset --hard
-                 git clean -fxd
-                 git cherry-pick -m 2 FETCH_HEAD >$LOG_PATH/topic.log 2>&1
+                 git cherry-pick --abort >>$LOG_PATH/topic.log 2>&1
+                 git reset --hard >>$LOG_PATH/topic.log 2>&1
+                 git clean -fxd >>$LOG_PATH/topic.log 2>&1
+                 git cherry-pick -m 2 FETCH_HEAD >>$LOG_PATH/topic.log 2>&1
                  export STATUS_GIT=$?
              fi
              echo $STATUS_GIT >>$LOG_PATH/topic.log
@@ -377,18 +377,18 @@ BUNDLE_BUILD()
              export STATUS_GIT=$?
              if [[ $STATUS_GIT != 0 ]] ; then
                  SPLIT_LINE "git cherry-pick -m 1 FETCH_HEAD"
-                 git cherry-pick --abort
-                 git reset --hard
-                 git clean -fxd
-                 git cherry-pick -m 1 FETCH_HEAD >$LOG_PATH/bundle.log 2>&1
+                 git cherry-pick --abort >>$LOG_PATH/bundle.log 2>&1
+                 git reset --hard >>$LOG_PATH/bundle.log 2>&1
+                 git clean -fxd >>$LOG_PATH/bundle.log 2>&1
+                 git cherry-pick -m 1 FETCH_HEAD >>$LOG_PATH/bundle.log 2>&1
                  export STATUS_GIT=$?
              fi
              if [[ $STATUS_GIT != 0 ]] ; then
                  SPLIT_LINE "git cherry-pick -m 2 FETCH_HEAD"
-                 git cherry-pick --abort
-                 git reset --hard
-                 git clean -fxd
-                 git cherry-pick -m 2 FETCH_HEAD >$LOG_PATH/bundle.log 2>&1
+                 git cherry-pick --abort >>$LOG_PATH/bundle.log 2>&1
+                 git reset --hard >>$LOG_PATH/bundle.log 2>&1
+                 git clean -fxd >>$LOG_PATH/bundle.log 2>&1
+                 git cherry-pick -m 2 FETCH_HEAD >>$LOG_PATH/bundle.log 2>&1
                  export STATUS_GIT=$?
              fi
              echo $STATUS_GIT >>$LOG_PATH/bundle.log
@@ -442,18 +442,18 @@ BUNDLE_BUILD()
              export STATUS_GIT=$?
              if [[ $STATUS_GIT != 0 ]] ; then
                  SPLIT_LINE "git cherry-pick -m 1 FETCH_HEAD"
-                 git cherry-pick --abort
-                 git reset --hard
-                 git clean -fxd
-                 git cherry-pick -m 1 FETCH_HEAD >$LOG_PATH/bundle.log 2>&1
+                 git cherry-pick --abort >>$LOG_PATH/bundle.log 2>&1
+                 git reset --hard >>$LOG_PATH/bundle.log 2>&1
+                 git clean -fxd >>$LOG_PATH/bundle.log 2>&1
+                 git cherry-pick -m 1 FETCH_HEAD >>$LOG_PATH/bundle.log 2>&1
                  export STATUS_GIT=$?
              fi
              if [[ $STATUS_GIT != 0 ]] ; then
                  SPLIT_LINE "git cherry-pick -m 2 FETCH_HEAD"
-                 git cherry-pick --abort
-                 git reset --hard
-                 git clean -fxd
-                 git cherry-pick -m 2 FETCH_HEAD >$LOG_PATH/bundle.log 2>&1
+                 git cherry-pick --abort >>$LOG_PATH/bundle.log 2>&1
+                 git reset --hard >>$LOG_PATH/bundle.log 2>&1
+                 git clean -fxd >>$LOG_PATH/bundle.log 2>&1
+                 git cherry-pick -m 2 FETCH_HEAD >>$LOG_PATH/bundle.log 2>&1
                  export STATUS_GIT=$?
              fi
              echo $STATUS_GIT >>$LOG_PATH/bundle.log
@@ -1165,18 +1165,18 @@ GIT_CHERRY_PICK()
     export CHECK_STATUS=$?
     if [[ $CHECK_STATUS != 0 ]] ; then
         SPLIT_LINE "git cherry-pick -m 1 FETCH_HEAD"
-        git cherry-pick --abort
-        git reset --hard
-        git clean -fxd
-        git cherry-pick -m 1 FETCH_HEAD >$LOG_PATH/patch.log 2>&1
+        git cherry-pick --abort >>$LOG_PATH/patch.log 2>&1
+        git reset --hard >>$LOG_PATH/patch.log 2>&1
+        git clean -fxd >>$LOG_PATH/patch.log 2>&1
+        git cherry-pick -m 1 FETCH_HEAD >>$LOG_PATH/patch.log 2>&1
         export CHECK_STATUS=$?
     fi
     if [[ $CHECK_STATUS != 0 ]] ; then
         SPLIT_LINE "git cherry-pick -m 2 FETCH_HEAD"
-        git cherry-pick --abort
-        git reset --hard
-        git clean -fxd
-        git cherry-pick -m 2 FETCH_HEAD >$LOG_PATH/patch.log 2>&1
+        git cherry-pick --abort >>$LOG_PATH/patch.log 2>&1
+        git reset --hard >>$LOG_PATH/patch.log 2>&1
+        git clean -fxd >>$LOG_PATH/patch.log 2>&1
+        git cherry-pick -m 2 FETCH_HEAD >>$LOG_PATH/patch.log 2>&1
         export CHECK_STATUS=$?
     fi
     [[ $CHECK_STATUS != 0 ]] && git status >$LOG_PATH/patch.log 2>&1
