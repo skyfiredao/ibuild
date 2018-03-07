@@ -63,6 +63,17 @@ CHECK_NODE()
  CHECK_PASSRATE
 }
 
+CHECK_OWNER()
+{
+ SPLIT_LINE owner_status
+ grep GERRIT_CHANGE_OWNER_EMAIL * | awk -F'=' {'print $2'} | sort -u >$TMP_ICASE/status_owner_email.tmp
+ for GERRIT_CHANGE_OWNER_EMAIL in $(cat $TMP_ICASE/status_owner_email.tmp)
+ do
+     echo -e $(grep GERRIT_CHANGE_OWNER_EMAIL=$GERRIT_CHANGE_OWNER_EMAIL * | wc -l) "$GERRIT_CHANGE_OWNER_EMAIL" >>$TMP_ICASE/status_owner_list.tmp
+ done
+ cat $TMP_ICASE/status_owner_list.tmp | sort -rn
+}
+
 CHECK_TIME()
 {
  for BUILD_TIME in `grep BUILD_TIME * | awk -F'=' {'print $2'}`
@@ -196,12 +207,14 @@ fi
 [[ $MODE = time ]] && CHECK_TIME
 [[ $MODE = map ]] && CHECK_BUSY_MAP
 [[ $MODE = rate ]] && CHECK_PASSRATE
+[[ $MODE = owner ]] && CHECK_OWNER
 
 if [[ -z $MODE ]] ; then
     CHECK_BUSY_MAP
     CHECK_NODE
     CHECK_TIME
     CLEAN_IBUILD_UPLOAD_SPACE
+    CHECK_OWNER
 fi
 
 rm -fr $TMP_ICASE
