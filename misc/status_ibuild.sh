@@ -67,10 +67,21 @@ CHECK_OWNER()
 {
  SPLIT_LINE owner_status
  grep GERRIT_CHANGE_OWNER_EMAIL * | awk -F'=' {'print $2'} | sort -u >$TMP_ICASE/status_owner_email.tmp
+ 
  for GERRIT_CHANGE_OWNER_EMAIL in $(cat $TMP_ICASE/status_owner_email.tmp)
  do
-     echo -e $(grep GERRIT_CHANGE_OWNER_EMAIL=$GERRIT_CHANGE_OWNER_EMAIL * | wc -l) "$GERRIT_CHANGE_OWNER_EMAIL" >>$TMP_ICASE/status_owner_list.tmp
+     export BUILD_PASSED=0
+     export BUILD_FAILED=0
+
+     for ICASE in $(grep GERRIT_CHANGE_OWNER_EMAIL=$GERRIT_CHANGE_OWNER_EMAIL * | awk -F':' {'print $1'})
+     do
+         [[ $(grep RESULT=PASSED $ICASE) ]] && export BUILD_PASSED=$(echo $BUILD_PASSED + 1 | bc)
+         [[ $(grep RESULT=FAILED $ICASE) ]] && export BUILD_FAILED=$(echo $BUILD_FAILED + 1 | bc)
+     done
+     export PASS_RATE=$(echo $BUILD_PASSED \* 100 / $(echo $BUILD_PASSED + $BUILD_FAILED | bc) | bc)
+     echo -e $(grep GERRIT_CHANGE_OWNER_EMAIL=$GERRIT_CHANGE_OWNER_EMAIL * | wc -l) $BUILD_FAILED:$BUILD_PASSED PASS_RATE=$PASS_RATE% "$GERRIT_CHANGE_OWNER_EMAIL" >>$TMP_ICASE/status_owner_list.tmp
  done
+
  cat $TMP_ICASE/status_owner_list.tmp | sort -rn
 }
 
