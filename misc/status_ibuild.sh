@@ -207,6 +207,7 @@ export MODE=$1
 if [[ $MODE = busy ]] ; then
     SETUP_ICASE $TOWEEK
     CHECK_BUSY
+    CHECK_OWNER
 elif [[ $MODE = clean ]] ; then
     SETUP_ICASE $LASTWEEK
     CLEAN_IBUILD_UPLOAD_SPACE
