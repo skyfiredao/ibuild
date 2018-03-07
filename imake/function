@@ -1161,7 +1161,7 @@ GIT_CHERRY_PICK()
  if [[ ! $(git log HEAD | grep $COMMIT_SHA1) && ! $(md5sum /tmp/diff-$NOW.tmp | grep d41d8cd98f00b204e9800998ecf8427e) ]] ; then
     rm -f /tmp/diff-$NOW.tmp
     SPLIT_LINE "git cherry-pick FETCH_HEAD"
-    git cherry-pick FETCH_HEAD >$LOG_PATH/patch.log 2>&1
+    git cherry-pick FETCH_HEAD >>$LOG_PATH/patch.log 2>&1
     export CHECK_STATUS=$?
     if [[ $CHECK_STATUS != 0 ]] ; then
         SPLIT_LINE "git cherry-pick -m 1 FETCH_HEAD"
