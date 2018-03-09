@@ -47,13 +47,26 @@ fi
 
 svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec $TASK_SPACE/tmp.ispec.$SEED
 
+CLEAN_TASK_STACK()
+{
+ if [[ -e ~/svn/itask/tasks && -e /dev/shm/lock && -e /local/queue/itask ]] ; then
+    pushd ~/svn/itask/tasks
+    for TASK_NAME in $(grep merged *|awk -F':' {'print $1'})
+    do
+        TASK_REV=$(svn info $TASK_NAME | grep 'Rev:' | awk -F' ' {'print $4'})
+        rm -f /dev/shm/lock/itask-r$TASK_REV.* /local/queue/itask/*.$TASK_REV >/dev/null 2>&1
+    done
+    popd
+ fi
+}
+
 if [[ -e $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec ]] ; then
     for SPEC_FILTER in $(cat $TASK_SPACE/tmp.ispec.$SEED/timer/$TOHOUR.spec | sort -u)
     do
         for SPEC_NAME in $(ls $TASK_SPACE/tmp.ispec.$SEED/spec | grep $SPEC_FILTER)
         do
             cp $TASK_SPACE/tmp.ispec.$SEED/spec/$SPEC_NAME $TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME
-            [[ ! $(grep 'IBUILD_MODE=' $TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME) ]] && echo "IBUILD_MODE=normal" >>$TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME
+            [[ ! $(grep 'IBUILD_MODE=' $TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME) ]] && echo "IBUILD_MODE=normal" >>$TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME && CLEAN_TASK_STACK
             $IBUILD_ROOT/imake/add_task.sh $TASK_SPACE/tmp.ispec.$SEED/normal.$SPEC_NAME
         done
     done
