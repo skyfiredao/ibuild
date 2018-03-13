@@ -1,0 +1,4 @@
+insmod proc_nvidia_fake.ko
+rmmod proc_nvidia_fake.ko
+check /proc/driver/nvidia/version
+
