@@ -75,13 +75,16 @@ if [[ `readlink /bin/sh` = dash && -e /bin/bash ]] ; then
     $DEBUG ln -sf /bin/bash /bin/sh
 fi
 
-if [[ ! $(curl http://www.google.com >/dev/null 2>&1) ]] ; then
+curl http://www.google.com >/dev/null 2>&1
+if [[ $? != 0 ]] ; then
     echo "Check Internet Access: Failed"
     exit 1
 fi
 
 # If your local is China
 # sudo ln -sf /usr/share/zoneinfo/posix/Asia/Shanghai /etc/localtime
+
+apt-get install -y aptitude vim openssh-server screen subversion
 
 # For Docker in ubuntu 14.04 only
 if [[ `echo $RUN_OPTION | egrep 'docker'` ]] ; then
