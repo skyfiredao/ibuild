@@ -1151,7 +1151,7 @@ GIT_CHERRY_PICK()
  git clean -fxd
 
  SPLIT_LINE "git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC"
- git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC >$LOG_PATH/patch.log 2>&1
+ git fetch ssh://$IBUILD_GRTSRV/$FETCH_GERRIT_PROJECT $GERRIT_REFSPEC >>$LOG_PATH/patch.log 2>&1
  export CHECK_STATUS=$?
  LOG_STATUS $CHECK_STATUS git_fetch $LOG_PATH/patch.log
  export COMMIT_SHA1=$(git log FETCH_HEAD | head -n1 | awk -F' ' {'print $2'})
@@ -1179,7 +1179,7 @@ GIT_CHERRY_PICK()
         git cherry-pick -m 2 FETCH_HEAD >>$LOG_PATH/patch.log 2>&1
         export CHECK_STATUS=$?
     fi
-    [[ $CHECK_STATUS != 0 ]] && git status >$LOG_PATH/patch.log 2>&1
+    [[ $CHECK_STATUS != 0 ]] && git status >>$LOG_PATH/patch.log 2>&1
     LOG_STATUS $CHECK_STATUS cherry_pick $LOG_PATH/patch.log
  else
     SPLIT_LINE "MERGED: $GERRIT_PROJECT $GERRIT_REFSPEC"
