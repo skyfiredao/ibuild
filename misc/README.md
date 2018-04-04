@@ -40,5 +40,8 @@ convert repo manifest to git subtree
 #### rebase_from_xml.sh
 rebase list project branch with snapshot manifest.xml
 
+#### rebuild_subv_repo.sh
+clean dirty subv_repo workspace and repo init/sync again
+
 #### purge_kernel.sh
 clean useless kernel from boot
