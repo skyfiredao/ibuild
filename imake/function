@@ -676,13 +676,13 @@ REPO_SYNC()
  time $REPO_CMD sync -j$JOBS --force-sync $REPO_SYNC_OPTION >>$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
  export STATUS_SYNC=$?
 
-# if [[ $STATUS_SYNC != 0 && -e $(pwd)/.repo && -e $(pwd).info ]] ; then
-#    mkdir old
-#    mv * .repo old/
-#    bash $(pwd).info
-#    time $REPO_CMD sync -j$JOBS --force-sync $REPO_SYNC_OPTION >>$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
-#    rm -fr old
-# fi
+ if [[ $(pwd | grep subv_repo) && $STATUS_SYNC != 0 && -e $(pwd)/.repo && -e $(pwd).info ]] ; then
+    mkdir old
+    mv * .repo old/
+    bash $(pwd).info
+    time $REPO_CMD sync -j$JOBS >>$LOG_PATH/$REPO_SYNC_LOG_NAME.log 2>&1
+    rm -fr old &
+ fi
 
  [[ -e $LOG_PATH ]] && rm -f log && ln -sf $LOG_PATH
  [[ -e /local/out ]] && rm -f out && ln -sf /local/out
