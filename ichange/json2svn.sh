@@ -55,6 +55,7 @@ export GERRIT_ROBOT=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_ROBOT=
 export GERRIT_XML_URL=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_XML_URL=' | awk -F'GERRIT_XML_URL=' {'print $2'})
 export GERRIT_BRANCH=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_BRANCH=' | awk -F'GERRIT_BRANCH=' {'print $2'})
 export GERRIT_SERVER=$GERRIT_ROBOT@$GERRIT_SRV.$DOMAIN_NAME
+export GERRIT_SRV_NAME=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_NAME=' | awk -F'GERRIT_SRV_NAME=' {'print $2'})
 
 export ICHANGE_SVN_SRV=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_SVN_SRV=' | awk -F'ICHANGE_SVN_SRV=' {'print $2'})
 export ICHANGE_SVN_OPTION=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_SVN_OPTION=' | awk -F'ICHANGE_SVN_OPTION=' {'print $2'})
@@ -91,7 +92,7 @@ UPDATE_XML()
 {
  rm -fr $TASK_SPACE/itrack/manifest >/dev/null 2>&1
  mkdir -p $TASK_SPACE/itrack/svn/manifest >/dev/null 2>&1
- git clone -b $GERRIT_BRANCH ssh://$GERRIT_SERVER:$GERRIT_SRV_PORT/$GERRIT_XML_URL $TASK_SPACE/itrack/manifest
+ git clone -b $GERRIT_BRANCH ssh://$GERRIT_ROBOT@$GERRIT_SRV_NAME:$GERRIT_SRV_PORT/$GERRIT_XML_URL $TASK_SPACE/itrack/manifest
  if [[ -e $TASK_SPACE/itrack/svn/manifest && -e $TASK_SPACE/itrack/manifest ]] ; then
      cd $TASK_SPACE/itrack/manifest
      git checkout $GERRIT_BRANCH
@@ -172,9 +173,9 @@ do
     fi
 
     if [[ ! -z $g_revision && ! -z $g_type ]] ; then
-        mkdir -p $TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch
-        echo "$g_revision|$g_id|$g_email|$g_path|$g_project|$g_change_number|$g_patchSet_number|$g_value|$g_ref" >>$TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch/$TOWEEK.$g_type
-        [[ $g_type != ref-updated ]] && echo "$g_revision|$g_id|$g_email|$g_path|$g_project|$g_change_number|$g_patchSet_number|$g_value|$g_ref" >>$TASK_SPACE/itrack/svn/$GERRIT_SRV.$DOMAIN_NAME/$g_branch/$TOWEEK.all-change
+        mkdir -p $TASK_SPACE/itrack/svn/$GERRIT_SRV_NAME/$g_branch
+        echo "$g_revision|$g_id|$g_email|$g_path|$g_project|$g_change_number|$g_patchSet_number|$g_value|$g_ref" >>$TASK_SPACE/itrack/svn/$GERRIT_SRV_NAME/$g_branch/$TOWEEK.$g_type
+        [[ $g_type != ref-updated ]] && echo "$g_revision|$g_id|$g_email|$g_path|$g_project|$g_change_number|$g_patchSet_number|$g_value|$g_ref" >>$TASK_SPACE/itrack/svn/$GERRIT_SRV_NAME/$g_branch/$TOWEEK.all-change
     fi
 
     svn cleanup $TASK_SPACE/itrack/svn
@@ -186,6 +187,7 @@ do
         sleep 0.7
     done
 
+    echo "$GERRIT_SRV.$DOMAIN_NAME" >>$TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log
     svn ci $ICHANGE_SVN_OPTION -q -F $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.log $TASK_SPACE/itrack/svn
     [[ $? = 0 ]] && rm -f $TASK_SPACE/itrack/$GERRIT_SRV.tmp/$ORDER.{json,log}
     sleep 0.7
