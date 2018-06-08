@@ -42,11 +42,11 @@ if [[ ! -e $ITRACK_PATH/conf/$HOSTNAME.conf ]] ; then
         exit 1
 fi
 
-export DOMAIN_NAME=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'DOMAIN_NAME=' | awk -F'DOMAIN_NAME=' {'print $2'})
-export GERRIT_SRV_LIST=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_LIST=' | awk -F'GERRIT_SRV_LIST=' {'print $2'})
-export GERRIT_SRV_PORT=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_PORT=' | awk -F'GERRIT_SRV_PORT=' {'print $2'})
-export GERRIT_ROBOT=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_ROBOT=' | awk -F'GERRIT_ROBOT=' {'print $2'})
-export GERRIT_SRV_NAME=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_NAME=' | awk -F'GERRIT_SRV_NAME=' {'print $2'}) 
+export DOMAIN_NAME=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep '^DOMAIN_NAME=' | awk -F'DOMAIN_NAME=' {'print $2'})
+export GERRIT_SRV_LIST=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep '^GERRIT_SRV_LIST=' | awk -F'GERRIT_SRV_LIST=' {'print $2'})
+export GERRIT_SRV_PORT=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep '^GERRIT_SRV_PORT=' | awk -F'GERRIT_SRV_PORT=' {'print $2'})
+export GERRIT_ROBOT=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep '^GERRIT_ROBOT=' | awk -F'GERRIT_ROBOT=' {'print $2'})
+export GERRIT_SRV_NAME=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep '^GERRIT_SRV_NAME=' | awk -F'GERRIT_SRV_NAME=' {'print $2'}) 
 
 STREAM_EVENTS()
 {
