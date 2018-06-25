@@ -153,7 +153,7 @@ if [[ ! -z $GERRIT_PATCHSET_REVISION && $IBUILD_MODE = patch ]] ; then
     echo "GERRIT_CHANGE_ID: $GERRIT_CHANGE_ID" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
     export MAIL_REPO_CMD="git fetch ssh://$IBUILD_GRTSRV/$REMOTE_NAME$GERRIT_PROJECT $GERRIT_REFSPEC && git cherry-pick FETCH_HEAD"
     echo "$MAIL_REPO_CMD" >>$TASK_SPACE/tmp/icase.mail.$SEED/$ICASE_REV.mail
-    [[ -z $GERRIT_CHANGE_NUMBER && ! -z $GERRIT_PATCHSET_NUMBER ]] && export PATCH_INFO=merged || export PATCH_INFO="$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER"
+    [[ $(echo $GERRIT_CHANGE_STATUS | grep change-merged) ]] && export PATCH_INFO=merged || export PATCH_INFO="$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER"
     export SUB_IBUILD_MODE="[patch][$PATCH_INFO]"
 fi
 
