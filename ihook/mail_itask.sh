@@ -44,7 +44,8 @@ svn blame $IBUILD_SVN_OPTION -r $ITASK_JOBS_REV:$ITASK_JOBS_REV $TASK_SPACE/tmp/
 export ITASK_REV=$(cat $TASK_SPACE/tmp/itask.$SEED/jobs.txt-$ITASK_JOBS_REV | grep " $ITASK_JOBS_REV " | awk -F' ' {'print $3'} | awk -F'|' {'print $1'})
 
 if [[ -z $ITASK_REV ]] ; then
-    echo Can NOT find $ITASK_JOBS_REV !!! 
+    echo Can NOT find $ITASK_JOBS_REV !!!
+    exit 0
 fi
 
 export ITASK_URL=$(svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
@@ -75,8 +76,8 @@ export GERRIT_CHANGE_URL=$(grep '^GERRIT_CHANGE_URL=' $BUILD_SPEC | awk -F'GERRI
 export GERRIT_PATCHSET_NUMBER=$(grep '^GERRIT_PATCHSET_NUMBER=' $BUILD_SPEC | awk -F'GERRIT_PATCHSET_NUMBER=' {'print $2'})
 export GERRIT_PATCHSET_REVISION=$(grep '^GERRIT_PATCHSET_REVISION=' $BUILD_SPEC | awk -F'GERRIT_PATCHSET_REVISION=' {'print $2'})
 export GERRIT_PROJECT=$(grep '^GERRIT_PROJECT=' $BUILD_SPEC | awk -F'GERRIT_PROJECT=' {'print $2'})
-export GERRIT_REFSPEC=$(grep '^GERRIT_REFSPEC=' $BUILD_INFO | awk -F'GERRIT_REFSPEC=' {'print $2'})
-export GERRIT_TOPIC=$(grep '^GERRIT_TOPIC=' $BUILD_INFO | awk -F'GERRIT_TOPIC=' {'print $2'})
+export GERRIT_REFSPEC=$(grep '^GERRIT_REFSPEC=' $BUILD_SPEC | awk -F'GERRIT_REFSPEC=' {'print $2'})
+export GERRIT_TOPIC=$(grep '^GERRIT_TOPIC=' $BUILD_SPEC | awk -F'GERRIT_TOPIC=' {'print $2'})
 export EMAIL_TMP=$(grep '^EMAIL_TMP=' $BUILD_SPEC | awk -F'EMAIL_TMP=' {'print $2'})
 
 export MAIL_LIST="-r $IBUILD_FOUNDER_EMAIL $IBUILD_FOUNDER_EMAIL"
