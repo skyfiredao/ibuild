@@ -153,7 +153,7 @@ do
     export g_url=$(cat $ORDER.json | egrep '"url":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | head -n1)
     [[ ! -z $g_url ]] && export g_change_number=$(basename $g_url)
     [[ -z $g_change_number ]] && export g_change_number=unknow
-    export g_patchSet_number=$(cat $ORDER.json | egrep '"number":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'} | sort -u | grep -v $g_change_number)
+    export g_patchSet_number=$(basename $g_ref)
     export g_value=''
     for value in `cat $ORDER.json | egrep '"value":' | awk -F'":' {'print $2'} | awk -F'"' {'print $2'}`
     do
@@ -167,8 +167,8 @@ do
     [[ ! $(ls $TASK_SPACE/itrack/svn/manifest/* | grep xml) ]] && UPDATE_XML
     [[ ! -z $g_project ]] && export g_path=$(grep $g_project $TASK_SPACE/itrack/svn/manifest/*.xml | awk -F'path="' {'print $2'} | awk -F'" name=' {'print $1'} | awk -F'"' {'print $1'} | grep -v ^$ | sort -u | head -n1)
     if [[ ! -z $g_project && -z $g_path ]] ; then
-        export remote_name=$(echo $g_project | awk -F'/' {'print $1'})
-        export g_project=$(echo $g_project | awk -F"$remote_name/" {'print $2'})
+        export remote_name=$(grep remote= $TASK_SPACE/itrack/svn/manifest/*.xml | awk -F' ' {'print $2'} | sort -u | grep remote= | awk -F'=' {'print $2'})
+        export g_project=$(echo $g_project | sed 's/$remote_name\///g')
         export g_path=$(grep $g_project $TASK_SPACE/itrack/svn/manifest/*.xml | awk -F'path="' {'print $2'} | awk -F'" name=' {'print $1'} | awk -F'"' {'print $1'} | grep -v ^$ | sort -u | head -n1)
     fi
 
