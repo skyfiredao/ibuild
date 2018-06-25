@@ -41,7 +41,7 @@ export ITASK_JOBS_REV=$1
 mkdir -p $TASK_SPACE/tmp/itask.$SEED
 svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/tmp/itask.$SEED/svn
 svn blame $IBUILD_SVN_OPTION -r $ITASK_JOBS_REV:$ITASK_JOBS_REV $TASK_SPACE/tmp/itask.$SEED/svn/jobs.txt >$TASK_SPACE/tmp/itask.$SEED/jobs.txt-$ITASK_JOBS_REV
-export ITASK_REV=$(cat $TASK_SPACE/tmp/itask.$SEED/jobs.txt-$ITASK_JOBS_REV | grep " $ITASK_JOBS_REV " | awk -F' ' {'print $3'} | awk -F'|' {'print $1'})
+export ITASK_REV=$(cat $TASK_SPACE/tmp/itask.$SEED/jobs.txt-$ITASK_JOBS_REV | grep "^$ITASK_JOBS_REV" | awk -F' ' {'print $3'} | awk -F'|' {'print $1'})
 
 if [[ -z $ITASK_REV ]] ; then
     echo Can NOT find $ITASK_JOBS_REV !!!
@@ -50,8 +50,8 @@ fi
 
 export ITASK_URL=$(svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
 export BUILD_SPEC_NAME=$(basename $ITASK_URL)
-export SLAVE_HOST=$(cat $TASK_SPACE/tmp/itask.$SEED/jobs.txt-$ITASK_JOBS_REV | grep " $ITASK_JOBS_REV " | awk -F' ' {'print $3'} | awk -F'|' {'print $2'})
-export SLAVE_IP=$(cat $TASK_SPACE/tmp/itask.$SEED/jobs.txt-$ITASK_JOBS_REV | grep " $ITASK_JOBS_REV " | awk -F' ' {'print $3'} | awk -F'|' {'print $3'})
+export SLAVE_HOST=$(cat $TASK_SPACE/tmp/itask.$SEED/jobs.txt-$ITASK_JOBS_REV | grep "^$ITASK_JOBS_REV" | awk -F' ' {'print $3'} | awk -F'|' {'print $2'})
+export SLAVE_IP=$(cat $TASK_SPACE/tmp/itask.$SEED/jobs.txt-$ITASK_JOBS_REV | grep "^$ITASK_JOBS_REV" | awk -F' ' {'print $3'} | awk -F'|' {'print $3'})
 
 export BUILD_SPEC="$TASK_SPACE/tmp/itask.$SEED/svn/tasks/$BUILD_SPEC_NAME"
 export EMAIL_PM=$(grep '^EMAIL_PM=' $BUILD_SPEC | awk -F'EMAIL_PM=' {'print $2'})
