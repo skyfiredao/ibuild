@@ -57,6 +57,10 @@ emove all folders or files named '.git' - a reserved filename in Git. These ofte
 bfg --delete-folders .git --delete-files .git  --no-blob-protection  my-repo.git
 "
 
+#git filter-branch --tree-filter "find . -name 'version' -exec sed -i -e \
+#	's/d1599d7d9bc76c0f2aed90f442ca72830cd27e42/209292b9594648f705ce4b2cf7f0171e014edb55/g' {} \;"
+
+
 if [[ ! -f /local/ibuild/bin/bfg.jar ]] ; then
     echo "Can NOT find bfg.jar"
 fi
