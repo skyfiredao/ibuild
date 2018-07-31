@@ -52,9 +52,12 @@ Replace all passwords listed in a file (prefix lines 'regex:' or 'glob:' if requ
 
 bfg --replace-text passwords.txt  my-repo.git
 
-emove all folders or files named '.git' - a reserved filename in Git. These often become a problem when migrating to Git from other source-control systems like Mercurial :
+remove all folders or files named '.git' - a reserved filename in Git. These often become a problem when migrating to Git from other source-control systems like Mercurial :
 
 bfg --delete-folders .git --delete-files .git  --no-blob-protection  my-repo.git
+
+git reflog expire --expire=now --all && git gc --prune=now --aggressive
+git push origin --force --all
 "
 
 #git filter-branch --tree-filter "find . -name 'version' -exec sed -i -e \
