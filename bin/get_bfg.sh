@@ -60,9 +60,12 @@ git reflog expire --expire=now --all && git gc --prune=now --aggressive
 git push origin --force --all
 "
 
-#git filter-branch --tree-filter "find . -name 'version' -exec sed -i -e \
+# git filter-branch --tree-filter "find . -name 'version' -exec sed -i -e \
 #	's/d1599d7d9bc76c0f2aed90f442ca72830cd27e42/209292b9594648f705ce4b2cf7f0171e014edb55/g' {} \;"
 # git filter-branch --tree-filter 'git rm --cached --ignore-unmatch big.zip' HEAD
+# git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch useless_file' --prune-empty --tag-name-filter cat -- --all
+# git filter-branch --force --tree-filter 'git rm --cached --ignore-unmatch useless_file' --prune-empty --tag-name-filter cat -- HEAD
+# git filter-branch --tree-filter 'rm -f useless_file' HEAD
 
 
 if [[ ! -f /local/ibuild/bin/bfg.jar ]] ; then
