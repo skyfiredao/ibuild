@@ -48,9 +48,9 @@ if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
         exit 0
 fi
 
-export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
+export SVN_SRV_IBUILD=`grep '^SVN_SRV_IBUILD=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'SVN_SRV_IBUILD=' {'print $2'}`
 export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
-export SVN_REV_SRV=`svn info $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
+export SVN_REV_SRV=`svn info $IBUILD_SVN_OPTION svn://$SVN_SRV_IBUILD/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'}`
 
 # useless segment
 # chmod +s /sbin/btrfs*
@@ -156,7 +156,7 @@ $DEBUG ln -sf /usr/local/jdk1.7 /usr/local/jdk
 # install Sun JDK 1.6 for AOSP build before L
 if [[ `echo $RUN_OPTION | egrep 'jdk1.6'` ]] ; then
     $DEBUG aptitude -y install sun-java6-jdk
-    wget http://$IBUILD_SVN_SRV/linux/jdk1.6.0_45.bz2
+    wget http://$SVN_SRV_IBUILD/linux/jdk1.6.0_45.bz2
     $DEBUG tar xfj jdk1.6.0_45.bz2 -C /usr/local/
     rm jdk1.6.0_45.bz2
 

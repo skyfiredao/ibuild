@@ -44,12 +44,12 @@ ECHO()
 if [[ ! -e ~/ibuild/conf/ibuild.conf ]] ; then
 	ECHO 'no ibuild in right place'
 else
-	export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' ~/ibuild/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
+	export SVN_SRV_IBUILD=$(grep '^SVN_SRV_IBUILD=' ~/ibuild/conf/ibuild.conf | awk -F'SVN_SRV_IBUILD=' {'print $2'})
 	export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' ~/ibuild/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
 	export LOC_REF_REPO_PATH=$(grep '^LOC_REF_REPO_PATH=' ~/ibuild/conf/ibuild.conf | awk -F'LOC_REF_REPO_PATH=' {'print $2'})
 	export LOC_WORKSPACE=$(grep '^LOC_WORKSPACE=' ~/ibuild/conf/ibuild.conf | awk -F'LOC_WORKSPACE=' {'print $2'})
 	export JDK7_PATH=$(grep '^JDK7_PATH=' ~/ibuild/conf/ibuild.conf | awk -F'JDK7_PATH=' {'print $2'})
-	[[ ! `svn ls $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec` ]] && ECHO 'no right svn setup'
+	[[ ! `svn ls $IBUILD_SVN_OPTION svn://$SVN_SRV_IBUILD/ispec/ispec` ]] && ECHO 'no right svn setup'
 	[[ ! -e $JDK7_PATH ]] && ECHO 'no jdk1.7'
 	[[ ! -e $LOC_WORKSPACE ]] && ECHO "no $LOC_WORKSPACE"
 	[[ ! -e $LOC_REF_REPO_PATH ]] && ECHO "no $LOC_REF_REPO_PATH"

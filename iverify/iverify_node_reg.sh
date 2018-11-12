@@ -57,10 +57,10 @@ do
     rm -fr $DOT_SVN >/dev/null 2>&1
 done
 
-export IVERIFY_SVN_SRV=$(grep '^IVERIFY_SVN_SRV=' $IVERIFY_ROOT/conf/iverify.conf | awk -F'IVERIFY_SVN_SRV=' {'print $2'})
+export SVN_SRV_IVERIFY=$(grep '^SVN_SRV_IVERIFY=' $IVERIFY_ROOT/conf/iverify.conf | awk -F'SVN_SRV_IVERIFY=' {'print $2'})
 export IVERIFY_SVN_OPTION=$(grep '^IVERIFY_SVN_OPTION=' $IVERIFY_ROOT/conf/iverify.conf | awk -F'IVERIFY_SVN_OPTION=' {'print $2'})
-export IVERIFY_SVN_REV_SRV=$(svn info $IVERIFY_SVN_OPTION svn://$IVERIFY_SVN_SRV/iverify/iverify | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
-export IVERIFY_SVN_SRV_HOSTNAME=$(echo $IVERIFY_SVN_SRV | awk -F'.' {'print $1'})
+export IVERIFY_SVN_REV_SRV=$(svn info $IVERIFY_SVN_OPTION svn://$SVN_SRV_IVERIFY/iverify/iverify | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
+export SVN_SRV_IVERIFY_HOSTNAME=$(echo $SVN_SRV_IVERIFY | awk -F'.' {'print $1'})
 
 if [[ -d $TASK_SPACE/iverify/inode.svn/.svn ]] ; then
     export SVN_REV_LOC=$(svn info $TASK_SPACE/iverify/inode.svn | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
@@ -72,7 +72,7 @@ else
     rm -fr $TASK_SPACE/iverify >/dev/null 2>&1
     mkdir -p $TASK_SPACE/iverify >/dev/null 2>&1
     rm -fr $TASK_SPACE/iverify/inode.svn >/dev/null 2>&1
-    svn co -q $IVERIFY_SVN_OPTION svn://$IVERIFY_SVN_SRV/iverify/iverify/inode $TASK_SPACE/iverify/inode.svn
+    svn co -q $IVERIFY_SVN_OPTION svn://$SVN_SRV_IVERIFY/iverify/iverify/inode $TASK_SPACE/iverify/inode.svn
 fi
 
 INODE_REG()

@@ -42,17 +42,17 @@ if [[ -e $TASK_SPACE/$USER.tasks.lock.$SEED ]] ; then
     exit
 fi
 
-export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
+export SVN_SRV_IBUILD=$(grep '^SVN_SRV_IBUILD=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'SVN_SRV_IBUILD=' {'print $2'})
 export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
 export ITASK_SVN_OPTION=$(grep '^ITASK_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'ITASK_SVN_OPTION=' {'print $2'})
-    [[ -z $ITASK_SVN_SRV ]] && export ITASK_SVN_SRV=$IBUILD_SVN_SRV
+    [[ -z $SVN_SRV_ITASK ]] && export SVN_SRV_ITASK=$SVN_SRV_IBUILD
 
 if [[ ! -e $SPEC_URL ]] ; then
     echo -e "cat not find $SPEC_URL"
     exit
 fi
 
-svn co -q $IBUILD_SVN_OPTION svn://$ITASK_SVN_SRV/itask/itask/tasks $TASK_SPACE/$USER.tasks.lock.$SEED
+svn co -q $IBUILD_SVN_OPTION svn://$SVN_SRV_ITASK/itask/itask/tasks $TASK_SPACE/$USER.tasks.lock.$SEED
 
 cp $SPEC_URL $TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME
 svn add $TASK_SPACE/$USER.tasks.lock.$SEED/$BUILD_TIME$RADOM.$SPEC_NAME >/dev/null 2>&1

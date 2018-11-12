@@ -27,7 +27,7 @@ export TOYEAR=$(date +%Y)
 
 export IVERIFY_ROOT=$HOME/iverify
 export IVERIFY_CONF=$HOME/iverify/conf/iverify.conf
-export IVERIFY_SVN_SRV=$(grep '^IVERIFY_SVN_SRV=' $IVERIFY_CONF | awk -F'IVERIFY_SVN_SRV=' {'print $2'})
+export SVN_SRV_IVERIFY=$(grep '^SVN_SRV_IVERIFY=' $IVERIFY_CONF | awk -F'SVN_SRV_IVERIFY=' {'print $2'})
 export IVERIFY_SVN_OPTION=$(grep '^IVERIFY_SVN_OPTION=' $IVERIFY_CONF | awk -F'IVERIFY_SVN_OPTION=' {'print $2'})
 
 if [[ ! -f $HOME/iverify/conf/iverify.conf ]] ; then
@@ -113,10 +113,10 @@ SETUP_ISTATUS()
 
  if [[ ! -d $TASK_SPACE/istatus-$TOWEEK ]] ; then
      rm -fr $TASK_SPACE/istatus-* >/dev/null 2>&1
-     svn co -q $IVERIFY_SVN_OPTION svn://$IVERIFY_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK
+     svn co -q $IVERIFY_SVN_OPTION svn://$SVN_SRV_IVERIFY/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK
      if [[ $? != 0 ]] ; then
-         svn mkdir -q $IVERIFY_SVN_OPTION -m "auto: add istatus/$TOYEAR/$TOWEEK" svn://$IVERIFY_SVN_SRV/istatus/$TOYEAR/$TOWEEK >/dev/null 2>&1
-         svn co -q $IVERIFY_SVN_OPTION svn://$IVERIFY_SVN_SRV/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK
+         svn mkdir -q $IVERIFY_SVN_OPTION -m "auto: add istatus/$TOYEAR/$TOWEEK" svn://$SVN_SRV_IVERIFY/istatus/$TOYEAR/$TOWEEK >/dev/null 2>&1
+         svn co -q $IVERIFY_SVN_OPTION svn://$SVN_SRV_IVERIFY/istatus/$TOYEAR/$TOWEEK $TASK_SPACE/istatus-$TOWEEK
      fi
  else
      svn up -q $IVERIFY_SVN_OPTION $TASK_SPACE/istatus-$TOWEEK

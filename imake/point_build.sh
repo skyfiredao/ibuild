@@ -32,17 +32,17 @@ fi
 export IVER=$1
 [[ -z $IVER ]] && exit
 export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
-export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
-export ICASE_SVN_SRV=$(grep '^ICASE_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'ICASE_SVN_SRV=' {'print $2'})
-    [[ -z $ICASE_SVN_SRV ]] && export ICASE_SVN_SRV=$IBUILD_SVN_SRV
-export IVERSION_SVN_SRV=$(grep '^IVERSION_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IVERSION_SVN_SRV=' {'print $2'})
-    [[ -z $IVERSION_SVN_SRV ]] && export IVERSION_SVN_SRV=$IBUILD_SVN_SRV
-export ISPEC_SVN_SRV=$(grep '^ISPEC_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'ISPEC_SVN_SRV=' {'print $2'})
-    [[ -z $ISPEC_SVN_SRV ]] && export ISPEC_SVN_SRV=$IBUILD_SVN_SRV
+export SVN_SRV_IBUILD=$(grep '^SVN_SRV_IBUILD=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'SVN_SRV_IBUILD=' {'print $2'})
+export SVN_SRV_ICASE=$(grep '^SVN_SRV_ICASE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'SVN_SRV_ICASE=' {'print $2'})
+    [[ -z $SVN_SRV_ICASE ]] && export SVN_SRV_ICASE=$SVN_SRV_IBUILD
+export SVN_SRV_IVERSION=$(grep '^SVN_SRV_IVERSION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'SVN_SRV_IVERSION=' {'print $2'})
+    [[ -z $SVN_SRV_IVERSION ]] && export SVN_SRV_IVERSION=$SVN_SRV_IBUILD
+export SVN_SRV_ISPEC=$(grep '^SVN_SRV_ISPEC=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'SVN_SRV_ISPEC=' {'print $2'})
+    [[ -z $SVN_SRV_ISPEC ]] && export SVN_SRV_ISPEC=$SVN_SRV_IBUILD
 
 mkdir -p $TASK_SPACE/tmp/$SEED
-svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase $TASK_SPACE/tmp/$SEED/icase
-svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec $TASK_SPACE/tmp/$SEED/ispec
+svn co -q $IBUILD_SVN_OPTION svn://$SVN_SRV_IBUILD/icase/icase $TASK_SPACE/tmp/$SEED/icase
+svn co -q $IBUILD_SVN_OPTION svn://$SVN_SRV_IBUILD/ispec/ispec $TASK_SPACE/tmp/$SEED/ispec
 
 cd $TASK_SPACE/tmp/$SEED/icase
 export BUILD_INFO=$(find | egrep "/r$IVER." | hear -n1)

@@ -96,8 +96,8 @@ if [[ -e $IBUILD_SRC_PATH/ibuild ]] ; then
         cp -Ra $IBUILD_SRC_PATH/ibuild $TMP_SVN_PATH/ibuild.source/ibuild
         rm -fr $TMP_SVN_PATH/ibuild.source/ibuild/.git
     fi
-    grep -v IBUILD_SVN_SRV $TMP_SVN_PATH/ibuild.source/ibuild/conf/ibuild.conf >$TMP_SVN_PATH/ibuild.source/ibuild.conf
-    echo "IBUILD_SVN_SRV=$HOSTNAME_A" >>$TMP_SVN_PATH/ibuild.source/ibuild.conf
+    grep -v SVN_SRV_IBUILD $TMP_SVN_PATH/ibuild.source/ibuild/conf/ibuild.conf >$TMP_SVN_PATH/ibuild.source/ibuild.conf
+    echo "SVN_SRV_IBUILD=$HOSTNAME_A" >>$TMP_SVN_PATH/ibuild.source/ibuild.conf
     /bin/mv $TMP_SVN_PATH/ibuild.source/ibuild.conf $TMP_SVN_PATH/ibuild.source/ibuild/conf/ibuild.conf
 
     for CLEAN in `ls $TMP_SVN_PATH/ibuild.source/ibuild/conf/priority`
@@ -164,7 +164,7 @@ do
     cp -Ra $TMP_SVN_PATH/$REPO_NAME.source/* $TMP_SVN_PATH/$REPO_NAME/
     mkdir -p $TMP_SVN_PATH/$REPO_NAME/$REPO_NAME
     svn add --no-ignore -q $TMP_SVN_PATH/$REPO_NAME/*
-    svn ci $LOCAL_SVN_OPTION -m "auto init $REPO_NAME from $IBUILD_SVN_SRV" $TMP_SVN_PATH/$REPO_NAME
+    svn ci $LOCAL_SVN_OPTION -m "auto init $REPO_NAME from $SVN_SRV_IBUILD" $TMP_SVN_PATH/$REPO_NAME
 done
 
 # for queue

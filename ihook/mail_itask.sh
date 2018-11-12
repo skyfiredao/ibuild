@@ -33,13 +33,13 @@ if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
     exit 0
 fi
 
-export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
+export SVN_SRV_IBUILD=$(grep '^SVN_SRV_IBUILD=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'SVN_SRV_IBUILD=' {'print $2'})
 export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
 export IBUILD_FOUNDER_EMAIL=$(grep '^IBUILD_FOUNDER_EMAIL=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_FOUNDER_EMAIL=' {'print $2'})
 
 export ITASK_JOBS_REV=$1
 mkdir -p $TASK_SPACE/tmp/itask.$SEED
-svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask $TASK_SPACE/tmp/itask.$SEED/svn
+svn co -q $IBUILD_SVN_OPTION svn://$SVN_SRV_IBUILD/itask/itask $TASK_SPACE/tmp/itask.$SEED/svn
 svn blame $IBUILD_SVN_OPTION -r $ITASK_JOBS_REV:$ITASK_JOBS_REV $TASK_SPACE/tmp/itask.$SEED/svn/jobs.txt >$TASK_SPACE/tmp/itask.$SEED/jobs.txt-$ITASK_JOBS_REV
 export ITASK_REV=$(cat $TASK_SPACE/tmp/itask.$SEED/jobs.txt-$ITASK_JOBS_REV | grep "^$ITASK_JOBS_REV" | awk -F' ' {'print $3'} | awk -F'|' {'print $1'})
 
@@ -48,7 +48,7 @@ if [[ -z $ITASK_REV ]] ; then
     exit 0
 fi
 
-export ITASK_URL=$(svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
+export ITASK_URL=$(svn log -v -r $ITASK_REV $IBUILD_SVN_OPTION svn://$SVN_SRV_IBUILD/itask/itask | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
 export BUILD_SPEC_NAME=$(basename $ITASK_URL)
 export SLAVE_HOST=$(cat $TASK_SPACE/tmp/itask.$SEED/jobs.txt-$ITASK_JOBS_REV | grep "^$ITASK_JOBS_REV" | awk -F' ' {'print $3'} | awk -F'|' {'print $2'})
 export SLAVE_IP=$(cat $TASK_SPACE/tmp/itask.$SEED/jobs.txt-$ITASK_JOBS_REV | grep "^$ITASK_JOBS_REV" | awk -F' ' {'print $3'} | awk -F'|' {'print $3'})

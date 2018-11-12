@@ -34,20 +34,20 @@ if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
     exit 0
 fi
 
-export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
+export SVN_SRV_IBUILD=$(grep '^SVN_SRV_IBUILD=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'SVN_SRV_IBUILD=' {'print $2'})
 export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
 export IBUILD_FOUNDER_EMAIL=$(grep '^IBUILD_FOUNDER_EMAIL=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_FOUNDER_EMAIL=' {'print $2'})
 
 export ICASE_REV=$1
 [[ -z $ICASE_REV ]] && exit
-export ICASE_URL=$(svn log -v -r $ICASE_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
+export ICASE_URL=$(svn log -v -r $ICASE_REV $IBUILD_SVN_OPTION svn://$SVN_SRV_IBUILD/icase/icase | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
 if [[ ! `echo $ICASE_URL | grep '^/icase/'` ]] ; then
     exit
 fi
 
 mkdir -p $TASK_SPACE/tmp/icase.mail.$SEED
-svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/tmp/icase.mail.$SEED/icase
-svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec $TASK_SPACE/tmp/icase.mail.$SEED/ispec
+svn co -q $IBUILD_SVN_OPTION svn://$SVN_SRV_IBUILD/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/tmp/icase.mail.$SEED/icase
+svn co -q $IBUILD_SVN_OPTION svn://$SVN_SRV_IBUILD/ispec/ispec $TASK_SPACE/tmp/icase.mail.$SEED/ispec
 
 export BUILD_INFO_NAME=$(basename $ICASE_URL | head -n1)
 [[ ! $(echo $BUILD_INFO_NAME | grep build_info.txt) ]] && exit

@@ -36,7 +36,7 @@ if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
     echo -e "Please put ibuild in your $HOME"
     exit 0
 else
-    export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
+    export SVN_SRV_IBUILD=`grep '^SVN_SRV_IBUILD=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'SVN_SRV_IBUILD=' {'print $2'}`
     export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
 fi
 

@@ -33,7 +33,7 @@ if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
     exit 0
 fi
 
-export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
+export SVN_SRV_IBUILD=`grep '^SVN_SRV_IBUILD=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'SVN_SRV_IBUILD=' {'print $2'}`
 export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
 
 export ICHANGE_REV=$1
@@ -43,9 +43,9 @@ export WATCHDOG_PATH=$TASK_SPACE/$WATCH_TMP/ispec/watchdog
 
 mkdir -p $TASK_SPACE/$WATCH_TMP
 
-svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec $TASK_SPACE/$WATCH_TMP/ispec
+svn co -q $IBUILD_SVN_OPTION svn://$SVN_SRV_IBUILD/ispec/ispec $TASK_SPACE/$WATCH_TMP/ispec
 
-svn log -v -r $ICHANGE_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ichange >$TASK_SPACE/$WATCH_TMP/svn.log
+svn log -v -r $ICHANGE_REV $IBUILD_SVN_OPTION svn://$SVN_SRV_IBUILD/ichange >$TASK_SPACE/$WATCH_TMP/svn.log
 export WATCH_GERRIT_SERVER=`cat $TASK_SPACE/$WATCH_TMP/svn.log | grep ichange | egrep -v 'manifest' | awk -F"$TOYEAR" {'print $2'} | awk -F'/' {'print $2'} | sort -u | head -n1`
 export WATCH_GERRIT_BRANCH=`cat $TASK_SPACE/$WATCH_TMP/svn.log | grep ichange | egrep -v 'manifest' | grep $TOWEEK | awk -F"$WATCH_GERRIT_SERVER/" {'print $2'} | awk -F"/$TOWEEK.all-change" {'print $1'} | sort -u | head -n1`
 if [[ $(cat $TASK_SPACE/$WATCH_TMP/svn.log | egrep '\[topic_build\]') ]] ; then
@@ -61,7 +61,7 @@ export WATCH_GERRIT_STAGE=`cat $TASK_SPACE/$WATCH_TMP/svn.log | egrep 'change-me
 
 export SLEEP=$(expr $(ps aux | grep blame | wc -l) % 10)
 sleep $SLEEP
-svn blame $IBUILD_SVN_OPTION -r $ICHANGE_REV:$ICHANGE_REV svn://$IBUILD_SVN_SRV/ichange/ichange/$TOYEAR/$WATCH_GERRIT_SERVER/$WATCH_GERRIT_BRANCH/$TOWEEK.all-change >$TASK_SPACE/$WATCH_TMP/svn.blame
+svn blame $IBUILD_SVN_OPTION -r $ICHANGE_REV:$ICHANGE_REV svn://$SVN_SRV_IBUILD/ichange/ichange/$TOYEAR/$WATCH_GERRIT_SERVER/$WATCH_GERRIT_BRANCH/$TOWEEK.all-change >$TASK_SPACE/$WATCH_TMP/svn.blame
 export ICHANGE_ENTRY=`tail -n1 $TASK_SPACE/$WATCH_TMP/svn.blame | awk -F' ' {'print $3'}`
 export WATCH_GERRIT_revision=`echo $ICHANGE_ENTRY | awk -F'|' {'print $1'}`
 export WATCH_GERRIT_id=`echo $ICHANGE_ENTRY | awk -F'|' {'print $2'}`

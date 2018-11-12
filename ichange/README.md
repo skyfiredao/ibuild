@@ -38,7 +38,7 @@ GERRIT_XML_URL=manifest_path
 
 GERRIT_BRANCH=branch_name
 
-ICHANGE_SVN_SRV=svn:icahnge_URL
+SVN_SRV_ICHANGE=svn:icahnge_URL
 
 ICHANGE_SVN_OPTION=svn_option
 

@@ -25,7 +25,7 @@ export BUILD_TIME=$(date +%y%m%d%H%M%S)
 export TASK_SPACE=/dev/shm
 export SPEC_URL=$1
 export ISPEC_URL=$(dirname $0)
-export IBUILD_SVN_SRV=Your_svn_Server
+export SVN_SRV_IBUILD=Your_svn_Server
 export IBUILD_SVN_OPTION='--non-interactive --no-auth-cache --username Your_Account --password Your_Password'
 export SVN_CMD=/usr/bin/svn
 export KEYRING_PID=$(ps aux | grep gnome-keyring-daemon | grep -v grep | awk -F' ' {'print $2'} | head -n1)
@@ -59,7 +59,7 @@ $SVN_CMD cleanup $ISPEC_URL >/dev/null 2>&1
 $SVN_CMD up -q $IBUILD_SVN_OPTION $ISPEC_URL >/dev/null 2>&1
 
 rm -fr $TASK_SPACE/$USER.tasks.lock.$SEED >/dev/null 2>&1
-$SVN_CMD co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask/tasks $TASK_SPACE/$USER.tasks.lock.$SEED
+$SVN_CMD co -q $IBUILD_SVN_OPTION svn://$SVN_SRV_IBUILD/itask/itask/tasks $TASK_SPACE/$USER.tasks.lock.$SEED
 
 export NEW_SPEC_NAME=$(grep spec.build $SPEC_URL | grep spec.build | awk -F'spec.build.' {'print $2'})
 if [[ ! -z $NEW_SPEC_NAME ]] ; then

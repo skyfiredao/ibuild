@@ -36,12 +36,12 @@ if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
     exit 0
 fi
 
-export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
+export SVN_SRV_IBUILD=$(grep '^SVN_SRV_IBUILD=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'SVN_SRV_IBUILD=' {'print $2'})
 export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
 export IBUILD_FOUNDER_EMAIL=$(grep '^IBUILD_FOUNDER_EMAIL=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_FOUNDER_EMAIL=' {'print $2'})
 
 export SVN_REPO=$(basename $IHOOK_REPOS)
-svn log -v -r $IHOOK_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/$SVN_REPO | mail -s "[ibuild][ihook] svn:$SVN_REPO $IHOOK_REV" $IBUILD_FOUNDER_EMAIL
+svn log -v -r $IHOOK_REV $IBUILD_SVN_OPTION svn://$SVN_SRV_IBUILD/$SVN_REPO | mail -s "[ibuild][ihook] svn:$SVN_REPO $IHOOK_REV" $IBUILD_FOUNDER_EMAIL
 
 
 

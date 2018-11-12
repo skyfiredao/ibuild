@@ -34,13 +34,13 @@ if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
 	exit 0
 fi
 
-export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
+export SVN_SRV_IBUILD=$(grep '^SVN_SRV_IBUILD=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'SVN_SRV_IBUILD=' {'print $2'})
 export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
 
 export QUEUE_SPACE=/local/queue/icase
 export QUEUE_SPACE_TOP=$(dirname $QUEUE_SPACE)
 #if [[ ! -e $QUEUE_SPACE_TOP ]] ; then
-#    svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/queue $QUEUE_SPACE_TOP
+#    svn co -q $IBUILD_SVN_OPTION svn://$SVN_SRV_IBUILD/itask/queue $QUEUE_SPACE_TOP
 #    chmod 777 -R $QUEUE_SPACE_TOP
 #else
 #    svn cleanup $QUEUE_SPACE_TOP
@@ -50,14 +50,14 @@ export QUEUE_SPACE_TOP=$(dirname $QUEUE_SPACE)
 
 export ICASE_REV=$1
 [[ -z $ICASE_REV ]] && exit
-export ICASE_URL=$(svn log -v -r $ICASE_REV $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
+export ICASE_URL=$(svn log -v -r $ICASE_REV $IBUILD_SVN_OPTION svn://$SVN_SRV_IBUILD/icase/icase | egrep 'A |M ' | awk -F' ' {'print $2'} | head -n1)
 
 if [[ ! `echo $ICASE_URL | grep '^/icase/'` ]] ; then
     exit
 fi
 
 mkdir -p $TASK_SPACE/tmp/icase.$SEED
-svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/tmp/icase.$SEED/icase
+svn co -q $IBUILD_SVN_OPTION svn://$SVN_SRV_IBUILD/icase/icase/$TOYEAR/$TOWEEK $TASK_SPACE/tmp/icase.$SEED/icase
 
 export BUILD_INFO_NAME=$(basename $ICASE_URL | head -n1)
 export BUILD_INFO=$TASK_SPACE/tmp/icase.$SEED/icase/$BUILD_INFO_NAME
@@ -86,7 +86,7 @@ if [[ $RESULT = PASSED && -z $STATUS_MAKE && ! -z $DOWNLOAD_PKG_NAME && ! -z $IV
             svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/ispec.svn
         else
             rm -fr $TASK_SPACE/ispec.svn >/dev/null 2>&1
-            svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec $TASK_SPACE/ispec.svn
+            svn co -q $IBUILD_SVN_OPTION svn://$SVN_SRV_IBUILD/ispec/ispec $TASK_SPACE/ispec.svn
         fi
         if [[ ! `grep "# $TODAY$" $TASK_SPACE/ispec.svn/queue/icase-$TOWEEK.list` ]] ; then
             echo "# $TODAY" >>$TASK_SPACE/ispec.svn/queue/icase-$TOWEEK.list

@@ -57,7 +57,7 @@ export GERRIT_BRANCH=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_BRANC
 export GERRIT_SERVER=$GERRIT_ROBOT@$GERRIT_SRV.$DOMAIN_NAME
 export GERRIT_SRV_NAME=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'GERRIT_SRV_NAME=' | awk -F'GERRIT_SRV_NAME=' {'print $2'})
 
-export ICHANGE_SVN_SRV=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_SVN_SRV=' | awk -F'ICHANGE_SVN_SRV=' {'print $2'})
+export SVN_SRV_ICHANGE=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'SVN_SRV_ICHANGE=' | awk -F'SVN_SRV_ICHANGE=' {'print $2'})
 export ICHANGE_SVN_OPTION=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_SVN_OPTION=' | awk -F'ICHANGE_SVN_OPTION=' {'print $2'})
 export ICHANGE_IGNORE_EVENTS=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHANGE_IGNORE_EVENTS=' | awk -F'ICHANGE_IGNORE_EVENTS=' {'print $2'})
 
@@ -66,8 +66,8 @@ export ICHANGE_IGNORE_EVENTS=$(cat $ITRACK_PATH/conf/$HOSTNAME.conf | grep 'ICHA
 touch $TASK_SPACE/itrack/json2svn.lock
 mkdir -p $TASK_SPACE/itrack/$GERRIT_SRV.tmp >/dev/null 2>&1
 
-if [[ ! `svn ls $ICHANGE_SVN_OPTION $ICHANGE_SVN_SRV/ | grep $TOYEAR` ]] ; then
-    svn mkdir -q $ICHANGE_SVN_OPTION $ICHANGE_SVN_SRV/$TOYEAR -m "auto: create $TOYEAR"
+if [[ ! `svn ls $ICHANGE_SVN_OPTION $SVN_SRV_ICHANGE/ | grep $TOYEAR` ]] ; then
+    svn mkdir -q $ICHANGE_SVN_OPTION $SVN_SRV_ICHANGE/$TOYEAR -m "auto: create $TOYEAR"
 fi
 
 if [[ ! -e $TASK_SPACE/itrack/svn.$TOHOUR.lock ]] ; then
@@ -76,14 +76,14 @@ fi
 
 if [[ -e $TASK_SPACE/itrack/svn ]] ; then
     export SVN_REPO_LOCAL=$(svn info $TASK_SPACE/itrack/svn | grep ^URL | awk -F': ' {'print $2'})
-    if [[ `echo $ICHANGE_SVN_SRV/$TOYEAR | grep $SVN_REPO_LOCAL` ]] ; then
+    if [[ `echo $SVN_SRV_ICHANGE/$TOYEAR | grep $SVN_REPO_LOCAL` ]] ; then
         svn up $ICHANGE_SVN_OPTION -q $TASK_SPACE/itrack/svn >/dev/null 2>&1
     else
         rm -fr $TASK_SPACE/itrack/svn
-        svn co $ICHANGE_SVN_OPTION -q $ICHANGE_SVN_SRV/$TOYEAR $TASK_SPACE/itrack/svn
+        svn co $ICHANGE_SVN_OPTION -q $SVN_SRV_ICHANGE/$TOYEAR $TASK_SPACE/itrack/svn
     fi
 else
-    svn co $ICHANGE_SVN_OPTION -q $ICHANGE_SVN_SRV/$TOYEAR $TASK_SPACE/itrack/svn
+    svn co $ICHANGE_SVN_OPTION -q $SVN_SRV_ICHANGE/$TOYEAR $TASK_SPACE/itrack/svn
 fi
 rm -f $TASK_SPACE/itrack/svn.*.lock
 touch $TASK_SPACE/itrack/svn.$TOHOUR.lock

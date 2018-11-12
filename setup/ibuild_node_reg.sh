@@ -62,16 +62,16 @@ sudo chmod -x /usr/bin/gnome-keyring-daemon
 svn up -q $IBUILD_ROOT
 
 export IBUILD_FOUNDER_EMAIL=$(grep '^IBUILD_FOUNDER_EMAIL=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_FOUNDER_EMAIL=' {'print $2'})
-export IBUILD_TOP_SVN_SRV=$(grep '^IBUILD_TOP_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_TOP_SVN_SRV=' {'print $2'})
-export IBUILD_TOP_SVN_SRV_HOSTNAME=$(echo $IBUILD_TOP_SVN_SRV | awk -F'.' {'print $1'})
-export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
-export IBUILD_SVN_SRV_HOSTNAME=$(echo $IBUILD_SVN_SRV | awk -F'.' {'print $1'})
-    [[ $IBUILD_SVN_SRV = $IP ]] && export IBUILD_SVN_SRV_HOSTNAME=$HOSTNAME
+export SVN_SRV_IBUILD_TOP=$(grep '^SVN_SRV_IBUILD_TOP=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'SVN_SRV_IBUILD_TOP=' {'print $2'})
+export SVN_SRV_IBUILD_TOP_HOSTNAME=$(echo $SVN_SRV_IBUILD_TOP | awk -F'.' {'print $1'})
+export SVN_SRV_IBUILD=$(grep '^SVN_SRV_IBUILD=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'SVN_SRV_IBUILD=' {'print $2'})
+export SVN_SRV_IBUILD_HOSTNAME=$(echo $SVN_SRV_IBUILD | awk -F'.' {'print $1'})
+    [[ $SVN_SRV_IBUILD = $IP ]] && export SVN_SRV_IBUILD_HOSTNAME=$HOSTNAME
 export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
-export IBUILD_SVN_REV_SRV=$(svn info $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
-export ITASK_SVN_SRV=$(grep '^ITASK_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'ITASK_SVN_SRV=' {'print $2'})
-    [[ -z $ITASK_SVN_SRV ]] && export ITASK_SVN_SRV=$IBUILD_SVN_SRV
-export ITASK_SVN_SRV_HOSTNAME=$(echo $ITASK_SVN_SRV | awk -F'.' {'print $1'})
+export IBUILD_SVN_REV_SRV=$(svn info $IBUILD_SVN_OPTION svn://$SVN_SRV_IBUILD/itask/itask | grep 'Last Changed Rev: ' | awk -F': ' {'print $2'})
+export SVN_SRV_ITASK=$(grep '^SVN_SRV_ITASK=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'SVN_SRV_ITASK=' {'print $2'})
+    [[ -z $SVN_SRV_ITASK ]] && export SVN_SRV_ITASK=$SVN_SRV_IBUILD
+export SVN_SRV_ITASK_HOSTNAME=$(echo $SVN_SRV_ITASK | awk -F'.' {'print $1'})
 export DIST_FS_SHARE=$(grep '^DIST_FS_SHARE=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'DIST_FS_SHARE=' {'print $2'})
 export SHARE_POINT=/local/share/build
 [[ ! -e $SHARE_POINT/README ]] && export SHARE_POINT=$(df | grep local | grep share | grep upload | awk -F' ' {'print $6'})
@@ -86,20 +86,20 @@ if [[ -e $TASK_SPACE/itask/svn.$TODAY.lock && -d $TASK_SPACE/itask/svn/.svn ]] ;
         svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn
         if [[ $? != 0 ]] ; then
             rm -fr $TASK_SPACE/itask/svn >/dev/null 2>&1
-            svn co -q $IBUILD_SVN_OPTION svn://$ITASK_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
+            svn co -q $IBUILD_SVN_OPTION svn://$SVN_SRV_ITASK/itask/itask $TASK_SPACE/itask/svn
         fi
     fi
 else
     mkdir -p $TASK_SPACE/itask >/dev/null 2>&1
     rm -fr $TASK_SPACE/itask/svn* >/dev/null 2>&1
     touch $TASK_SPACE/itask/svn.$TODAY.lock
-    svn co -q $IBUILD_SVN_OPTION svn://$ITASK_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
+    svn co -q $IBUILD_SVN_OPTION svn://$SVN_SRV_ITASK/itask/itask $TASK_SPACE/itask/svn
 fi
 
-if [[ $IBUILD_TOP_SVN_SRV_HOSTNAME != $IBUILD_SVN_SRV_HOSTNAME && ! -z $IBUILD_TOP_SVN_SRV ]] ; then
+if [[ $SVN_SRV_IBUILD_TOP_HOSTNAME != $SVN_SRV_IBUILD_HOSTNAME && ! -z $SVN_SRV_IBUILD_TOP ]] ; then
     rm -fr $TASK_SPACE/itask.top
     mkdir -p $TASK_SPACE/itask.top
-    svn co -q $IBUILD_SVN_OPTION svn://$ITASK_SVN_SRV/itask/itask $TASK_SPACE/itask.top/svn
+    svn co -q $IBUILD_SVN_OPTION svn://$SVN_SRV_ITASK/itask/itask $TASK_SPACE/itask.top/svn
 fi
 
 if [[ ! -e $TASK_SPACE/itask/svn/inode ]] ; then
@@ -107,7 +107,7 @@ if [[ ! -e $TASK_SPACE/itask/svn/inode ]] ; then
     svn ci $IBUILD_SVN_OPTION -m "auto: add inode in $IP" $TASK_SPACE/itask/svn/inode
 fi
 
-if [[ -e $DIST_FS_SHARE/README && $IBUILD_SVN_SRV_HOSTNAME != $HOSTNAME ]] ; then
+if [[ -e $DIST_FS_SHARE/README && $SVN_SRV_IBUILD_HOSTNAME != $HOSTNAME ]] ; then
     export DIST_FS=$DIST_FS_SHARE
     export SHARE_POINT_USAGE=$(df $DIST_FS | grep dev | awk -F' ' {'print $5'} | awk -F'%' {'print $1'})
     export RM_ENTRY=$(ls $DIST_FS | head -n1)
@@ -134,8 +134,8 @@ DIST_FS=$DIST_FS" | sort -u >$TASK_SPACE/itask/$HOSTNAME
 
 cp $TASK_SPACE/itask/$HOSTNAME $TASK_SPACE/itask/svn/inode/$HOSTNAME >/dev/null 2>&1
 
-if [[ $IBUILD_TOP_SVN_SRV_HOSTNAME != $IBUILD_SVN_SRV_HOSTNAME ]] ; then
-    if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME && ! -z $IBUILD_TOP_SVN_SRV ]] ; then    
+if [[ $SVN_SRV_IBUILD_TOP_HOSTNAME != $SVN_SRV_IBUILD_HOSTNAME ]] ; then
+    if [[ $SVN_SRV_IBUILD_HOSTNAME = $HOSTNAME && ! -z $SVN_SRV_IBUILD_TOP ]] ; then    
         cp $TASK_SPACE/itask/$HOSTNAME $TASK_SPACE/itask.top/svn/inode/$HOSTNAME >/dev/null 2>&1
         svn add $TASK_SPACE/itask.top/svn/inode/$HOSTNAME >/dev/null 2>&1
         svn ci $IBUILD_SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask.top/svn/inode/$HOSTNAME
@@ -147,7 +147,7 @@ if [[ $(svn st $TASK_SPACE/itask/svn/inode/$HOSTNAME | grep $HOSTNAME) ]] ; then
     svn ci $IBUILD_SVN_OPTION -m "auto: update $HOSTNAME $IP" $TASK_SPACE/itask/svn/inode/$HOSTNAME
     if [[ $? != 0 ]] ; then
         rm -fr $TASK_SPACE/itask/svn
-        svn co -q $IBUILD_SVN_OPTION svn://$ITASK_SVN_SRV/itask/itask $TASK_SPACE/itask/svn
+        svn co -q $IBUILD_SVN_OPTION svn://$SVN_SRV_ITASK/itask/itask $TASK_SPACE/itask/svn
         echo -e "Waiting for next cycle because conflict"
         exit 1
     fi
@@ -251,7 +251,7 @@ RESET_SHARE_POINT()
  bash /tmp/clean_share.sh
 }
 
-if [[ $IBUILD_SVN_SRV_HOSTNAME = $HOSTNAME ]] ; then
+if [[ $SVN_SRV_IBUILD_HOSTNAME = $HOSTNAME ]] ; then
     svn up -q $IBUILD_SVN_OPTION $TASK_SPACE/itask/svn/inode
     for CHK_HOST in `ls $TASK_SPACE/itask/svn/inode`
     do
@@ -293,7 +293,7 @@ if [[ ! `echo $CPU | grep ARM` ]] ; then
     bash -x $IBUILD_ROOT/setup/ibuild_node_daemon.sh $TASK_SPACE/itask/svn >/tmp/ibuild_node_daemon.log 2>&1 &
 fi
 
-if [[ $IBUILD_SVN_SRV_HOSTNAME != $HOSTNAME ]] ; then
+if [[ $SVN_SRV_IBUILD_HOSTNAME != $HOSTNAME ]] ; then
     $IBUILD_ROOT/hotfix/mount_ref_repo.sh
 fi
 

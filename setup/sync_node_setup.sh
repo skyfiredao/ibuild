@@ -34,20 +34,20 @@ if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
 	exit 0
 fi
 
-export IBUILD_SVN_SRV=`grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'}`
+export SVN_SRV_IBUILD=`grep '^SVN_SRV_IBUILD=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'SVN_SRV_IBUILD=' {'print $2'}`
 export IBUILD_SVN_OPTION=`grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'}`
 
 mkdir -p ~/.ssh
 cd ~/.ssh
 if [[ ! -e id_rsa-irobot ]] ; then
-	scp $IBUILD_SVN_SRV:.ssh/* .
+	scp $SVN_SRV_IBUILD:.ssh/* .
 fi
 [[ ! -e ~/.gitconfig ]] && ln -sf ~/.ssh/gitconfig ~/.gitconfig
 
 chown $USER -R /local/workspace
 sudo mkdir -p /mnt/tmp
 sudo chown $USER /mnt/tmp
-sshfs irobot@$IBUILD_SVN_SRV:/local /mnt/tmp 
+sshfs irobot@$SVN_SRV_IBUILD:/local /mnt/tmp 
 
 rm -f $IBUILD_ROOT/bin/repo
 time rsync -av /mnt/tmp/workspace/. /local/workspace/ >>/tmp/sync.log

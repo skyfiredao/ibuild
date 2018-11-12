@@ -32,10 +32,10 @@ if [[ ! -e $HOME/ibuild/conf/ibuild.conf ]] ; then
     echo -e "Please put ibuild in your $HOME"
     exit 0
 fi
-export IBUILD_SVN_SRV=$(grep '^IBUILD_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_SRV=' {'print $2'})
+export SVN_SRV_IBUILD=$(grep '^SVN_SRV_IBUILD=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'SVN_SRV_IBUILD=' {'print $2'})
 export IBUILD_SVN_OPTION=$(grep '^IBUILD_SVN_OPTION=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'IBUILD_SVN_OPTION=' {'print $2'})
-export ISPEC_SVN_SRV=$(grep '^ISPEC_SVN_SRV=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'ISPEC_SVN_SRV=' {'print $2'})
-    [[ -z $ISPEC_SVN_SRV ]] && export ISPEC_SVN_SRV=$IBUILD_SVN_SRV
+export SVN_SRV_ISPEC=$(grep '^SVN_SRV_ISPEC=' $IBUILD_ROOT/conf/ibuild.conf | awk -F'SVN_SRV_ISPEC=' {'print $2'})
+    [[ -z $SVN_SRV_ISPEC ]] && export SVN_SRV_ISPEC=$SVN_SRV_IBUILD
 export LOCK_SPACE=/dev/shm/lock
 mkdir -p $LOCK_SPACE >/dev/null 2>&1
 
@@ -45,7 +45,7 @@ else
     exit
 fi
 
-svn co -q $IBUILD_SVN_OPTION svn://$IBUILD_SVN_SRV/ispec/ispec $TASK_SPACE/tmp.ispec.$SEED
+svn co -q $IBUILD_SVN_OPTION svn://$SVN_SRV_IBUILD/ispec/ispec $TASK_SPACE/tmp.ispec.$SEED
 
 CLEAN_TASK_STACK()
 {
