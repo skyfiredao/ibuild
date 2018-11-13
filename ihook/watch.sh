@@ -63,18 +63,20 @@ export SLEEP=$(expr $(ps aux | grep blame | wc -l) % 10)
 sleep $SLEEP
 if [[ $(svn log -v -r $ICHANGE_REV | grep all-change) ]] ; then
     svn blame $IBUILD_SVN_OPTION -r $ICHANGE_REV:$ICHANGE_REV svn://$SVN_SRV_IBUILD/ichange/ichange/$TOYEAR/$WATCH_GERRIT_SERVER/$WATCH_GERRIT_BRANCH/$TOWEEK.all-change >$TASK_SPACE/$WATCH_TMP/svn.blame
-fi
-export ICHANGE_ENTRY=`tail -n1 $TASK_SPACE/$WATCH_TMP/svn.blame | awk -F' ' {'print $3'}`
-export WATCH_GERRIT_revision=`echo $ICHANGE_ENTRY | awk -F'|' {'print $1'}`
-export WATCH_GERRIT_id=`echo $ICHANGE_ENTRY | awk -F'|' {'print $2'}`
-export WATCH_GERRIT_email=`echo $ICHANGE_ENTRY | awk -F'|' {'print $3'}`
+    export ICHANGE_ENTRY=$(tail -n1 $TASK_SPACE/$WATCH_TMP/svn.blame | awk -F' ' {'print $3'})
+    export WATCH_GERRIT_revision=$(echo $ICHANGE_ENTRY | awk -F'|' {'print $1'})
+    export WATCH_GERRIT_id=$(echo $ICHANGE_ENTRY | awk -F'|' {'print $2'})
+    export WATCH_GERRIT_email=$(echo $ICHANGE_ENTRY | awk -F'|' {'print $3'})
     [[ -z $WATCH_GERRIT_email ]] && export WATCH_GERRIT_email=no_mail
-export WATCH_GERRIT_PATH=`echo $ICHANGE_ENTRY | awk -F'|' {'print $4'}`
-export WATCH_GERRIT_PROJECT=`echo $ICHANGE_ENTRY | awk -F'|' {'print $5'}`
-export WATCH_GERRIT_change_number=`echo $ICHANGE_ENTRY | awk -F'|' {'print $6'}`
-export WATCH_GERRIT_patchSet_number=`echo $ICHANGE_ENTRY | awk -F'|' {'print $7'}`
-export WATCH_GERRIT_value=`echo $ICHANGE_ENTRY | awk -F'|' {'print $8'}`
-export WATCH_GERRIT_REFSPEC=$(echo $ICHANGE_ENTRY | awk -F'|' {'print $9'})
+    export WATCH_GERRIT_PATH=$(echo $ICHANGE_ENTRY | awk -F'|' {'print $4'})
+    export WATCH_GERRIT_PROJECT=$(echo $ICHANGE_ENTRY | awk -F'|' {'print $5'})
+    export WATCH_GERRIT_change_number=$(echo $ICHANGE_ENTRY | awk -F'|' {'print $6'})
+    export WATCH_GERRIT_patchSet_number=$(echo $ICHANGE_ENTRY | awk -F'|' {'print $7'})
+    export WATCH_GERRIT_value=$(echo $ICHANGE_ENTRY | awk -F'|' {'print $8'})
+    export WATCH_GERRIT_REFSPEC=$(echo $ICHANGE_ENTRY | awk -F'|' {'print $9'})
+else
+    exit
+fi
 
 SPEC_EXT()
 {
