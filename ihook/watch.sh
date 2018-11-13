@@ -63,6 +63,9 @@ export SLEEP=$(expr $(ps aux | grep blame | wc -l) % 10)
 sleep $SLEEP
 if [[ $(svn log -v -r $ICHANGE_REV | grep all-change) ]] ; then
     svn blame $IBUILD_SVN_OPTION -r $ICHANGE_REV:$ICHANGE_REV svn://$SVN_SRV_IBUILD/ichange/ichange/$TOYEAR/$WATCH_GERRIT_SERVER/$WATCH_GERRIT_BRANCH/$TOWEEK.all-change >$TASK_SPACE/$WATCH_TMP/svn.blame
+fi
+
+if [[ -e $TASK_SPACE/$WATCH_TMP/svn.blame ]] ; then
     export ICHANGE_ENTRY=$(tail -n1 $TASK_SPACE/$WATCH_TMP/svn.blame | awk -F' ' {'print $3'})
     export WATCH_GERRIT_revision=$(echo $ICHANGE_ENTRY | awk -F'|' {'print $1'})
     export WATCH_GERRIT_id=$(echo $ICHANGE_ENTRY | awk -F'|' {'print $2'})
