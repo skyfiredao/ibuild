@@ -31,8 +31,8 @@ export TAG_NAME=sshd
 export PORT_MAP=2222:22
 export VOLUME_localtime=/etc/localtime:/etc/localtime:ro
 export VOLUME_local=/local/ref_repo:/local/ref_repo:ro
-export VOLUME_local_share_build=/local/share/build:/local/share/build
-export VOLUME_etc_ssh=/etc/ssh:/etc/ssh:ro
+# export VOLUME_local_share_build=/local/share/build:/local/share/build
+# export VOLUME_etc_ssh=/etc/ssh:/etc/ssh:ro
 export DOCKER_NAMES=$TAG_NAME-$TODAY
 export IMAGE_TAG=ibuild/$TAG_NAME
 
@@ -46,10 +46,11 @@ export CONTAINER_ID=$(docker run \
 -p $PORT_MAP \
 -v $VOLUME_localtime \
 -v $VOLUME_local \
--v $VOLUME_local_share_build \
--v $VOLUME_etc_ssh \
 --name=$DOCKER_NAMES \
 -t $IMAGE_TAG)
+
+# -v $VOLUME_local_share_build \
+# -v $VOLUME_etc_ssh \
 
 docker exec -t $DOCKER_NAMES bash -l -c "service ssh start" >/tmp/docker.tmp 2>&1
 cat /tmp/docker.tmp
@@ -57,7 +58,7 @@ cat /tmp/docker.tmp
 if [[ $(cat /tmp/docker.tmp |grep running | grep Error) ]] ; then
     ERROR_DOCKER_ID=$(cat /tmp/docker.tmp |grep running | grep Error | awk -F' ' {'print $6'})
     docker rm $ERROR_DOCKER_ID
-    docker exec -t $DOCKER_NAMES bash -l -c "service ssh start"
+#    docker exec -t $DOCKER_NAMES bash -l -c "service ssh start"
 fi
 
 echo CONTAINER_ID=$CONTAINER_ID
